@@ -1,0 +1,25 @@
+
+
+
+async function server_func(func_name: string, kwargs: Record<string, any>) {
+    const response = await fetch(
+        'http://localhost:5000/' + func_name, 
+        {
+            method: "POST", mode: "cors", 
+            //cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            //credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+            "Content-Type": "application/json",
+        },
+    //    redirect: "follow", // manual, *follow, error
+    //    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(kwargs), // body data type must match "Content-Type" header
+    });
+    return await response.json();
+}
+
+
+
+export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string, any>){
+    return server_func('convert_fcj', {'fcj':fcj, 'sinfo':sinfo});
+}
