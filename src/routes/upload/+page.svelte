@@ -25,7 +25,6 @@
             convert_fcj(data, {'category': "F3A", 'name': 'P23'})
             .then((res: Record<string, any>) => {
                 mans.set(res);
-                window.location.href = '/analysis';
             });
         }
     }
@@ -47,11 +46,7 @@
 
 
 {#if value}
-<Button on:click={convert_json}>
+<Button on:click={convert_json} href='/analysis'>
     Prepare Analysis
 </Button>
 {/if}
-
-{#each Object.keys($mans) as man}
-    <p>{man}</p>
-{/each}

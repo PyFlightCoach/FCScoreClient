@@ -13,7 +13,7 @@
 </script>
 
 <Navbar let:hidden let:toggle>
-	<NavBrand>
+	<NavBrand href='/'>
 		FCScore
 	</NavBrand>
 	<NavUl {hidden}>
