@@ -1,6 +1,5 @@
 
 
-
 async function server_func(func_name: string, kwargs: Record<string, any>) {
     const response = await fetch(
         'http://localhost:5000/' + func_name, 
@@ -19,7 +18,7 @@ async function server_func(func_name: string, kwargs: Record<string, any>) {
 }
 
 
-
 export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string, any>){
     return server_func('convert_fcj', {'fcj':fcj, 'sinfo':sinfo});
 }
+
