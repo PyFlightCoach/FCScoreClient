@@ -22,3 +22,7 @@ export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string
     return server_func('convert_fcj', {'fcj':fcj, 'sinfo':sinfo});
 }
 
+export async function align(mdef: Record<string, any>, fl: Record<string, any>){
+    return server_func('align', {'mdef':mdef, 'fl':fl});
+}
+

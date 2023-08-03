@@ -5,7 +5,7 @@
     let value: any;
     let data: Record<string, any> = {};
     
-    import { mans } from '$lib/stores.js';
+    import { flightdata } from '$lib/stores.js';
 
 
     function readjson(event) {
@@ -24,7 +24,11 @@
         if (data) {
             convert_fcj(data, {'category': "F3A", 'name': 'P23'})
             .then((res: Record<string, any>) => {
-                mans.set(res);
+                for (const [key, value] of Object.entries(res)) {
+                    value['busy'] = false;
+                    flightdata.addMan(key).set(value);
+                }
+                
             });
         }
     }

@@ -1,35 +1,35 @@
 
 <script lang="ts">
-  import { Sidebar, SidebarGroup, SidebarItem, SidebarWrapper } from 'flowbite-svelte';
-
-  import {mans} from '$lib/stores';
-
+  import { goto } from '$app/navigation';
+  import {flightdata} from '$lib/stores';
+  import {Button} from 'flowbite-svelte';
+  let mannames = flightdata.mannames;
 </script>
 
 
-<div class="sidebar">
-  <Sidebar class="sidebar__sidebar">
+<div id="parent">
+  <div id="manoeuvre-select">
 
-    <SidebarGroup>
-      {#each Object.keys($mans) as man}
-        <SidebarItem href={'/analysis/' + man} label={man}></SidebarItem>
-      {/each}
-
-    </SidebarGroup>
-      
-  </Sidebar>  
-
-  <slot class="sidebar__main"/>
+        {#each $mannames as man}
+          <Button  on:click={() => {goto('/analysis/' + man)}} >{man}</Button>
+        {/each}
+  
+  </div>
+  
+  <slot id="contents"/>
 
 </div>
   
 <style >
   
-  .sidebar {display: flex;}
-  .sidebar__sidebar {width: 10%;}
-  .sidebar__main {
-      flex: 1;/* Take the remaining width */
-      overflow: auto;       /* Make it scrollable */
+  #parent {display: flex; flex-direction: row; align-items: stretch; width:100%; height: 100%;}
+  #manoeuvre-select {width: 100px; display: flex; flex-direction: column;}
+  #contents {
+      flex: 1 1 auto;
+      
+      height: 100%;
+      width: 100%;
+      background-color: red;
   }
 
 </style>
