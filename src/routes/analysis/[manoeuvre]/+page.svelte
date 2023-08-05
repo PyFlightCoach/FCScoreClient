@@ -5,7 +5,7 @@
   import { flightdata } from '$lib/stores.js';
   import {page} from '$app/stores';
   import {align} from '$lib/api_calls';
-  import Plotdtw from '$lib/plotdtw.svelte';
+  import PlotState from '$lib/plotState.svelte';
 
   $: manname = $page.params['manoeuvre'];
   $: man = flightdata.man(manname);
@@ -24,12 +24,11 @@
     
   }; 
 
-
 </script>
 
 {#if 'fl' in $man}
   <div>Preparing alignment for {$man['mdef']['info']['short_name']}</div>
 {:else if 'al' in $man}
-  <Plotdtw/>
+  <PlotState state={$man['al']}/>
 {/if}
 
