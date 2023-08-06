@@ -3,6 +3,13 @@ export class Point {
     x: number; y: number; z: number;
     constructor(x: number, y: number, z: number) {this.x = x; this.y = y; this.z = z;};
 
+    norm(): Point {
+        const fac = 1 / Math.sqrt(this.x**2 + this.y**2 + this.z**2)
+        return new Point(fac * this.x, fac * this.y, fac * this.z);
+    }
+
+    length(): number {return Math.sqrt(this.x**2 + this.y**2 + this.z**2);}
+
     static dot(a: Point, b: Point): number {return a.x * b.x + a.y * b.y + a.z * b.z;}
 
     static cross(a: Point, b: Point): Point {
@@ -38,11 +45,12 @@ export class Quaternion {
     axis(): Point {return new Point(this.x, this.y, this.z);}
 
     static mul(a: Quaternion, b: Quaternion): Quaternion {
-        const w = a.w * b.w - Point.dot(a.axis(), b.axis());
+        const pa = a.axis(); const pb = b.axis();
+        const w = a.w * b.w - Point.dot(pa, pb);
         const xyz = Point.sum([
-            b.axis().mul(a.w),
-            a.axis().mul(b.w),
-            Point.cross(a.axis(), b.axis())
+            pb.mul(a.w),
+            pa.mul(b.w),
+            Point.cross(pa, pb)
         ]); 
         return new Quaternion(w, xyz.x, xyz.y, xyz.z)
     }
@@ -59,11 +67,11 @@ export class Quaternion {
     transform_point(p: Point): Point {
         //a, b = Base.length_check(self, point)
         return Quaternion.mul(
-            Quaternion.mul(
-                this, 
-                new Quaternion(0, p.x, p.y, p.z)
-            ), 
-            this.inverse()
+            this,
+            Quaternion.mul( 
+                new Quaternion(0, p.x, p.y, p.z),
+                this.inverse()
+            )
         ).axis();   
     }       
 }
@@ -73,21 +81,11 @@ export class State {
     pos: Point; att: Quaternion;
     constructor(data: Record<string, any>) {
         this.pos = new Point(data.x, data.y, data.z);
-        this.att = new Quaternion(data.rw, data.rx, data.ry, data.rx);
+        this.att = new Quaternion(data.rw, data.rx, data.ry, data.rz);
 //        this.vel = new Point(data.u, data.v, data.w);
 //        this.rvel = new Point(data.p, data.q, data.r);
     }
 
     body_to_world(p: Point): Point {return this.att.transform_point(p).offset(this.pos);}
 
-}
-
-
-export function zip(a: any[], b: any[]){
-    let result: any[]=[];
-    a.forEach(function(o,i){
-        result.push(o);
-       result.push(b[i]);
-    });
-    return result
 }
