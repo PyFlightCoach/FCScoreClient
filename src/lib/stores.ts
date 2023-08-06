@@ -17,10 +17,15 @@ function createFlightData(){
             });
             return mans[name];
         },
-        man: (name: string) => {return mans[name]},
-        clear: () => {mans = {};}
+        man: (name: string) => {           
+            return mans[name]
+        },
+        clear: () => {mans = {};},
+
     };
-    
+
 };
 
 export const flightdata=createFlightData();
+
+

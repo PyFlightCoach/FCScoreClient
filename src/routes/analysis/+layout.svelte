@@ -2,17 +2,20 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import {flightdata} from '$lib/stores';
-  import {Button} from 'flowbite-svelte';
+  import {Button, Dropdown, Chevron, DropdownItem} from 'flowbite-svelte';
+  import Mandd from './Mandd.svelte';
+
   let mannames = flightdata.mannames;
+
+
 </script>
 
 
 <div id="parent">
   <div id="manoeuvre-select">
-
-        {#each $mannames as man}
-          <Button  on:click={() => {goto('/analysis/' + man)}} >{man}</Button>
-        {/each}
+    {#each $mannames as manname}
+      <Mandd manname={manname}/>
+    {/each}
   
   </div>
   
@@ -29,7 +32,6 @@
       
       height: 100%;
       width: 100%;
-      background-color: red;
   }
 
 </style>

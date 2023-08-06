@@ -21,21 +21,16 @@
         });
 
         let _i: number[] = []; let _j: number[] = []; let _k: number[] = [];
-        
         for (let i = 0; i < points.length-2; i+=2) {
             _i.push(i  ); _j.push(i+1); _k.push(i+2);
             _i.push(i+1); _j.push(i+3); _k.push(i+2);
         }
         
-        //const facecolor: string[] = points.slice(0,-2).map(() => 'red');
-
         let data: Record<string, number[]>={x: [], y: [], z: []};
         points.forEach((val: Record<string, any>) => {
             data.x.push(val.x); data.y.push(val.y); data.z.push(val.z);
         })
 
-        //intensitymode:"cell", facecolor
-//        return {...data, type: "scatter3d", mode: 'lines'};
         return {...data, i:_i, j:_j, k:_k, type: 'mesh3d'};
     };
 
