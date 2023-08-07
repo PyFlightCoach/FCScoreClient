@@ -21,7 +21,6 @@
   }
   #parent {
     display:flex; flex-direction:column; align-items: stretch; 
-    height: 100%;
   }
   #head {flex: 0 1 auto;}
 </style>

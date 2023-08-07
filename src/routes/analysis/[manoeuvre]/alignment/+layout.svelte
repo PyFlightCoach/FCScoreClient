@@ -1,7 +1,7 @@
 
 
 <script lang="ts">
-  import {Button, ButtonGroup, Input, Label, Dropdown, DropdownItem, Chevron, Spinner} from 'flowbite-svelte';
+  import {Tooltip, Input, Dropdown, DropdownItem, BottomNav, BottomNavItem} from 'flowbite-svelte';
   let step: number = 1.0;
 
   import { flightdata } from '$lib/stores.js';
@@ -12,34 +12,34 @@
   $: man = flightdata.man(manname);
 
   $: elements = [...new Set($man.al.map((val: Record<string, string>)=>val.element))];
-  let element = "Select Element";
+  let element = "select element";
 
 </script>
 
 
 <div id="parent">
-  <div id="edit_alignment">
-  
-    <Button  color="alternative">Confirm</Button>
-    <Button  color="alternative"><Chevron>{element}</Chevron></Button>
+  <slot id="contents"/>  
+  <BottomNav classInner="grid-cols-5" id="adjust-split">
+    
+    <BottomNavItem>{element}</BottomNavItem>
     <Dropdown bind:open={dropdownOpen}>
       {#each elements as el}
         <DropdownItem on:click={()=>{element=el; dropdownOpen=false;}}>{el}</DropdownItem>  
       {/each}
     </Dropdown>
-    <Label type=number >Step Size<Input placeholder='step' value={step}/></Label>
+    <BottomNavItem><Input placeholder='step' value={step}/></BottomNavItem>
 
-    <Button  color="alternative">&#60</Button>
-    <Button color="alternative">&#62</Button>
+    <BottomNavItem>&#60</BottomNavItem>
+    <BottomNavItem>&#62</BottomNavItem>
+    <BottomNavItem>Confirm</BottomNavItem>
     
-  
-  </div>
-  <slot id="contents"/>  
+  </BottomNav>
+  <Tooltip triggeredBy="[id='adjust-split']">Select Element, enter step size and use buttons to edit split locations</Tooltip>
 
 </div>
 
 <style>
   #parent {display: flex; flex-direction: row; align-items: stretch; width: 100%; height: 100%; }
-  #edit_alignment { display: flex; flex-direction: column; width:100px;}
+
   #contents {flex: 1 1 auto;}
 </style>

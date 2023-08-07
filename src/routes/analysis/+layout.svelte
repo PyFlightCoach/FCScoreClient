@@ -30,6 +30,10 @@
   $: hidden = !space_show
 
 
+  function alignAll() {
+
+  }
+
 </script>
 
 
@@ -48,6 +52,7 @@
 </Drawer>
   
 <slot id="contents"/>
+<Button color="alternative" on:click{alignAll}>Align All</Button>
 
   
 <style >
