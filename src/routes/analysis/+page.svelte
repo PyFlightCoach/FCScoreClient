@@ -1,28 +1,27 @@
 <script lang="ts">
-  import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Checkbox, TableSearch } from 'flowbite-svelte';
+  import { Heading} from 'flowbite-svelte';
   import {flightdata} from '$lib/stores';
   let mannames = flightdata.mannames;
 
   
 
 </script>
+<div id='parent'>
+  <div id='head'>
+    <Heading>Analysis</Heading>
+    <div>move mouse to left or press spacebar to view manoeuvres</div>
+  </div>
 
-<Table>
-  <TableHead>
-    <TableHeadCell>Manoeuvre</TableHeadCell>
-    <TableHeadCell>K Factor</TableHeadCell>
-    <TableHeadCell>Status</TableHeadCell>
-    <TableHeadCell>Score</TableHeadCell>
-  </TableHead>
-  <TableBody>
-    {#each $mannames as manname}
-      <TableBodyRow>
-        <TableBodyCell>{manname}</TableBodyCell>
-        <TableBodyCell>3</TableBodyCell>
-        <TableBodyCell>Read</TableBodyCell>
-        <TableBodyCell>-</TableBodyCell>
-      </TableBodyRow>
+</div>
 
-    {/each}
-  </TableBody>
-</Table>
+
+<style>
+  div {
+    text-align: center;
+  }
+  #parent {
+    display:flex; flex-direction:column; align-items: stretch; 
+    height: 100%;
+  }
+  #head {flex: 0 1 auto;}
+</style>

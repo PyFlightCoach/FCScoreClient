@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Dropdown, DropdownItem, Chevron, DropdownDivider } from 'flowbite-svelte'
-
+	import { mouse } from '$lib/stores';
 	import {flightdata} from '$lib/stores';
 
 	const clearflight = () => {
@@ -10,10 +10,15 @@
 	}
 
 
+	function handleMousemove(event) {
+		$mouse = {x: event.clientX, y: event.clientY}
+	}
+
 </script>
 
 
-<div id="parent">
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div id="parent" on:mousemove={handleMousemove} >
 	<Navbar let:hidden let:toggle>
 		<NavBrand href='/'>
 			FCScore

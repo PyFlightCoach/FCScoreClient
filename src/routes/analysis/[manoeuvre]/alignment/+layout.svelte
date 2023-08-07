@@ -39,7 +39,7 @@
 </div>
 
 <style>
-  #parent {display: flex; flex-direction: row; align-items: stretch; width: 100%; }
+  #parent {display: flex; flex-direction: row; align-items: stretch; width: 100%; height: 100%; }
   #edit_alignment { display: flex; flex-direction: column; width:100px;}
   #contents {flex: 1 1 auto;}
 </style>

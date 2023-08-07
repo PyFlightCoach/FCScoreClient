@@ -28,4 +28,4 @@ function createFlightData(){
 
 export const flightdata=createFlightData();
 
-
+export const mouse = writable({x: 0, y: 0});
