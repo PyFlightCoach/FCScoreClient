@@ -4,31 +4,16 @@
 
   import { goto } from '$app/navigation';
   import {flightdata} from '$lib/stores';
-  import {Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Button, Dropdown, Chevron, DropdownItem} from 'flowbite-svelte';
+  import {Button, Dropdown, Chevron, DropdownItem} from 'flowbite-svelte';
   import {align} from '$lib/api_calls';
-	import { onMount } from 'svelte';
 
   $: man = flightdata.man(manname);
   
   $: aligned = !('fl' in $man); 
   $: busy = $man.busy;
+  $: scored = 'score' in $man;
 
   let dropdownOpen = false;
-
-  const prepare_alignment = () => {
-    if (!aligned && !busy) {
-      $man.busy = true;
-      align($man.mdef, $man.fl)
-      .then((res: Record<string, any>) => {
-        man.update((data) => {
-          data.al = res;
-          delete data.fl;
-          data.busy = false;
-          return data;
-        });
-      });
-    }; 
-  }
 
 </script>
 
@@ -38,10 +23,13 @@
     <Dropdown bind:open={dropdownOpen}>
       {#if aligned}
         <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + manname + '/alignment');}}>edit alignment</DropdownItem>
-        <DropdownItem  on:click={() => { dropdownOpen=false; goto('/analysis/' + manname + '/scores');}}>score info</DropdownItem>
+        {#if !scored}
+          <DropdownItem  on:click={() => {dropdownOpen=false; flightdata.scoreman(manname);}}>calculate scores</DropdownItem>
+        {:else}
+          <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + manname + '/scores');}}>score</DropdownItem>
+        {/if}
       {:else}
-
-        <DropdownItem  on:click={prepare_alignment}>setup</DropdownItem>
+        <DropdownItem  on:click={()=> {dropdownOpen=false; flightdata.alignman(manname);}}>setup</DropdownItem>
       {/if}  
     </Dropdown>       
 </div>
@@ -54,10 +42,7 @@
   {/if}
 </div>
 <div>
-  {#if aligned}
-    2.0
-  {:else}-{/if}
-  
+  {#if aligned}2.0{:else}-{/if}
 </div>
 
 <style>

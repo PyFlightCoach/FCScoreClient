@@ -1,11 +1,13 @@
 
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import {flightdata, mouse} from '$lib/stores';
-  import {Drawer, Button, CloseButton } from 'flowbite-svelte';
+  import {flightdata, mouse, flightmenu} from '$lib/stores';
+  import {Drawer, Button, CloseButton, Alert } from 'flowbite-svelte';
   import ManSummary from './ManSummary.svelte';
   import { sineIn } from 'svelte/easing';
-  
+	import { onMount, onDestroy, tick} from 'svelte';
+  import {align} from '$lib/api_calls';
+
   let mannames = flightdata.mannames;
 
   let space_show = false; 
@@ -30,9 +32,16 @@
   $: hidden = !space_show
 
 
-  function alignAll() {
+  onMount(() => {
+    $flightmenu['AlignAll'] = () => {$mannames.forEach((mn) => {
+      flightdata.alignman(mn);
+    })};
+  });
 
-  }
+  onDestroy(() => {
+    delete $flightmenu['AlignAll']
+  });
+
 
 </script>
 
@@ -45,14 +54,13 @@
       <div>K</div>
       <div>Status</div>
       <div>Score</div>
-      {#each $mannames as manname}
+      {#each $mannames as manname, i}
         <ManSummary manname={manname}/>
       {/each}
   </div>
 </Drawer>
   
 <slot id="contents"/>
-<Button color="alternative" on:click{alignAll}>Align All</Button>
 
   
 <style >

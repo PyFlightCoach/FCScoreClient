@@ -26,3 +26,6 @@ export async function align(mdef: Record<string, any>, fl: Record<string, any>){
     return server_func('align', {'mdef':mdef, 'fl':fl});
 }
 
+export async function score(mdef: Record<string, any>, al: Record<string, any>){
+    return server_func('score', {'mdef':mdef, 'al':al});
+}
