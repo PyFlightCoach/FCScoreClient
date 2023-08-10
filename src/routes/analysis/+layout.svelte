@@ -31,18 +31,6 @@
 
   $: hidden = !space_show
 
-
-  onMount(() => {
-    $flightmenu['AlignAll'] = () => {$mannames.forEach((mn) => {
-      flightdata.alignman(mn);
-    })};
-  });
-
-  onDestroy(() => {
-    delete $flightmenu['AlignAll']
-  });
-
-
 </script>
 
 
@@ -54,7 +42,7 @@
       <div>K</div>
       <div>Status</div>
       <div>Score</div>
-      {#each $mannames as manname, i}
+      {#each Object.keys($mannames) as manname}
         <ManSummary manname={manname}/>
       {/each}
   </div>

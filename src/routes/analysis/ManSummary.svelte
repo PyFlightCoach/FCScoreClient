@@ -26,10 +26,11 @@
         {#if !scored}
           <DropdownItem  on:click={() => {dropdownOpen=false; flightdata.scoreman(manname);}}>calculate scores</DropdownItem>
         {:else}
-          <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + manname + '/scores');}}>score</DropdownItem>
+          <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + manname + '/scores');}}>score info</DropdownItem>
         {/if}
       {:else}
-        <DropdownItem  on:click={()=> {dropdownOpen=false; flightdata.alignman(manname);}}>setup</DropdownItem>
+        <DropdownItem  on:click={()=> {dropdownOpen=false; flightdata.alignman(manname);}}>Align</DropdownItem>
+        <DropdownItem  on:click={()=> {dropdownOpen=false; flightdata.alignman(manname).then(()=>{flightdata.scoreman(manname)});}}>Score</DropdownItem>
       {/if}  
     </Dropdown>       
 </div>
@@ -42,7 +43,7 @@
   {/if}
 </div>
 <div>
-  {#if aligned}2.0{:else}-{/if}
+  {#if scored}{$man.score.score.toFixed(1)}{:else}-{/if}
 </div>
 
 <style>

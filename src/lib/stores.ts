@@ -1,19 +1,24 @@
-import { writable } from 'svelte/store';
+import { writable, derived} from 'svelte/store';
 import type { Writable} from 'svelte/store';
 
 export const PlotlyLib = writable(null);
 import {align, score} from '$lib/api_calls';
 
+import {createEventDispatcher} from 'svelte';
+
+
 class FlightData {
     mans: Record<string, Writable<Record<string, any>>> = {};
-    mannames: Writable<string[]> = writable([]);
+    mannames: Writable<Record<string, number>> = writable({});
 
     addMan(name: string): Writable<Record<string, any>> {
         this.mans[name] = writable({}); 
         this.mannames.update((mnames) => {
-            mnames.push(name);
+            mnames[name] = 1;
             return mnames;
         });
+
+
         return this.mans[name];
     };
 
@@ -23,48 +28,51 @@ class FlightData {
 
     clear() {
         this.mans = {}; 
-        this.mannames.update((val) => []);
+        this.mannames.set({});
     }
 
-    alignman(name: string) {
-        this.mans[name].update((man)=>{
-            if (('fl' in man) && !man.busy) {
-                man.busy = true;
+    async alignman(name: string) {
+        let man: Record<string, any>={};
+        this.mans[name].subscribe((val) => {man=val});
 
-                align(man.mdef, man.fl)
-                .then((res: Record<string, any>) => {
-                    this.mans[name].update((data: Record<string, any>) => {
-                        data.al = res;
-                        delete data.fl;
-                        data.busy = false;
-                        return data;
-                    });
-                });
-
-            }
-            return man;
-        });
+        if (('fl' in man) && !man.busy) {
+            this.mans[name].update(man => {man.busy = true; return man;});
+            const res: Record<string, any> = await align(man.mdef, man.fl);
+            this.mans[name].update((data: Record<string, any>) => {
+                data.al = res;
+                delete data.fl;
+                data.busy = false;
+                return data;
+            });
+            this.mannames.update(
+                (mnames) => {mnames[name] = 2; return mnames;}
+            );
+        }
+    
     }
 
-    scoreman(name: string) {
-        this.mans[name].update((man) => {
-            if (!('score' in man) && !man.busy) {
-                man.busy = true;
-                score(man.mdef, man.al)
-                .then((res: Record<string, any>) => {
-                    this.mans[name].update((data: Record<string, any>) => {
-                        data.analysis = res.analysis;
-                        data.score=res.score;
-                        data.busy = false;
-                        return data;
-                    });
-                });
-                
+    async scoreman(name: string) {
+        let man: Record<string, any>={};
+        this.mans[name].subscribe((val) => {man=val});
 
-            }
-            return man
-        });
+        if (!('score' in man) && !man.busy) {
+            this.mans[name].update(man => {man.busy = true; return man;});
+            const res: Record<string, any> = await score(man.mdef, man.al);
+            this.mans[name].update((data: Record<string, any>) => {
+                data.mdef=res.mdef;
+                data.analysis=res.analysis;
+                data.score=res.score;
+                data.busy=false;
+                return data;
+            });
+            this.mannames.update(
+                (mnames) => {mnames[name] = 3; return mnames;}
+            );
+        }
+    
     }
+
+
 
 }
 

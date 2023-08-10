@@ -1,13 +1,15 @@
 
 
 <script lang="ts">
-  import {Tooltip, Input, Dropdown, DropdownItem, BottomNav, BottomNavItem, Select} from 'flowbite-svelte';
+  import {Tooltip, Input, BottomNav, BottomNavItem, Select} from 'flowbite-svelte';
   let step: number = 0.1;
 
   import { flightdata } from '$lib/stores.js';
   import {page} from '$app/stores';
+	import { goto } from '$app/navigation';
   let dropdownOpen = false;
-  
+  let mannames = flightdata.mannames;
+
   $: manname = $page.params['manoeuvre'];
   $: man = flightdata.man(manname);
 
@@ -27,6 +29,12 @@
 
   const editsplit = (stp: number, elname: string) => {
     man.update((val) => {
+      if ('score' in val) {
+        delete val['score'];
+        delete val['analysis'];
+      }
+      $mannames[manname]=2;
+
       const elindex = elements.indexOf(elname);
       let i=0;
       if (stp>0) {
@@ -64,7 +72,7 @@
 
     <BottomNavItem on:click={() => {editsplit(-Number(step), element)}}>&#60</BottomNavItem>
     <BottomNavItem on:click={() => {editsplit(Number(step), element)}}>&#62</BottomNavItem>
-    
+    <BottomNavItem on:click={() => {goto('/analysis')}}>back</BottomNavItem>
   </BottomNav>
   <Tooltip triggeredBy="[id='adjust-split']">Select Element, enter step size and use buttons to edit split locations</Tooltip>
 
