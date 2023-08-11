@@ -1,4 +1,5 @@
-
+import {ManDef, ManoeuvreResult} from '$lib/api_objects';
+import {State} from '$lib/geometry';
 
 async function server_func(func_name: string, kwargs: Record<string, any>) {
     const response = await fetch(
@@ -24,8 +25,19 @@ export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string
 
 export async function align(mdef: Record<string, any>, fl: Record<string, any>){
     return server_func('align', {'mdef':mdef, 'fl':fl});
+
 }
 
 export async function score(mdef: Record<string, any>, al: Record<string, any>){
-    return server_func('score', {'mdef':mdef, 'al':al});
+    const data: Record<string, any> = await server_func('score', {'mdef':mdef, 'al':al});
+    return {
+        mdef: ManDef.parse(data.mdef),
+        intended: data.intended,
+        intended_template: data.intended_template,
+        corrected: data.corrected,
+        corrected_template: data.corrected_template,
+        score: ManoeuvreResult.parse(data.score)
+    }
 }
+
+

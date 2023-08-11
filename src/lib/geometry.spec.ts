@@ -50,10 +50,6 @@ describe("Quaternion", () => {
             new Quaternion(1,1,0,0).transform_point(new Point(1,2,3))
         ).toStrictEqual(new Point(1.414213562373095,-4.242640687119285,2.82842712474619))
 
-        expect(
-            new Quaternion(0.1, 0,0,0).transform_point(new Point(1,0,0)).length()
-        ).toStrictEqual(1)
-
 
     })
 

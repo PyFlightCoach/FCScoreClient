@@ -78,10 +78,12 @@ export class Quaternion {
 
 
 export class State {
-    pos: Point; att: Quaternion;
+    pos: Point; att: Quaternion; manoeuvre: string=""; element: string="";
     constructor(data: Record<string, any>) {
         this.pos = new Point(data.x, data.y, data.z);
         this.att = new Quaternion(data.rw, data.rx, data.ry, data.rz);
+        if ('element' in data) this.element=data.element;
+        if ('manoeuvre' in data) this.manoeuvre=data.manoeuvre;
 //        this.vel = new Point(data.u, data.v, data.w);
 //        this.rvel = new Point(data.p, data.q, data.r);
     }

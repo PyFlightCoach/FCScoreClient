@@ -1,13 +1,13 @@
 <script lang="ts">
-  export let man: Record<string, any> = {};
+  export let score: ManoeuvreResult;
   import PlotState from '$lib/plotState.svelte';
   import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-	import Result from 'postcss/lib/result';
+	import type {ManoeuvreResult} from '$lib/api_objects';
 
-
+  let all_fields: string[];
   $: all_fields = [];
 
-  $: Object.values(man.score.intra.data).forEach((results) => {
+  $: Object.values(score.intra.data).forEach((results) => {
     Object.values(results.data).forEach(result => {
       all_fields.push(result.name)
     });
@@ -27,7 +27,7 @@
     <TableHeadCell>Total</TableHeadCell>
   </TableHead>
   <TableBody>
-    {#each Object.entries(man.score.intra.data) as [name, result] }
+    {#each Object.entries(score.intra.data) as [name, result] }
       <TableBodyRow>
         <TableBodyCell>{name}</TableBodyCell>
         {#each unique_fields as unfn}

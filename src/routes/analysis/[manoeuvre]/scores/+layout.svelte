@@ -19,7 +19,7 @@
       <slot id="contents"/>  
     </TabItem>
     <TabItem title="Templates"><Templates man={$man}/></TabItem>
-    <TabItem title="Intra"><Intra man={$man}/></TabItem>
+    <TabItem title="Intra"><Intra score={$man.score}/></TabItem>
     <TabItem title="Inter"><div>Inter</div></TabItem>
     <TabItem title="Positioning"><div>Positioning</div></TabItem>
   </Tabs>
