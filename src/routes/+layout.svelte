@@ -1,29 +1,33 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Dropdown, DropdownItem, Chevron, DropdownDivider } from 'flowbite-svelte'
+	import { Icon } from 'flowbite-svelte-icons';
 	import { mouse } from '$lib/stores';
 	import {flightdata, flightmenu} from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import {example_manlist} from '$lib/api_calls';
 
 	const clearflight = (target: string = '/') => {
 		flightdata.clear();
 		window.location.href = target;
 	}
 
-
 	function handleMousemove(event) {
 		$mouse = {x: event.clientX, y: event.clientY}
 	}
 
-	function save() {
+	let manlist: string[] =[];
+	example_manlist().then(res => {manlist=res});
 
+	function example_states() {
+		
 	}
+
 
 	onMount(() => {
 		flightmenu.update((data: Record<string, any>) => {
 			data['Load'] = ()=>{clearflight('/upload')};
-			data['Save'] = save;
 			data['Clear'] = ()=>{clearflight('/')};
 			return data;
 		});
@@ -46,6 +50,22 @@
 				{/each}
 			</Dropdown> 
 		</NavUl>
+		<NavUl {hidden}>
+			<NavLi id="nav-menu2" class="cursor-pointer"><Chevron aligned>examples</Chevron></NavLi>
+			<Dropdown triggeredBy="#nav-menu2" class="w-44 z-20">
+				<DropdownItem on:click={example_states}>states</DropdownItem>
+				<DropdownItem class="flex items-center justify-between">
+					align
+					<Icon name="chevron-right-solid" class="w-3 h-3 ml-2 text-primary-700 dark:text-white" />
+				</DropdownItem>
+				<Dropdown placement="right-start">
+					{#each manlist as mn}
+						<DropdownItem>{mn}</DropdownItem>
+					{/each}
+				</Dropdown>
+			</Dropdown>
+		</NavUl>
+
 	</Navbar>
 
   <div id='page'>

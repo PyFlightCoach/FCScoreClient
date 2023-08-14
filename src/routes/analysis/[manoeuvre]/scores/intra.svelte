@@ -1,8 +1,11 @@
 <script lang="ts">
   export let score: ManoeuvreResult;
-  import PlotState from '$lib/plotState.svelte';
-  import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-	import type {ManoeuvreResult} from '$lib/api_objects';
+  export let state: State[];
+  export let intended: State[];
+  import { Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+	import type {ManoeuvreResult, Result} from '$lib/api_objects';
+  import IntraPlot from './intra_plot.svelte';
+  import {split_states, type State} from '$lib/geometry';
 
   let all_fields: string[];
   $: all_fields = [];
@@ -14,6 +17,23 @@
   });
 
   $: unique_fields = [...new Set(all_fields)];
+
+
+  $: states = split_states(state);
+  $: templates = split_states(intended);
+
+  let popopen=false;
+  let target_el: string;
+  let target_field: string;
+  const openpop =(el:string, field: string) => {
+    popopen=false;
+    target_el = el;
+    target_field = field;
+    popopen = true;    
+    const pl = document.querySelector('#plot');
+    if (pl) {pl.scrollIntoView({behavior: 'smooth'});}
+  }
+
 
 </script>
 
@@ -31,7 +51,7 @@
       <TableBodyRow>
         <TableBodyCell>{name}</TableBodyCell>
         {#each unique_fields as unfn}
-          <TableHeadCell on:click={(event)=>console.log(name + ', ' + unfn)}>
+          <TableHeadCell on:click={(event)=>openpop(name, unfn)}>
             {#if unfn in result.data}
               {result.data[unfn].value.toFixed(2)}
             {:else}
@@ -45,5 +65,13 @@
 
   </TableBody>
 </Table>
-
+<div id='plot'></div>
+{#if popopen}
+  
+  <IntraPlot 
+    result={score.intra.data[target_el].data[target_field]} 
+    flown={states[target_el]}
+    template={templates[target_el]}
+  />
+{/if}
 

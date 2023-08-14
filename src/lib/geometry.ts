@@ -91,3 +91,16 @@ export class State {
     body_to_world(p: Point): Point {return this.att.transform_point(p).offset(this.pos);}
 
 }
+
+
+export function split_states(state: State[]) {
+    let states: Record<string, State[]> = {};
+    state.forEach((st) => {
+        if (st.element in states) {
+            states[st.element].push(st);
+        } else {
+            states[st.element] = [st];
+        }
+    });
+    return states
+}

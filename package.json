@@ -36,6 +36,7 @@
 		"dataclass": "^2.1.1",
 		"flowbite": "^1.8.0",
 		"flowbite-svelte": "^0.40.2",
+		"flowbite-svelte-icons": "^0.3.6",
 		"plotly.js-dist": "^2.25.0",
 		"tailwind-merge": "^1.14.0"
 	}
