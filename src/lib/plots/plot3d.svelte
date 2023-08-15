@@ -2,13 +2,10 @@
 
 <script lang="ts">
     import Plotly from './Plotly.svelte';
-    import type {State} from '$lib/geometry';
-    export let states: Record<string, State[]> = {};
     export const id='dtwplot';
-    export let span: number = 5;
-    import {createRibbon, coloured_ribbons} from './traces';
     
-    $: plotdata = coloured_ribbons(states, span);
+    export let data: Record<string, any>[];
+    //$: data = coloured_ribbons(states, span);
 
     let layout = {
         legend: {font: {size: 20}, yanchor: "top", y: 0.99, xanchor: "left", x: 0.01},
@@ -30,6 +27,6 @@
 
 <Plotly
     {id}
-    data={plotdata}
+    data={data}
     layout={layout}
 />

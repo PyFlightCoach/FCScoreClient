@@ -2,7 +2,7 @@
 import {State, Point, Quaternion} from '$lib/geometry';
 
 
-export const createRibbon = (st: Record<string, any>[], sp: number) => {
+export const ribbon = (st: Record<string, any>[], sp: number) => {
     const semisp = sp / 2;
 
     let points: Point[] = [];
@@ -30,11 +30,11 @@ export const createRibbon = (st: Record<string, any>[], sp: number) => {
 
 export const coloured_ribbons = (states: Record<string, State[]>, span: number) => {
     return Object.keys(states).map(
-        (el) => {return {...createRibbon(states[el], span), name: el}}
+        (el) => {return {...ribbon(states[el], span), name: el}}
     );  
 }
 
-export const createVectors = (pos: Point[], vec: Point[]) => {
+export const vectors = (pos: Point[], vec: Point[]) => {
     /*def vectors(npoints: int, seq: State, vectors: Point, **kwargs):
     trs = []
     step = int(len(seq.data) / (npoints+1))

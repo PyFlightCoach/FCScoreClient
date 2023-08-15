@@ -51,7 +51,7 @@
 			<NavLi id="nav-menu2" class="cursor-pointer"><Chevron aligned>examples</Chevron></NavLi>
 			<Dropdown triggeredBy="#nav-menu2" class="w-44 z-20">
 				{#each manlist as mn}
-					<DropdownItem href={'analysis/' + mn + '_example/'}>
+					<DropdownItem href={'./analysis/' + mn + '_example/'}>
 						{mn}
 					</DropdownItem>
 				{/each}

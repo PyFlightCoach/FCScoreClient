@@ -49,7 +49,7 @@ export class ManDef{
 export class Result{
     constructor (
         readonly name: string, 
-        readonly measurement: Record<string, any>,
+        readonly measurement: Record<string, any>[],
         readonly dgs: number[],
         readonly keys: string,
         readonly value: number
