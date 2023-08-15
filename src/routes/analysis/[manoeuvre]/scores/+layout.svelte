@@ -1,15 +1,11 @@
 <script lang='ts'>
-
-  import { Tabs, TabItem } from 'flowbite-svelte';
   import {page} from '$app/stores';
-  import { flightdata } from '$lib/stores.js';
+	import { flightdata } from '$lib/stores';
+  import { Tabs, TabItem } from 'flowbite-svelte';
   import Templates from './templates.svelte';
   import Intra from './intra.svelte';
-
-  $: manname = $page.params['manoeuvre'];
-  $: man = flightdata.man(manname);
-
-
+	
+  $: man = flightdata.man($page.params['manoeuvre']);
 
 </script>
 
@@ -30,12 +26,7 @@
   
 </div>
 
-
-
-
 <style>
   #parent {display: flex; flex-direction: column; align-items: stretch; width: 100%; height: 100%; }
-
-  #contents {flex: 1 1 auto;}
-  
+  #contents {flex: 1 1 auto;}  
 </style>

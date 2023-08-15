@@ -7,9 +7,6 @@
     export let template: State[];
 
 
-
-
-
 </script>
 
 

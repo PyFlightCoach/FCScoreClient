@@ -1,17 +1,18 @@
 
 
 <script lang="ts">
-  import {Tooltip, Input, BottomNav, BottomNavItem, Select} from 'flowbite-svelte';
-  let step: number = 0.1;
-
-  import { flightdata } from '$lib/stores.js';
   import {page} from '$app/stores';
-	import { goto } from '$app/navigation';
-  let dropdownOpen = false;
+	import { flightdata } from '$lib/stores';
+
+  import {Tooltip, Input, BottomNav, BottomNavItem, Select} from 'flowbite-svelte';
+  import { goto } from '$app/navigation';
+
+  $: man = flightdata.man($page.params['manoeuvre']);
+  $: manname = $man.mdef.info.short_name;
   let mannames = flightdata.mannames;
 
-  $: manname = $page.params['manoeuvre'];
-  $: man = flightdata.man(manname);
+  let step: number = 0.1;
+
 
   let all_elements: string[];   $: all_elements = $man.al.map((el: Record<string, any>) => el.element);
   let elements: string[];       $: elements = [...new Set(all_elements)].slice(0, -1);
@@ -22,10 +23,7 @@
       return [el, {lastid: lastid,lastt: $man.al[lastid].t, firstid: firstid, firstt:$man.al[firstid].t}];
   }));
   
-
-
   let element = "select element";
-
 
   const editsplit = (stp: number, elname: string) => {
     man.update((val) => {
@@ -65,7 +63,6 @@
 <div id="parent">
   <slot id="contents"/>  
   <BottomNav classInner="grid-cols-5" id="adjust-split">
-    
     
     <Select bind:value={element} items={elements.map((el) => {return {value: el, name: el};})}/>
     <BottomNavItem><Input placeholder='step' bind:value={step}/></BottomNavItem>

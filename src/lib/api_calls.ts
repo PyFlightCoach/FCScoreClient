@@ -23,16 +23,12 @@ export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string
     return server_func('convert_fcj', {'fcj':fcj, 'sinfo':sinfo});
 }
 
-export async function convert_fcj_example(){
-    return server_func('convert_fcj_example');
+export async function example(man: string){
+    return server_func('example', {man});
 }
 
 export async function align(mdef: Record<string, any>, fl: Record<string, any>){
     return server_func('align', {'mdef':mdef, 'fl':fl});
-}
-
-export async function align_example(man: string){
-    return server_func('align_example', {man});
 }
 
 
@@ -47,19 +43,6 @@ export async function score(mdef: Record<string, any>, al: Record<string, any>){
         score: ManoeuvreResult.parse(data.score)
     }
 }
-
-export async function score_example(man: string){
-    const data: Record<string, any> = await server_func('score_example', {man});
-    return {
-        mdef: ManDef.parse(data.mdef),
-        intended: data.intended,
-        intended_template: data.intended_template,
-        corrected: data.corrected,
-        corrected_template: data.corrected_template,
-        score: ManoeuvreResult.parse(data.score)
-    };
-}
-
 
 export async function example_manlist(){
     return server_func('example_manlist');

@@ -1,11 +1,8 @@
 <script lang='ts'>
-
   import {page} from '$app/stores';
-  import { flightdata } from '$lib/stores.js';
+	import { flightdata } from '$lib/stores';
 
-  $: manname = $page.params['manoeuvre'];
-  $: man = flightdata.man(manname);
-
+  $: man = flightdata.man($page.params['manoeuvre']);
   $: score = $man.score;
  
 
@@ -13,7 +10,7 @@
 
 
 
-<p>{manname}</p>
+<p>{$man.mdef.info.name}</p>
 <p>Score = {score.score.toFixed(2)}</p>
 <p>Downgrades:</p>
 <p>Intra = {score.intra.value.toFixed(2)}</p>

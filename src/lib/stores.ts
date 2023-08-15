@@ -2,7 +2,7 @@ import { writable, derived } from 'svelte/store';
 import type { Writable } from 'svelte/store';
 
 export const PlotlyLib = writable(null);
-import { align, score } from '$lib/api_calls';
+import { align, score, example } from '$lib/api_calls';
 
 import { createEventDispatcher } from 'svelte';
 
@@ -21,9 +21,17 @@ class FlightData {
 
         return this.mans[name];
     };
-
+    
     man(name: string): Writable<Record<string, any>> {
-        return this.mans[name];
+        let mname = name;
+        if (name.includes('example')) {
+            mname = name.split('_')[0];
+            if (!(mname in this.mans)) {
+                this.mannames.update(mnames => {mnames[mname]=1; return mnames});
+                this.mans[mname] = writable({});
+                example(mname).then(man => {this.mans[mname].set(man)});
+        }}
+        return this.mans[mname];
     }
 
     clear() {
@@ -32,13 +40,14 @@ class FlightData {
     }
 
     async alignman(name: string) {
+        let rman = await this.man(name);
         let man: Record<string, any> = {};
-        this.mans[name].subscribe((val) => { man = val });
+        const uns = rman.subscribe((val) => { man = val });
 
         if (('fl' in man) && !man.busy) {
-            this.mans[name].update(man => { man.busy = true; return man; });
+            rman.update(man => { man.busy = true; return man; });
             const res: Record<string, any> = await align(man.mdef, man.fl);
-            this.mans[name].update((data: Record<string, any>) => {
+            rman.update((data: Record<string, any>) => {
                 data.al = res;
                 delete data.fl;
                 data.busy = false;
@@ -48,17 +57,18 @@ class FlightData {
                 (mnames) => { mnames[name] = 2; return mnames; }
             );
         }
-
+        uns();
     }
 
     async scoreman(name: string) {
+        let rman = await this.man(name);
         let man: Record<string, any> = {};
-        this.mans[name].subscribe((val) => { man = val });
+        const uns = rman.subscribe((val) => { man = val });
 
         if (!('score' in man) && !man.busy) {
-            this.mans[name].update(man => { man.busy = true; return man; });
+            rman.update(man => { man.busy = true; return man; });
             const res: Record<string, any> = await score(man.mdef, man.al);
-            this.mans[name].update((data: Record<string, any>) => {
+            rman.update((data: Record<string, any>) => {
 
                 data = { ...data, ...res, busy: false };
                 return data;
@@ -67,8 +77,9 @@ class FlightData {
                 (mnames) => { mnames[name] = 3; return mnames; }
             );
         }
-
+        uns();
     }
+    
 
     export(): Record<string, any> {
         let expd: Record<string, any> = {};

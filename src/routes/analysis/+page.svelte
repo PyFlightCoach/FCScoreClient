@@ -1,8 +1,6 @@
 <script lang="ts">
   import { Button} from 'flowbite-svelte';
   import {flightdata} from '$lib/stores';
-  import {tick, onDestroy} from 'svelte';
-	import type { Unsubscriber } from 'svelte/motion';
   
   let mannames = flightdata.mannames;
 

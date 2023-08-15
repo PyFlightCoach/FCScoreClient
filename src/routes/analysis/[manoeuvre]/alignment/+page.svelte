@@ -1,15 +1,11 @@
 
 
 <script lang="ts">
-
-  import { flightdata } from '$lib/stores.js';
-  import {page} from '$app/stores';
+import {page} from '$app/stores';
+	import { flightdata } from '$lib/stores';
+  $: man = flightdata.man($page.params['manoeuvre']);
   import PlotState from '$lib/plots/plot3d.svelte';
-  import {split_states, type State} from '$lib/geometry';
-
-
-  $: manname = $page.params['manoeuvre'];
-  $: man = flightdata.man(manname);
+  import {split_states} from '$lib/geometry';
   
   $: states = split_states($man['al']);
 </script>

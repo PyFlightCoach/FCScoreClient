@@ -18,12 +18,6 @@
 	}
 
 	let manlist: string[] =[];
-	example_manlist().then(res => {manlist=res});
-
-	function example_states() {
-		
-	}
-
 
 	onMount(() => {
 		flightmenu.update((data: Record<string, any>) => {
@@ -31,6 +25,9 @@
 			data['Clear'] = ()=>{clearflight('/')};
 			return data;
 		});
+
+		example_manlist().then(res => {manlist=res});
+
 	});
 
 </script>
@@ -53,16 +50,11 @@
 		<NavUl {hidden}>
 			<NavLi id="nav-menu2" class="cursor-pointer"><Chevron aligned>examples</Chevron></NavLi>
 			<Dropdown triggeredBy="#nav-menu2" class="w-44 z-20">
-				<DropdownItem on:click={example_states}>states</DropdownItem>
-				<DropdownItem class="flex items-center justify-between">
-					align
-					<Icon name="chevron-right-solid" class="w-3 h-3 ml-2 text-primary-700 dark:text-white" />
-				</DropdownItem>
-				<Dropdown placement="right-start">
-					{#each manlist as mn}
-						<DropdownItem>{mn}</DropdownItem>
-					{/each}
-				</Dropdown>
+				{#each manlist as mn}
+					<DropdownItem href={'analysis/' + mn + '_example/'}>
+						{mn}
+					</DropdownItem>
+				{/each}
 			</Dropdown>
 		</NavUl>
 
