@@ -121,3 +121,4 @@ export class ManoeuvreResult{
         data.score
     )}
 }
+

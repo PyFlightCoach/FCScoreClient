@@ -17,15 +17,12 @@
                 result.measurement.value.y[i],
                 result.measurement.value.z[i]
             );
-            pos[i] = flown[i].pos;
+            pos[i] = new Point(flown[i].x, flown[i].y, flown[i].z);
         }
     };
-
+    //coloured_ribbons({flown, template}, 2.0)
 </script>
 
 
 <div>{result.name} downgrades for {flown[0].element}, value={result.value}</div>
-<PlotState data={coloured_ribbons({flown, template}, 2.0).concat(
-        vectors(pos, vec)
-    )    
-}/>
+<PlotState data={vectors(pos, vec)}/>

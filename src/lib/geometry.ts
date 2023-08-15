@@ -77,18 +77,55 @@ export class Quaternion {
 }
 
 
+
+/*
+constructs = Table.constructs + Constructs([
+    SVar("pos", Point,       ["x", "y", "z"]           , lambda self: P0(len(self))       ), 
+    SVar("att", Quaternion,  ["rw", "rx", "ry", "rz"]  , lambda self : Q0(len(self))       ),
+    SVar("vel", Point,       ["u", "v", "w"]           , lambda st: P0() if len(st)==1 else st.att.inverse().transform_point(st.pos.diff(st.dt))  ),
+    SVar("rvel", Point,       ["p", "q", "r"]           , lambda st: P0() if len(st)==1 else st.att.body_diff(st.dt).remove_outliers(3)  ),
+    SVar("acc", Point,       ["du", "dv", "dw"]        , lambda st : P0() if len(st)==1 else st.att.inverse().transform_point(st.att.transform_point(st.vel).diff(st.dt) + PZ(9.81, len(st)))),
+    SVar("racc", Point,       ["dp", "dq", "dr"]        , lambda st: P0() if len(st)==1 else st.rvel.diff(st.dt)),
+])
+*/
+
 export class State {
-    pos: Point; att: Quaternion; manoeuvre: string=""; element: string="";
-    constructor(data: Record<string, any>) {
-        this.pos = new Point(data.x, data.y, data.z);
-        this.att = new Quaternion(data.rw, data.rx, data.ry, data.rz);
-        if ('element' in data) this.element=data.element;
-        if ('manoeuvre' in data) this.manoeuvre=data.manoeuvre;
-//        this.vel = new Point(data.u, data.v, data.w);
-//        this.rvel = new Point(data.p, data.q, data.r);
+    manoeuvre: string; element: string;
+    constructor(
+        readonly t: number, readonly dt: number, 
+        readonly x: number, readonly y: number, readonly z: number,
+        readonly rw: number, readonly rx: number, readonly ry: number, readonly rz: number,
+        readonly u: number, readonly v: number, readonly w: number,
+        readonly p: number, readonly q: number, readonly r: number, 
+        readonly du: number, readonly dv: number, readonly dw: number, 
+        manoeuvre: string='unknown', element: string='unknown'
+    ) {this.manoeuvre=manoeuvre; this.element=element;}
+    
+    static parse(data: Record<string, any>) {
+        let st= new State(
+            data.t, data.dt,
+            data.x, data.y, data.z, 
+            data.rw, data.rx, data.ry, data.rz,
+            data.u, data.v, data.w,
+            data.p, data.q, data.r,
+            data.du, data.dv, data.dw
+        );
+        if ('manoeuvre' in data) {st.manoeuvre = data.manoeuvre}
+        if ('element' in data) {st.element = data.element}
+        return st;
     }
 
-    body_to_world(p: Point): Point {return this.att.transform_point(p).offset(this.pos);}
+    static parse_arr(data: Record<string, any>[]) {
+        return data.map(st => State.parse(st))
+    }
+
+    pos () {return new Point(this.x, this.y, this.z)}
+    att () {return new Quaternion(this.rw, this.rx, this.ry, this.rz)}
+    vel () {return new Point(this.u, this.v, this.w)}
+    rvel () {return new Point(this.p, this.q, this.r)}
+    acc () {return new Point(this.du, this.dv, this.dw)}
+
+    body_to_world(p: Point): Point {return this.att().transform_point(p).offset(this.pos());}
 
 }
 

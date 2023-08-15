@@ -2,13 +2,12 @@
 import {State, Point, Quaternion} from '$lib/geometry';
 
 
-export const ribbon = (st: Record<string, any>[], sp: number) => {
+export const ribbon = (st: State[], sp: number) => {
     const semisp = sp / 2;
 
     let points: Point[] = [];
 
-    st.forEach((val) => {
-        const _s = new State(val);
+    st.forEach((_s: State) => {
         points.push(_s.body_to_world(new Point(0, semisp, 0)));
         points.push(_s.body_to_world(new Point(0, -semisp, 0)));
     });

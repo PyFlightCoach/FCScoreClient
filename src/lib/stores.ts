@@ -4,8 +4,6 @@ import type { Writable } from 'svelte/store';
 export const PlotlyLib = writable(null);
 import { align, score, example } from '$lib/api_calls';
 
-import { createEventDispatcher } from 'svelte';
-
 
 class FlightData {
     mans: Record<string, Writable<Record<string, any>>> = {};
@@ -17,7 +15,6 @@ class FlightData {
             mnames[name] = 1;
             return mnames;
         });
-
 
         return this.mans[name];
     };

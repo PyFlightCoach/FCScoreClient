@@ -23,13 +23,12 @@ export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string
     return server_func('convert_fcj', {'fcj':fcj, 'sinfo':sinfo});
 }
 
-export async function example(man: string){
-    return server_func('example', {man});
-}
 
 export async function align(mdef: Record<string, any>, fl: Record<string, any>){
-    return server_func('align', {'mdef':mdef, 'fl':fl});
+    const res = await server_func('align', {'mdef':mdef, 'fl':fl});
+    return State.parse_arr(res)
 }
+
 
 
 export async function score(mdef: Record<string, any>, al: Record<string, any>){
@@ -37,12 +36,26 @@ export async function score(mdef: Record<string, any>, al: Record<string, any>){
     return {
         mdef: ManDef.parse(data.mdef),
         intended: data.intended,
-        intended_template: data.intended_template,
+        intended_template: State.parse_arr(data.intended_template),
         corrected: data.corrected,
-        corrected_template: data.corrected_template,
+        corrected_template: State.parse_arr(data.corrected_template),
         score: ManoeuvreResult.parse(data.score)
-    }
+    };
 }
+
+export async function example(man: string){
+    const data = await server_func('example', {man});
+    return {
+        mdef: ManDef.parse(data.mdef),
+        al: State.parse_arr(data.al),
+        intended: data.intended,
+        intended_template: State.parse_arr(data.intended_template),
+        corrected: data.corrected,
+        corrected_template: State.parse_arr(data.corrected_template),
+        score: ManoeuvreResult.parse(data.score)
+    };
+}
+
 
 export async function example_manlist(){
     return server_func('example_manlist');
