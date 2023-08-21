@@ -1,6 +1,6 @@
 <script lang='ts'>
 	import type {Result} from '$lib/api_objects';
-    import {type State, Point} from '$lib/geometry';
+    import type {State,  Point} from '$lib/geometry';
     import PlotState from '$lib/plots/plot3d.svelte';
     import {coloured_ribbons, vectors} from '$lib/plots/traces';
     
@@ -12,17 +12,28 @@
     $: {
         vec=[]; pos=[];
         for (let i = 0; i < flown.length; i++) {
-            vec[i] = new Point(
-                result.measurement.value.x[i],
-                result.measurement.value.y[i],
-                result.measurement.value.z[i]
-            );
-            pos[i] = new Point(flown[i].x, flown[i].y, flown[i].z);
+            vec[i] = result.measurement.value[i];
+            pos[i] = flown[i].pos();
         }
     };
-    //coloured_ribbons({flown, template}, 2.0)
+    let info: string[];
+    $: {
+        info = [];
+        for (let i = 0; i < result.measurement.visibility.length; i++) {
+            info.push(
+                'error = ' + result.measurement.value[i].length().toFixed(2).toString() + 
+                ', visibility = ' + result.measurement.visibility[i].toFixed(2).toString() +
+                ', expected = ' + result.measurement.expected[i].length().toFixed(2).toString()
+            )
+        }
+    }
+
+    $: vecs = vectors(pos, vec, info)
+    
+    $: traces = coloured_ribbons({flown, template},2).concat(vecs);
+
 </script>
 
 
 <div>{result.name} downgrades for {flown[0].element}, value={result.value}</div>
-<PlotState data={vectors(pos, vec)}/>
+<PlotState data={traces}/>

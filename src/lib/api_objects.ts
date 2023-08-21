@@ -1,6 +1,7 @@
 import {State} from '$lib/geometry';
 import { Data } from "dataclass";
 import type { readonly } from 'svelte/store';
+import {Point} from '$lib/geometry';
 
 
 export function parse_dict(data: Record<string, any>, parser) {
@@ -46,20 +47,45 @@ export class ManDef{
     )}
 }
 
+
+export class Measurement{
+    constructor(
+        readonly value: Point[],
+        readonly expected: Point[],
+        readonly visibility: number[]
+    ) {}
+
+    static parse(data: Record<string, any> ) {
+        return new Measurement(
+            data.value.map(p=>new Point(p.x, p.y, p.z)),
+            data.expected.map(p=>new Point(p.x, p.y, p.z)),
+            data.visibility
+        )
+    }
+
+}
+
+
 export class Result{
     constructor (
         readonly name: string, 
-        readonly measurement: Record<string, any>[],
+        readonly measurement: Measurement |  number[],
         readonly dgs: number[],
         readonly keys: string,
         readonly value: number
     ) {}
     static parse(data: Record<string, any>) {
         if (data == null) {
-            return new Result('', {}, [], '', 0);
+            return new Result('', new Measurement([], [], []), [], '', 0);
         }
+        let m: Measurement | number[];
+        if ('value' in data.measurement) {m=Measurement.parse(data.measurement);} else {m=data.measurement;}
         return new Result(
-            data.name, data.measurement, data.dgs, data.keys, data.value
+            data.name, 
+            m, 
+            data.dgs, 
+            data.keys, 
+            data.value
         )
     }
 }

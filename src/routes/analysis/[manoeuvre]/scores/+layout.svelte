@@ -4,6 +4,7 @@
   import { Tabs, TabItem } from 'flowbite-svelte';
   import Templates from './templates.svelte';
   import Intra from './intra.svelte';
+  import Inter from './inter.svelte';
 	
   $: man = flightdata.man($page.params['manoeuvre']);
 
@@ -16,11 +17,15 @@
     </TabItem>
     <TabItem title="Templates"><Templates man={$man}/></TabItem>
     <TabItem title="Intra"><Intra 
-      score={$man.score} 
+      intra={$man.score.intra} 
       state={$man.al} 
       intended={$man.intended_template}
     /></TabItem>
-    <TabItem title="Inter"><div>Inter</div></TabItem>
+    <TabItem title="Inter"><Inter
+      inter={$man.score.inter} 
+      state={$man.al} 
+      mdef={$man.mdef}
+      /></TabItem>
     <TabItem title="Positioning"><div>Positioning</div></TabItem>
   </Tabs>
   

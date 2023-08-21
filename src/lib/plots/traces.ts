@@ -33,7 +33,7 @@ export const coloured_ribbons = (states: Record<string, State[]>, span: number) 
     );  
 }
 
-export const vectors = (pos: Point[], vec: Point[]) => {
+export const vectors = (pos: Point[], vec: Point[], text: string[] | null = null): Record<string, any>[] => {
     /*def vectors(npoints: int, seq: State, vectors: Point, **kwargs):
     trs = []
     step = int(len(seq.data) / (npoints+1))
@@ -47,7 +47,11 @@ export const vectors = (pos: Point[], vec: Point[]) => {
             type:'scatter3d',
             x:[pos[i].x, pos[i].x + vec[i].x],
             y:[pos[i].y, pos[i].y + vec[i].y],
-            z:[pos[i].z, pos[i].z + vec[i].z]
+            z:[pos[i].z, pos[i].z + vec[i].z],
+            mode:'lines',
+            line: {color: 'black', width: 2},
+            showlegend: false,
+            text: (text==null)?'':text[i]
         });
     }
 

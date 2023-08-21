@@ -1,16 +1,16 @@
 <script lang="ts">
-  export let score: ManoeuvreResult;
+  export let intra: ElementsResults;
   export let state: State[];
   export let intended: State[];
   import { Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-	import type {ManoeuvreResult, Result} from '$lib/api_objects';
+	import type {ElementsResults, Result} from '$lib/api_objects';
   import IntraPlot from './intra_plot.svelte';
   import {split_states, type State} from '$lib/geometry';
 
   let all_fields: string[];
   $: all_fields = [];
 
-  $: Object.values(score.intra.data).forEach((results) => {
+  $: Object.values(intra.data).forEach((results) => {
     Object.values(results.data).forEach(result => {
       all_fields.push(result.name)
     });
@@ -47,7 +47,7 @@
     <TableHeadCell>Total</TableHeadCell>
   </TableHead>
   <TableBody>
-    {#each Object.entries(score.intra.data) as [name, result] }
+    {#each Object.entries(intra.data) as [name, result] }
       <TableBodyRow>
         <TableBodyCell>{name}</TableBodyCell>
         {#each unique_fields as unfn}
@@ -69,7 +69,7 @@
 {#if popopen}
   
   <IntraPlot 
-    result={score.intra.data[target_el].data[target_field]} 
+    result={intra.data[target_el].data[target_field]} 
     flown={states[target_el]}
     template={templates[target_el]}
   />
