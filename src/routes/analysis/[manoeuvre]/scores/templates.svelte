@@ -1,8 +1,10 @@
 <script lang='ts'>
 
   export let man: Record<string, any> = {};
-  import PlotState from '$lib/plots/plot3d.svelte';
-  import {coloured_ribbons} from '$lib/plots/traces';
+  import Plotly from '$lib/plots/Plotly.svelte'; 
+  import {coloured_ribbons, vectors} from '$lib/plots/traces';
+  import {layout3d} from '$lib/plots/layouts';    
+
   import {Checkbox} from 'flowbite-svelte';
 
   let states:Record<string, any>={};
@@ -19,4 +21,4 @@
 <Checkbox bind:checked={fl}>Flown</Checkbox>
 <Checkbox bind:checked={intended}>intended</Checkbox>
 <Checkbox bind:checked={corrected}>corrected</Checkbox>
-<PlotState data={coloured_ribbons(states, 5)}/>
+<Plotly data={coloured_ribbons(states, 5)} layout={layout3d}/>

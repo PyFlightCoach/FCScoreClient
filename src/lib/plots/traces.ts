@@ -34,13 +34,6 @@ export const coloured_ribbons = (states: Record<string, State[]>, span: number) 
 }
 
 export const vectors = (pos: Point[], vec: Point[], text: string[] | null = null): Record<string, any>[] => {
-    /*def vectors(npoints: int, seq: State, vectors: Point, **kwargs):
-    trs = []
-    step = int(len(seq.data) / (npoints+1))
-    for pos, wind in zip(seq.pos[::step], vectors[::step]):
-        pdata = Point.concatenate([pos, pos+wind])
-        trs.append(trace3d(*pdata.data.T, **kwargs))    
-    return trs*/
     let trs: Record<string, any>[] = [];
     for (let i = 0; i < pos.length; i++) {
         trs.push({
@@ -57,4 +50,5 @@ export const vectors = (pos: Point[], vec: Point[], text: string[] | null = null
 
     return trs;
 }
+
 

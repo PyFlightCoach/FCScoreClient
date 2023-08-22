@@ -6,7 +6,8 @@
 
 </script>
 
-
-{#if ('al' in $man)}
-    <slot />
+{#if !(typeof $man === 'undefined')}
+    {#if ('al' in $man)}
+        <slot />
+    {/if}
 {/if}
