@@ -91,7 +91,7 @@ export class Result{
         readonly sample: number[],
         readonly errors: number[],
         readonly dgs: number[],
-        readonly keys: string,
+        readonly keys: string[] | number[],
         readonly total: number
     ) {}
     static parse(data: Record<string, any>) {

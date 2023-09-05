@@ -20,6 +20,7 @@
       intra={$man.score.intra} 
       state={$man.al} 
       intended={$man.intended_template}
+      manoeuvre={$man.intended}
     /></TabItem>
     <TabItem title="Inter"><Inter
       inter={$man.score.inter} 

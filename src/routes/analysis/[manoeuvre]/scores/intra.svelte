@@ -2,6 +2,8 @@
   export let intra: ElementsResults;
   export let state: State[];
   export let intended: State[];
+  export let manoeuvre: Record<string, Any>;
+
   import { Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import type {ElementsResults, Result} from '$lib/api_objects';
   import IntraPlot from './intra_plot.svelte';
@@ -34,6 +36,13 @@
     if (pl) {pl.scrollIntoView({behavior: 'smooth'});}
   }
 
+  function getEl(ename: string, els: Record<string, any>[]) {
+    for (let i=0; i<els.length; i++) {
+      if (els[i].uid == ename) {
+        return els[i];
+      }
+    }
+  }
 
 </script>
 
@@ -72,6 +81,7 @@
     result={intra.data[target_el].data[target_field]} 
     flown={states[target_el]}
     template={templates[target_el]}
+    element={getEl(target_el, manoeuvre.elements)}
   />
 {/if}
 
