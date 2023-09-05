@@ -52,3 +52,14 @@ export const vectors = (pos: Point[], vec: Point[], text: string[] | null = null
 }
 
 
+export const single_point = (x=0, y=0, z=0) => {
+    return {
+        type:'scatter3d',
+        x:[x],
+        y:[y],
+        z:[z],
+        mode:'markers',
+        name:'pilot position',
+        showlegend: false
+    }
+}

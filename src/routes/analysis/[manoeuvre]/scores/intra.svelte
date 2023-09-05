@@ -53,13 +53,13 @@
         {#each unique_fields as unfn}
           <TableHeadCell on:click={(event)=>openpop(name, unfn)}>
             {#if unfn in result.data}
-              {result.data[unfn].value.toFixed(2)}
+              {result.data[unfn].total.toFixed(2)}
             {:else}
               -
             {/if}
           </TableHeadCell>
         {/each}
-        <TableBodyCell>{result.value.toFixed(2)}</TableBodyCell>
+        <TableBodyCell>{result.total.toFixed(2)}</TableBodyCell>
       </TableBodyRow>
     {/each}
 

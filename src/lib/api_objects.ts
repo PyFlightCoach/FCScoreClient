@@ -56,36 +56,62 @@ export class Measurement{
     ) {}
 
     static parse(data: Record<string, any> ) {
-        return new Measurement(
-            data.value.map(p=>new Point(p.x, p.y, p.z)),
-            data.expected.map(p=>new Point(p.x, p.y, p.z)),
-            data.visibility
-        )
+        if (data.value[0].constructor == Object) {
+            return new Measurement(
+                data.value.map(p=>new Point(p.x, p.y, p.z)),
+                data.expected.map(p=>new Point(p.x, p.y, p.z)),
+                data.visibility
+            )
+        } else {
+            return new Measurement(
+                data.value.map(p=>new Point(p, 0, 0)),
+                data.expected.map(p=>new Point(p, 0, 0)),
+                data.visibility
+            )
+        }
+
     }
 
 }
 
 
+/*
+name: str
+    measurement: Measurement 
+sample: npt.ArrayLike
+errors: npt.ArrayLike
+dgs: npt.ArrayLike
+keys: npt.ArrayLike
+ */
+
 export class Result{
     constructor (
         readonly name: string, 
         readonly measurement: Measurement |  number[],
+        readonly sample: number[],
+        readonly errors: number[],
         readonly dgs: number[],
         readonly keys: string,
-        readonly value: number
+        readonly total: number
     ) {}
     static parse(data: Record<string, any>) {
         if (data == null) {
-            return new Result('', new Measurement([], [], []), [], '', 0);
+            return new Result('', new Measurement([], [], []), [],[], [], '', 0);
         }
         let m: Measurement | number[];
-        if ('value' in data.measurement) {m=Measurement.parse(data.measurement);} else {m=data.measurement;}
+        if (typeof data.measurement === 'undefined') {
+            m=[];
+        } else {
+            if (data.measurement.constructor == Object) {m=Measurement.parse(data.measurement);} else {m=data.measurement;}
+        }
         return new Result(
             data.name, 
             m, 
+            data.sample,
+            data.errors,
             data.dgs, 
             data.keys, 
-            data.value
+            data.total
         )
     }
 }
@@ -95,7 +121,7 @@ export class Results{
         readonly name: string, 
         readonly data: Record<string, Result>, 
         readonly summary: Record< string, number[]>,
-        readonly value: number
+        readonly total: number
     ) {}
 
     static parse(data: Record<string, any>) {
@@ -103,7 +129,7 @@ export class Results{
             data.name, 
             parse_dict(data.data, Result.parse),
             data.summary,
-            data.value
+            data.total
         )
     }
 
@@ -115,13 +141,13 @@ export class ElementsResults{
     constructor(
         readonly data: Record<string, Results>, 
         readonly summary: Record< string, number[]>,
-        readonly value: number
+        readonly total: number
     ) {}
 
     static parse(data: Record<string, any>) {return new ElementsResults(
         parse_dict(data.data, Results.parse),
         data.summary,
-        data.value
+        data.total
     )}
 }
 

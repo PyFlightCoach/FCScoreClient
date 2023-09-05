@@ -2,7 +2,7 @@
 	import type {Result} from '$lib/api_objects';
     import type {State,  Point} from '$lib/geometry';
     import Plotly from '$lib/plots/Plotly.svelte'; 
-    import {coloured_ribbons, vectors} from '$lib/plots/traces';
+    import {coloured_ribbons, vectors, single_point} from '$lib/plots/traces';
     import {layout3d} from '$lib/plots/layouts';    
     export let result: Result;
     export let flown: State[];
@@ -21,16 +21,16 @@
         info = [];
         for (let i = 0; i < result.measurement.visibility.length; i++) {
             info.push(
-                'value = ' + result.measurement.value[i].length().toFixed(2).toString() + 
+                'value = ' + result.sample[i].toFixed(2).toString() + 
                 ', expected = ' + result.measurement.expected[i].length().toFixed(2).toString() +
                 ', visibility = ' + result.measurement.visibility[i].toFixed(2).toString() 
             )
         }
     }
 
-    $: vecs = vectors(pos, vec, info)
+   /* $: vecs = vectors(pos, vec, info)*/
     
-    $: traces = coloured_ribbons({flown, template},2);//.concat(vecs);
+    $: traces = coloured_ribbons({flown, template},2).concat(single_point());
 
 </script>
 
@@ -43,6 +43,11 @@
         type: 'scatter',
         y: result.measurement.value.map(p=>p.length()),
         name: 'measurement'
+    },
+    {
+        type: 'scatter',
+        y: result.sample,
+        name: 'sample'
     },
     {
         type: 'scatter',
