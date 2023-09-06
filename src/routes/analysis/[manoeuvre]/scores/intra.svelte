@@ -8,7 +8,8 @@
 	import type {ElementsResults, Result} from '$lib/api_objects';
   import IntraPlot from './intra_plot.svelte';
   import {split_states, type State} from '$lib/geometry';
-
+  import { Tooltip } from 'flowbite-svelte';
+  
   let all_fields: string[];
   $: all_fields = [];
 
@@ -36,12 +37,41 @@
     if (pl) {pl.scrollIntoView({behavior: 'smooth'});}
   }
 
-  function getEl(ename: string, els: Record<string, any>[]) {
-    for (let i=0; i<els.length; i++) {
-      if (els[i].uid == ename) {
-        return els[i];
+  function getEl(ename: string, man: Record<string, any>) {
+    if (ename == 'entry_line') {
+      return man.entry_line;
+    }
+    for (let i=0; i<man.elements.length; i++) {
+      if (man.elements[i].uid == ename) {
+        return man.elements[i];
       }
     }
+  }
+
+  function remove_ret(name:string, data: Record<string, any>) {
+    let outp: Record<string, any> = {};
+    Object.entries(data).forEach(v=>{
+      if (v[0] != name) {
+        outp[v[0]] = v[1];
+      }
+    });
+    return outp;
+  }
+
+  function elInfo(name: string, man: Record<string, any>) {
+    const el = remove_ret('scoring', getEl(name, man));
+
+    function format(input: any) {
+      if (typeof input == 'number') {
+        return input.toFixed(2)
+      } else {
+        return String(input)
+      }
+    }
+
+    return Object.entries(el).map(
+      row=>String(row[0]) + '=' + format(row[1])
+    );
   }
 
 </script>
@@ -70,18 +100,25 @@
         {/each}
         <TableBodyCell>{result.total.toFixed(2)}</TableBodyCell>
       </TableBodyRow>
+      <Tooltip>
+        {#each elInfo(name, manoeuvre) as info}
+          {info}
+          <br>
+        {/each}
+      </Tooltip>
     {/each}
 
   </TableBody>
 </Table>
-<div id='plot'></div>
+
 {#if popopen}
   
   <IntraPlot 
     result={intra.data[target_el].data[target_field]} 
     flown={states[target_el]}
     template={templates[target_el]}
-    element={getEl(target_el, manoeuvre.elements)}
+    element={getEl(target_el, manoeuvre)}
   />
 {/if}
 
+<div id='plot'></div>

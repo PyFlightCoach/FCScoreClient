@@ -1,6 +1,6 @@
 
 import {State, Point, Quaternion} from '$lib/geometry';
-
+import {linspace} from '$lib/arrays';
 
 export const ribbon = (st: State[], sp: number) => {
     const semisp = sp / 2;
@@ -62,4 +62,81 @@ export const single_point = (x=0, y=0, z=0) => {
         name:'pilot position',
         showlegend: false
     }
+}
+
+
+export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
+    let info: string[] = [];
+    for (let i = 0; i < result.keys.length; i++) {
+        info.push(
+            'error = ' + (result.errors[i]*scale).toFixed(1).toString() + 
+            '<br>visibility = ' + result.measurement.visibility[result.keys[i]].toFixed(2).toString() +
+            '<br>downgrade = ' + result.dgs[i].toFixed(2).toString() 
+        )
+    }
+
+    return [
+        {
+            type: 'scatter',
+            y: result.measurement.value.map(p=>p.length()*scale),
+            name: 'measurement',
+            line: {color: 'black', width: 1},
+            hoverinfo:'skip',
+            yaxis: 'y'
+        },
+        {
+            type: 'scatter',
+            y: result.sample.map(p=>{
+                if(p!=null) {
+                    return p*scale;
+                } else {
+                    return null;
+                }}
+            ),
+            name: 'sample',
+            line: {width: 3},
+            hoverinfo:'skip',
+            yaxis: 'y'
+        },
+        {
+            type: 'scatter',
+            x: result.keys,
+            y: result.keys.map(k=>result.sample[k]*scale),
+            text: result.dgs.map(dg=>dg.toFixed(3)),
+            hovertext: info,
+            name: 'downgrades',
+            mode: 'markers+text',
+            marker: {size:12, color:'red'},
+            textposition:"bottom center",
+            yaxis: 'y'
+        },
+        {
+            type: 'scatter',
+            y: result.measurement.expected.map(p=>p.length()*scale),
+            line: {color: 'black', width: 1, dash: 'dash'},
+            name: 'expected',
+            hoverinfo:'skip',
+            yaxis: 'y'
+        },
+        {
+            type: 'scatter',
+            y: result.measurement.visibility,
+            name: 'visibility',
+            line: {color:'blue', width:1, dash:'dot'},
+            hoverinfo:'skip',
+            yaxis: 'y2'
+        }
+    ]
+}
+
+
+
+export const criteria_info = (criteria: Record<string, any>, scale: number) => {
+    
+    const x = criteria.comparison=='absolute' ?  linspace(0.0, 90.0, 20.0) : linspace(0.0,5.0,20.0);
+    
+    const y = x.map(v=>criteria.lookup.factor*Math.pow((v/scale), criteria.lookup.exponent))
+
+    return {type: 'scatter',x, y, line: {color: 'black'}}
+
 }

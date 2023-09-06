@@ -2,7 +2,7 @@
 	import type {Result} from '$lib/api_objects';
     import type {State,  Point} from '$lib/geometry';
     import Plotly from '$lib/plots/Plotly.svelte'; 
-    import {coloured_ribbons, vectors, single_point} from '$lib/plots/traces';
+    import {coloured_ribbons, criteria_info, single_point, downgrade_info} from '$lib/plots/traces';
     import {layout3d} from '$lib/plots/layouts';    
     export let result: Result;
     export let flown: State[];
@@ -17,88 +17,91 @@
             pos[i] = flown[i].pos();
         }
     };
-    let info: string[];
+
+
+    $: traces_3d = coloured_ribbons({flown, template},2).concat(single_point());
+
+    $: downgrade = element.scoring[result.name];
+
+    let scale:number=1;
     $: {
-        info = [];
-        for (let i = 0; i < result.keys.length; i++) {
-            info.push(
-                'error = ' + result.errors[i].toFixed(2).toString() + 
-                '<br>visibility = ' + result.measurement.visibility[result.keys[i]].toFixed(2).toString() +
-                '<br>downgrade = ' + result.dgs[i].toFixed(2).toString() 
-            )
-        }
+        if (downgrade.criteria.comparison=='absolute') {
+            scale=180/Math.PI;
+        } else {scale=1}
     }
-
-    $: traces = coloured_ribbons({flown, template},2).concat(single_point());
-
-
-
-
 
 </script>
 
 
-<div>{result.name} downgrades for {flown[0].element}, total={result.total.toFixed(2)}</div>
 
-{#each Object.entries(element) as entry}
-    <div>{entry[0]}={entry[1]}</div>
-{/each}
-<Plotly data={traces} layout={layout3d}/>
 
-<Plotly 
-    data={[
-        {
-            type: 'scatter',
-            y: result.measurement.value.map(p=>p.length()),
-            name: 'measurement',
-            hoverinfo:'skip',
-            yaxis: 'y'
-        },
-        {
-            type: 'scatter',
-            y: result.sample,
-            name: 'sample',
-            line: {width: 3},
-            hoverinfo:'skip',
-            yaxis: 'y'
-        },
-        {
-            type: 'scatter',
-            x: result.keys,
-            y: result.keys.map(k=>result.sample[k]),
-            text: result.dgs.map(dg=>dg.toFixed(3)),
-            hovertext: info,
-            name: 'downgrades',
-            mode: 'markers+text',
-            marker: {size:12},
-            textposition:"bottom center",
-            yaxis: 'y'
-        },
-        {
-            type: 'scatter',
-            y: result.measurement.expected.map(p=>p.length()),
-            line: {color: 'black', width: 1, dash: 'dash'},
-            name: 'expected',
-            hoverinfo:'skip',
-            yaxis: 'y'
-        },
-        {
-            type: 'scatter',
-            y: result.measurement.visibility,
-            name: 'visibility',
-            hoverinfo:'skip',
-            yaxis: 'y2'
-        }
-    ]}
-    layout={{
-        yaxis:{title:'measurement'},
-        yaxis2:{
-            title:'visibility',
-            overlaying: 'y',
-            side: 'right',
-            range: [0, 1]
-        },
-        legend:{orientation: 'h', x:0.1, y:0.15}
-    }}
 
-/>
+<div id='parent'>
+
+
+    <div id='info'>
+        {result.name} downgrades for {element.uid}<br />
+        Total={result.total.toFixed(2)}<br/>
+        Comparison Mode={downgrade.criteria.comparison}<br/>
+        Criteria Type = {downgrade.criteria.kind}<br/>
+    </div>
+
+    <div id='plotone'><Plotly data={traces_3d} layout={layout3d}/></div>
+
+    <div id='plottwo'><Plotly 
+        data={[criteria_info(downgrade.criteria, scale)]} 
+        layout={{
+            yaxis:{title:'downgrade',range:[0,10]}, 
+            xaxis:{title: downgrade.criteria.comparison + ' error'},
+            autosize: true,
+            margin: {l:30, r:0, t:0, b:30},
+        }}
+    /></div>
+
+    <div id='plotthree'><Plotly 
+        data={downgrade_info(result, scale)}
+        layout={{
+            yaxis:{
+                title:'measurement',
+                range: [Math.min(0, ...result.sample) * 2 * scale, Math.max(...result.sample) * 2 * scale]
+            },
+            yaxis2:{
+                title:'visibility',
+                overlaying: 'y',
+                side: 'right',
+                range: [0, 1]
+            },
+            xaxis:{visible: false},
+            legend:{orientation: 'h', x:0.2, y:0},
+            autosize: true,
+            margin: {l:30, r:30, t:0, b:0},
+        }}
+    /></div>
+
+</div>
+
+
+<style>
+#parent {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 300px 600px;
+}
+#info{
+  grid-column: 1;
+  grid-row: 1;  
+}
+#plotone {
+  grid-column: 2;
+  grid-row: 1;
+}
+#plottwo {
+  grid-column: 3;
+  grid-row: 1;
+}
+#plotthree {
+  grid-column: 1/4;
+  grid-row: 2;
+}
+
+</style>
