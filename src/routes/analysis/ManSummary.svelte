@@ -32,14 +32,15 @@
         <DropdownItem  on:click={()=> {dropdownOpen=false; flightdata.alignman(manname);}}>Align</DropdownItem>
         <DropdownItem  on:click={()=> {dropdownOpen=false; flightdata.alignman(manname).then(()=>{flightdata.scoreman(manname)});}}>Score</DropdownItem>
       {/if}  
-    </Dropdown>       
+    </Dropdown>
+
 </div>
-<div>3</div>
+<div>{$man.mdef.info.k}</div>
 <div>
   {#if busy}
     preparing...
   {:else}
-    {#if aligned}score{:else}align{/if}
+    {#if aligned}aligned ({$man.dist.toFixed(0)}){:else}read{/if}
   {/if}
 </div>
 <div>

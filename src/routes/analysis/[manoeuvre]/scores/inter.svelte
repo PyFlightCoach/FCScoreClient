@@ -15,6 +15,18 @@
         return inter.data[mpname].keys.findIndex(v=>v==collname);
     }
 
+    function colinfo(mp: Record<string, any>) {
+        return Object.values(mp.collectors).map(co=>{
+            let colid = collid(mp.name, co);
+            return [
+                co,
+                inter.data[mp.name].sample[colid].toFixed(2),
+                inter.data[mp.name].errors[colid].toFixed(2),
+                inter.data[mp.name].measurement.visibility[colid].toFixed(2),
+                inter.data[mp.name].dgs[colid].toFixed(2),
+            ]
+        })
+    }
 
 </script>
 
@@ -23,27 +35,26 @@
     {#each Object.values(mdef.mps) as mp}
         
         <AccordionItem>
-            <span slot="header">{mp.name}</span>
+            <span slot="header">{mp.name} (dg={mp.name in inter.data ? inter.data[mp.name].total.toFixed(2) : 0})</span>
             {#if mp.name in inter.data}
             
                 <Table hoverable={true}>
                     <TableHead>
-                        <TableHeadCell>Name</TableHeadCell>
                         <TableHeadCell>Collector</TableHeadCell>
                         <TableHeadCell>Value</TableHeadCell>
                         <TableHeadCell>Error</TableHeadCell>
+                        <TableHeadCell>Visibility</TableHeadCell>
                         <TableHeadCell>Downgrade</TableHeadCell>
                     </TableHead>
+                
+                    {#each colinfo(mp) as co}
+                        <TableBodyRow>
+                            {#each co as cocell}
+                            <TableBodyCell>{cocell}</TableBodyCell>
+                            {/each}
+                        </TableBodyRow>
+                    {/each}
                 </Table>
-                {#each Object.entries(mp.collectors) as co}
-                    <TableBodyRow>
-                        <TableBodyCell>{co[0]}</TableBodyCell>
-                        <TableBodyCell>{inter.data[mp.name].errors[collid(mp.name, co[1])]}</TableBodyCell>
-                        <TableBodyCell>test</TableBodyCell>
-                        <TableBodyCell></TableBodyCell>
-                        <TableBodyCell></TableBodyCell>
-                    </TableBodyRow>
-                {/each}
             {:else}
                 <P>This parameter is not downgradable. Usually this is because it is covered by the 
                     intra element scoring, the parameter is just used to create the templates.

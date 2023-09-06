@@ -26,7 +26,10 @@ export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string
 
 export async function align(mdef: Record<string, any>, fl: Record<string, any>){
     const res = await server_func('align', {'mdef':mdef, 'fl':fl});
-    return State.parse_arr(res)
+    return {
+        dist: res.dist,
+        al: State.parse_arr(res.al)
+    }
 }
 
 

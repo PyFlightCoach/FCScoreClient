@@ -1,10 +1,8 @@
 <script lang="ts">
 	import '../app.postcss';
-	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Dropdown, DropdownItem, Chevron, DropdownDivider } from 'flowbite-svelte'
-	import { Icon } from 'flowbite-svelte-icons';
+	import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem, Chevron} from 'flowbite-svelte'
 	import { mouse } from '$lib/stores';
 	import {flightdata, flightmenu} from '$lib/stores';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import {example_manlist} from '$lib/api_calls';
 

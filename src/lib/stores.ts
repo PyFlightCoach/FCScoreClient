@@ -45,7 +45,8 @@ class FlightData {
             rman.update(man => { man.busy = true; return man; });
             const res: Record<string, any> = await align(man.mdef, man.fl);
             rman.update((data: Record<string, any>) => {
-                data.al = res;
+                data.dist = res.dist
+                data.al = res.al;
                 delete data.fl;
                 data.busy = false;
                 return data;
