@@ -51,6 +51,7 @@ export async function example(man: string){
     return {
         mdef: ManDef.parse(data.mdef),
         al: State.parse_arr(data.al),
+        dist: data.dist,
         intended: data.intended,
         intended_template: State.parse_arr(data.intended_template),
         corrected: data.corrected,

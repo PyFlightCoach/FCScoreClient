@@ -19,7 +19,7 @@
     };
 
 
-    $: traces_3d = coloured_ribbons({flown, template},2).concat(single_point());
+    $: traces_3d = coloured_ribbons({flown, template},2);//.concat(single_point());
 
     $: downgrade = element.scoring[result.name];
 
@@ -41,9 +41,9 @@
 
     <div id='info'>
         {result.name} downgrades for {element.uid}<br />
-        Total={result.total.toFixed(2)}<br/>
-        Comparison Mode={downgrade.criteria.comparison}<br/>
-        Criteria Type = {downgrade.criteria.kind}<br/>
+        Total:      {result.total.toFixed(2)}<br/>
+        Comparison: {downgrade.criteria.comparison}<br/>
+        Criteria:   {downgrade.criteria.kind}<br/>
     </div>
 
     <div id='plotone'><Plotly data={traces_3d} layout={layout3d}/></div>
@@ -84,8 +84,8 @@
 <style>
 #parent {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 300px 600px;
+  grid-template-columns: max-content 2fr 1fr;
+  grid-template-rows: 400px 500px;
 }
 #info{
   grid-column: 1;

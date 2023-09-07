@@ -5,15 +5,16 @@
   import Templates from './templates.svelte';
   import Intra from './intra.svelte';
   import Inter from './inter.svelte';
-	
+  import { goto } from '$app/navigation';
+
+
   $: man = flightdata.man($page.params['manoeuvre']);
 
 </script>
 
-<div id="parent">
   <Tabs>
     <TabItem open title="Summary">
-      <slot id="contents"/>  
+      <slot/>  
     </TabItem>
     <TabItem title="Templates"><Templates man={$man}/></TabItem>
     <TabItem title="Intra"><Intra 
@@ -28,10 +29,6 @@
       mdef={$man.mdef}
       /></TabItem>
     <TabItem title="Positioning"><div>Positioning</div></TabItem>
+    <TabItem title="Back" on:click={()=>{goto('/analysis')}}/>
   </Tabs>
-</div>
 
-<style>
-  #parent {display: flex; flex-direction: column; align-items: stretch; width: 100%; height: 100%; }
-  #contents {flex: 1 1 auto;}  
-</style>
