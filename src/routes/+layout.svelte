@@ -23,8 +23,13 @@
 			data['Clear'] = ()=>{clearflight('/')};
 			return data;
 		});
-
-		example_manlist().then(res => {manlist=res});
+		try {
+			example_manlist().then(res => {manlist=res});
+		} catch (e) {
+			console.error(e);
+			manlist=[];
+		}
+		
 
 	});
 

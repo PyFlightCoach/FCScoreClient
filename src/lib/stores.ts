@@ -37,23 +37,33 @@ class FlightData {
     }
 
     async alignman(name: string) {
-        let rman = await this.man(name);
+        let rman = this.man(name);
         let man: Record<string, any> = {};
         const uns = rman.subscribe((val) => { man = val });
-
         if (('fl' in man) && !man.busy) {
             rman.update(man => { man.busy = true; return man; });
-            const res: Record<string, any> = await align(man.mdef, man.fl);
-            rman.update((data: Record<string, any>) => {
-                data.dist = res.dist
-                data.al = res.al;
-                delete data.fl;
-                data.busy = false;
-                return data;
-            });
-            this.mannames.update(
-                (mnames) => { mnames[name] = 2; return mnames; }
-            );
+            try {
+                const res: Record<string, any> = await align(man.mdef, man.fl);
+                rman.update((data: Record<string, any>) => {
+                    data.dist = res.dist
+                    data.status = 'aligned, dist='+data.dist.toFixed(1)
+                    data.al = res.al;
+                    delete data.fl;
+                    data.busy = false;
+                    return data;
+                });
+                this.mannames.update(
+                    (mnames) => { mnames[name] = 2; return mnames; }
+                );
+            } catch (err) {
+                console.log('Aligment error, man=' + name + ', ' + err);
+                rman.update(man => {
+                    man.status = 'Aligment error = ' + err;
+                    man.busy = false; 
+                    return man; 
+                });
+            }
+
         }
         uns();
     }
@@ -65,21 +75,31 @@ class FlightData {
 
         if (!('score' in man) && !man.busy) {
             rman.update(man => { man.busy = true; return man; });
-            const res: Record<string, any> = await score(man.mdef, man.al);
-            rman.update((data: Record<string, any>) => {
 
-                data = { ...data, ...res, busy: false };
-                return data;
-            });
-            this.mannames.update(
-                (mnames) => { mnames[name] = 3; return mnames; }
-            );
+            try {
+                const res: Record<string, any> = await score(man.mdef, man.al);
+                rman.update((data: Record<string, any>) => {
+    
+                    data = { ...data, ...res, busy: false };
+                    return data;
+                });
+                this.mannames.update(
+                    (mnames) => { mnames[name] = 3; return mnames; }
+                );
+            } catch (err) {
+                rman.update(man => {
+                    man.status = 'Scoring error = ' + err;
+                    man.busy = false; 
+                    return man; 
+                });
+            }
         }
         uns();
     }
     
 
     export(): Record<string, any> {
+        // export the stored manoeuvre analysis, might be useful one day
         let expd: Record<string, any> = {};
 
         Object.values(this.mans).forEach((man: Writable<Record<string, any>>) => {

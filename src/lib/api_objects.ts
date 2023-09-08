@@ -75,15 +75,6 @@ export class Measurement{
 }
 
 
-/*
-name: str
-    measurement: Measurement 
-sample: npt.ArrayLike
-errors: npt.ArrayLike
-dgs: npt.ArrayLike
-keys: npt.ArrayLike
- */
-
 export class Result{
     constructor (
         readonly name: string, 
