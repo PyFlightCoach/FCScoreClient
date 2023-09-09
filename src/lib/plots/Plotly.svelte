@@ -65,7 +65,7 @@
 </script>
 
 <svelte:head>
-	<script src="https://cdn.plot.ly/plotly-2.12.1.min.js" on:load={init}></script>
+	<script src="node_modules/plotly.js-dist/plotly.js" on:load={init}></script>
 </svelte:head>
 
 {#if $PlotlyLib}

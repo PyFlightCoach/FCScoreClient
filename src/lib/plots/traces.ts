@@ -69,7 +69,8 @@ export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
     let info: string[] = [];
     for (let i = 0; i < result.keys.length; i++) {
         info.push(
-            'error = ' + (result.errors[i]*scale).toFixed(1).toString() + 
+            'measurement = ' + (result.measurement.value[result.keys[i]].length() * scale).toFixed(2) +  
+            '<br>error = ' + (result.errors[i]*scale).toFixed(1).toString() + 
             '<br>visibility = ' + result.measurement.visibility[result.keys[i]].toFixed(2).toString() +
             '<br>downgrade = ' + result.dgs[i].toFixed(2).toString() 
         )
@@ -86,6 +87,14 @@ export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
         },
         {
             type: 'scatter',
+            y: result.measurement.visibility,
+            name: 'visibility',
+            line: {color:'blue', width:1, dash:'dot'},
+            hoverinfo:'skip',
+            yaxis: 'y2'
+        },
+        {
+            type: 'scatter',
             y: result.sample.map(p=>{
                 if(p!=null) {
                     return p*scale;
@@ -93,8 +102,16 @@ export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
                     return null;
                 }}
             ),
-            name: 'sample',
+            name: 'downgradable error',
             line: {width: 3},
+            hoverinfo:'skip',
+            yaxis: 'y'
+        },
+        {
+            type: 'scatter',
+            y: result.measurement.expected.map(p=>p.length()*scale),
+            line: {color: 'black', width: 1, dash: 'dash'},
+            name: 'expected',
             hoverinfo:'skip',
             yaxis: 'y'
         },
@@ -109,22 +126,6 @@ export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
             marker: {size:12, color:'red'},
             textposition:"bottom center",
             yaxis: 'y'
-        },
-        {
-            type: 'scatter',
-            y: result.measurement.expected.map(p=>p.length()*scale),
-            line: {color: 'black', width: 1, dash: 'dash'},
-            name: 'expected',
-            hoverinfo:'skip',
-            yaxis: 'y'
-        },
-        {
-            type: 'scatter',
-            y: result.measurement.visibility,
-            name: 'visibility',
-            line: {color:'blue', width:1, dash:'dot'},
-            hoverinfo:'skip',
-            yaxis: 'y2'
         }
     ]
 }

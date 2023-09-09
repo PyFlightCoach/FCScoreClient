@@ -63,7 +63,7 @@
         layout={{
             yaxis:{
                 title:'measurement',
-                range: [Math.min(0, ...result.sample) * 2 * scale, Math.max(...result.sample) * 2 * scale]
+                range: [0, Math.max(...result.measurement.value.map(p=>p.length())) * 1.5 * scale]
             },
             yaxis2:{
                 title:'visibility',
