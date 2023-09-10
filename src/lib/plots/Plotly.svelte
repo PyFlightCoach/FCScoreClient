@@ -64,9 +64,6 @@
 	}
 </script>
 
-<svelte:head>
-	<script src="node_modules/plotly.js-dist/plotly.js" on:load={init}></script>
-</svelte:head>
 
 {#if $PlotlyLib}
 	<div {id} use:plotlyAction={{ data, layout, config, reloadPlot }} {...$$restProps} />

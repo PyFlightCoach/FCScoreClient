@@ -69,7 +69,7 @@ class FlightData {
     }
 
     async scoreman(name: string) {
-        let rman = await this.man(name);
+        let rman = this.man(name);
         let man: Record<string, any> = {};
         const uns = rman.subscribe((val) => { man = val });
 

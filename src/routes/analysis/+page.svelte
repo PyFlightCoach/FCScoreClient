@@ -1,7 +1,11 @@
 <script lang="ts">
   import { Button} from 'flowbite-svelte';
   import {flightdata} from '$lib/stores';
-  
+  import {create_fc_json} from '$lib/api_calls';
+  import type {State} from '$lib/geometry';
+  import type {ManDef} from '$lib/api_objects';
+  import { saveAs } from 'file-saver';
+
   let mannames = flightdata.mannames;
 
   $: summary = Object.keys($mannames).map(mn => {
@@ -46,6 +50,32 @@
     }
   }
 
+  const downloadTemplate = async (kind: string) => {
+    if (nscored == nmans) {
+
+      let sts: State[] = [];
+      let mdefs: ManDef[] =[];
+      Object.keys($mannames).forEach(mn => {
+        flightdata.man(mn).subscribe(man=>{
+          if (kind=='intended') {
+            sts = sts.concat(man.intended_template);
+          } else {
+            sts = sts.concat(man.corrected_template);
+          }
+          
+          mdefs.push(man.mdef);
+        })();
+      });
+      let fcj = await create_fc_json(sts, mdefs, 'kind', 'F3A');
+      var fileToSave = new Blob(
+        [JSON.stringify(fcj)], 
+        {type: 'application/json'}
+      );
+
+      saveAs(fileToSave, kind + '_template.json');
+    }
+  }
+
 </script>
 
 
@@ -60,6 +90,8 @@
     <div>score      = {total.toFixed(1)}</div>
     <Button color="alternative" on:click={alignall}>Align All</Button>
     <Button color="alternative" on:click={scoreall}>Score All</Button>
+    <Button color="alternative" on:click={() => downloadTemplate('intended')}>Download Intended Template FCjson</Button>
+    <Button color="alternative" on:click={() => downloadTemplate('corrected')}>Download Corrected Template FCjson</Button>
   </div>
 
 </div>

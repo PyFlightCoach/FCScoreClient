@@ -15,7 +15,7 @@
 
 
   let all_elements: string[];   $: all_elements = $man.al.map((el: Record<string, any>) => el.element);
-  let elements: string[];       $: elements = [...new Set(all_elements)].slice(0, -1);
+  let elements: string[];       $: elements = [...new Set(all_elements)];
 
   $: end_info = Object.fromEntries(elements.map((el) => {
       const lastid = all_elements.lastIndexOf(el);
@@ -64,7 +64,7 @@
   <slot id="contents"/>  
   <BottomNav classInner="grid-cols-5" id="adjust-split">
     
-    <Select bind:value={element} items={elements.map((el) => {return {value: el, name: el};})}/>
+    <Select bind:value={element} items={elements.slice(0, -1).map((el) => {return {value: el, name: el};})}/>
     <BottomNavItem><Input placeholder='step' bind:value={step}/></BottomNavItem>
 
     <BottomNavItem on:click={() => {editsplit(-Number(step), element)}}>&#60</BottomNavItem>
