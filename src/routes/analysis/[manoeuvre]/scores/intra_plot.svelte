@@ -33,12 +33,7 @@
 </script>
 
 
-
-
-
 <div id='parent'>
-
-
     <div id='info'>
         {result.name} downgrades for {element.uid}<br />
         Total:      {result.total.toFixed(2)}<br/>

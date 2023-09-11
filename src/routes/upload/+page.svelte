@@ -3,8 +3,8 @@
     import {convert_fcj} from '$lib/api_calls';
 
     let value: any;
-    let data: Record<string, any> = {};
-    
+    let data: Record<string, any>;
+    let sinfo: Record<string, string>;
     import { flightdata } from '$lib/stores.js';
 
 
@@ -15,14 +15,22 @@
                 value=file.name;
                 let fr = new FileReader();
                 fr.onload = (event) => {data=JSON.parse(event.target.result);};
-                console.log(file)
+                console.log(file);
                 fr.readAsText(file);
     }}}
 
 
+    const get_sinfo = (d: Record<string, any>) => {
+        if (d) {
+            return {category: d.parameters.schedule[0], name: d.parameters.schedule[1]};
+        }
+    }
+
+    $: sinfo = get_sinfo(data);
+
     const convert_json = () => {
         if (data) {
-            convert_fcj(data, {'category': "F3A", 'name': 'P23'})
+            convert_fcj(data, sinfo)
             .then((res: Record<string, any>) => {
                 for (const [key, value] of Object.entries(res)) {
                     value['busy'] = false;
@@ -50,7 +58,11 @@
 
 
 {#if value}
-<Button on:click={convert_json} href='/analysis'>
-    Prepare Analysis
-</Button>
+    {#if sinfo}
+        <p>category={sinfo.category}</p> 
+        <p>schedule={sinfo.name}</p>
+        <Button on:click={convert_json} href='/analysis'>
+            Prepare Analysis
+        </Button>
+    {/if}
 {/if}
