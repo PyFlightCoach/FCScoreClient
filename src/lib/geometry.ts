@@ -127,6 +127,10 @@ export class State {
 
     body_to_world(p: Point): Point {return this.att().transform_point(p).offset(this.pos());}
 
+    direction () {
+        return (+(this.att().transform_point(new Point(1,0,0)).x > 0)) * 2 - 1;
+    }
+
 }
 
 

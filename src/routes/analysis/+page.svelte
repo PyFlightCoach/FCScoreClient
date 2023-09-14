@@ -2,24 +2,28 @@
   import { Button} from 'flowbite-svelte';
   import {flightdata} from '$lib/stores';
   import {create_fc_json} from '$lib/api_calls';
-  import type {State} from '$lib/geometry';
+  import {State} from '$lib/geometry';
   import type {ManDef} from '$lib/api_objects';
   import { saveAs } from 'file-saver';
 
   let mannames = flightdata.mannames;
+  let direction = flightdata.direction;
 
   $: summary = Object.keys($mannames).map(mn => {
     let row = {
         name:mn, 
-        k:0, 
+        k:0,
+        entry: 1,
         aligned:$mannames[mn]>1, 
         scored: $mannames[mn]>2,
         score: 0,
-        total: 0 
+        total: 0
       };
-
+    
     flightdata.man(mn).subscribe((man)=>{
       row.aligned = 'al' in man;
+      const st = ('al' in man) ? man.al[0] : man.fl[0]; 
+      row.entry = State.parse(st).direction();
       row.scored = 'score' in man;
       row.k=man.mdef.info.k;
       if (row.scored) {
@@ -30,7 +34,8 @@
 
     return row;
   });
-
+  
+  $: entry = {0:'Right to Left', 1: 'Unknown', 2: 'Left to Right'}[$direction+1]
   $: nmans = Object.values($mannames).length;
   $: naligned = summary.filter((val) => val.aligned).length;
   $: nscored = summary.filter((val) => val.scored).length;
@@ -84,6 +89,7 @@
 <div id='parent'>
   <div id='head'>
     <div>move mouse to left or press spacebar to view manoeuvres</div>
+    <div>direction = {entry}</div>
     <div>manoeuvres = {nmans}</div>
     <div>aligned    = {naligned}</div>
     <div>scored     = {nscored}</div>

@@ -38,8 +38,8 @@ export async function align(mdef: Record<string, any>, fl: Record<string, any>){
 
 
 
-export async function score(mdef: Record<string, any>, al: Record<string, any>){
-    const data: Record<string, any> = await server_func('score', {'mdef':mdef, 'al':al});
+export async function score(mdef: Record<string, any>, al: Record<string, any>, direction: number){
+    const data: Record<string, any> = await server_func('score', {mdef, al, direction});
     return {
         mdef: ManDef.parse(data.mdef),
         intended: data.intended,

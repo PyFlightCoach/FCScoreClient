@@ -8,7 +8,7 @@
   import {align} from '$lib/api_calls';
 
   $: man = flightdata.man(manname);
-  
+  let direction = flightdata.direction; // -1 = r to l, 1 = l to r 
   $: aligned = !('fl' in $man); 
   $: busy = $man.busy;
   $: scored = 'score' in $man;

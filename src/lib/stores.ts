@@ -6,9 +6,11 @@ import { align, score, example } from '$lib/api_calls';
 
 
 class FlightData {
+    sinfo: Writable<Record<string, string>> = writable();
+    direction: Writable<number> = writable(0);
     mans: Record<string, Writable<Record<string, any>>> = {};
     mannames: Writable<Record<string, number>> = writable({});
-
+    
     addMan(name: string): Writable<Record<string, any>> {
         this.mans[name] = writable({});
         this.mannames.update((mnames) => {
@@ -71,13 +73,16 @@ class FlightData {
     async scoreman(name: string) {
         let rman = this.man(name);
         let man: Record<string, any> = {};
-        const uns = rman.subscribe((val) => { man = val });
+        rman.subscribe((val) => { man = val })();
+        
+        let direction: number;
+        this.direction.subscribe(di=>direction=di)();
 
         if (!('score' in man) && !man.busy) {
             rman.update(man => { man.busy = true; return man; });
 
             try {
-                const res: Record<string, any> = await score(man.mdef, man.al);
+                const res: Record<string, any> = await score(man.mdef, man.al, direction);
                 rman.update((data: Record<string, any>) => {
     
                     data = { ...data, ...res, busy: false };
@@ -94,7 +99,6 @@ class FlightData {
                 });
             }
         }
-        uns();
     }
     
 
