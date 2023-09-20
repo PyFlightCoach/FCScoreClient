@@ -4,7 +4,7 @@
 	import { mouse } from '$lib/stores';
 	import {flightdata, flightmenu} from '$lib/stores';
 	import { onMount } from 'svelte';
-	import {example_manlist} from '$lib/api_calls';
+
 
 	const clearflight = (target: string = '/') => {
 		flightdata.clear();
@@ -15,7 +15,6 @@
 		$mouse = {x: event.clientX, y: event.clientY}
 	}
 
-	let manlist: string[] =[];
 
 	onMount(() => {
 		flightmenu.update((data: Record<string, any>) => {
@@ -23,13 +22,6 @@
 			data['Clear'] = ()=>{clearflight('/')};
 			return data;
 		});
-		try {
-			example_manlist().then(res => {manlist=res});
-		} catch (e) {
-			console.error(e);
-			manlist=[];
-		}
-		
 
 	});
 
@@ -49,16 +41,6 @@
 					<DropdownItem on:click={item}>{key}</DropdownItem>	
 				{/each}
 			</Dropdown> 
-		</NavUl>
-		<NavUl {hidden}>
-			<NavLi id="nav-menu2" class="cursor-pointer"><Chevron aligned>examples</Chevron></NavLi>
-			<Dropdown triggeredBy="#nav-menu2" class="w-44 z-20">
-				{#each manlist as mn}
-					<DropdownItem href={'./analysis/' + mn + '_example/'}>
-						{mn}
-					</DropdownItem>
-				{/each}
-			</Dropdown>
 		</NavUl>
 
 	</Navbar>

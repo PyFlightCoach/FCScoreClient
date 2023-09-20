@@ -74,3 +74,7 @@ export async function example_manlist(){
 export async function create_fc_json(sts: State[], mdefs: ManDef[], name: string, category: string) {
     return await server_func('create_fc_json', {sts, mdefs, name, category});
 }
+
+export async function server_version(){
+    return await server_func('version').then(v=>v.version);
+}
