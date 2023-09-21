@@ -5,10 +5,8 @@
   import { goto } from '$app/navigation';
   import {flightdata} from '$lib/stores';
   import {Button, Dropdown, Chevron, DropdownItem} from 'flowbite-svelte';
-  import {align} from '$lib/api_calls';
 
-  $: man = flightdata.man(manname);
-  let direction = flightdata.direction; // -1 = r to l, 1 = l to r 
+  $: man = flightdata.mans[manname];
   $: aligned = !('fl' in $man); 
   $: busy = $man.busy;
   $: scored = 'score' in $man;

@@ -1,12 +1,15 @@
-import { writable, derived } from 'svelte/store';
+import { writable } from 'svelte/store';
 import type { Writable } from 'svelte/store';
 
 export const PlotlyLib = writable(null);
-import { align, score, example } from '$lib/api_calls';
+import { align, score } from '$lib/api_calls';
 
 
 class FlightData {
-    sinfo: Writable<Record<string, string>> = writable();
+    name: Writable<string|null> = writable(null);
+    sinfo: Writable<Record<string, string|null>> = writable({
+        category: null, name: null
+    });
     direction: Writable<number> = writable(0);
     mans: Record<string, Writable<Record<string, any>>> = {};
     mannames: Writable<Record<string, number>> = writable({});
@@ -20,26 +23,17 @@ class FlightData {
 
         return this.mans[name];
     };
-    
-    man(name: string): Writable<Record<string, any>> {
-        let mname = name;
-        if (name.includes('example')) {
-            mname = name.split('_')[0];
-            if (!(mname in this.mans)) {
-                this.mannames.update(mnames => {mnames[mname]=1; return mnames});
-                this.mans[mname] = writable({});
-                example(mname).then(man => {this.mans[mname].set(man)});
-        }}
-        return this.mans[mname];
-    }
 
     clear() {
         this.mans = {};
         this.mannames.set({});
+        this.name.set(null);
+        this.sinfo.set({category: null, name: null});
+        this.direction.set(0);
     }
 
     async alignman(name: string) {
-        let rman = this.man(name);
+        let rman = this.mans[name];
         let man: Record<string, any> = {};
         const uns = rman.subscribe((val) => { man = val });
         if (('fl' in man) && !man.busy) {
@@ -71,7 +65,7 @@ class FlightData {
     }
 
     async scoreman(name: string) {
-        let rman = this.man(name);
+        let rman = this.mans[name];
         let man: Record<string, any> = {};
         rman.subscribe((val) => { man = val })();
         
@@ -100,7 +94,6 @@ class FlightData {
             }
         }
     }
-    
 
     export(): Record<string, any> {
         // export the stored manoeuvre analysis, might be useful one day
@@ -114,19 +107,11 @@ class FlightData {
         return expd;
     }
 
-
-
-
-
-
 }
 
-
 export const flightdata = new FlightData();
-
-
-
+export const schedule = new FlightData();
 export const mouse = writable({ x: 0, y: 0 });
-
-
 export const flightmenu: Writable<Record<string, any>> = writable({});
+export const schedulemenu: Writable<Record<string, any>> = writable({});
+

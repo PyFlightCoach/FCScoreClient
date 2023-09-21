@@ -1,7 +1,4 @@
-import {State} from '$lib/geometry';
-import { Data } from "dataclass";
-import type { readonly } from 'svelte/store';
-import {Point} from '$lib/geometry';
+import {Point, State} from '$lib/geometry';
 
 
 export function parse_dict(data: Record<string, any>, parser) {
@@ -11,23 +8,43 @@ export function parse_dict(data: Record<string, any>, parser) {
 }
 
 
+export const Heights = ["BTM","MID","TOP"] as const;
+export const Directions = ["DRIVEN","UPWIND","DOWNWIND"] as const;
+export const Orientations = ["DRIVEN","UPRIGHT","INVERTED"] as const;
+export const Positions = ["CENTRE","END"] as const;
+export type Height = typeof Heights[number];
+export type Direction = typeof Directions[number];
+export type Orientation = typeof Orientations[number];
+export type Position = typeof Positions[number];
+
 
 export class BoxLocation{
-    constructor(readonly h: string, readonly d: string, readonly  o: string) {}
-    static parse(data: Record<string, string>) {return new BoxLocation(data.h, data.d, data.o);}
+    constructor(readonly h: Height, readonly d: Direction, readonly  o: Orientation) {}
+    static parse(data: BoxLocation) {return new BoxLocation(data.h, data.d, data.o);}
 } 
 
 export class ManInfo{
     constructor (
         readonly name: string, readonly short_name: string, 
-        readonly k: number, readonly position: string, 
+        readonly k: number, readonly position: Position, 
         readonly start: BoxLocation, readonly end: BoxLocation, 
         readonly centre_loc: number) {}
-    static parse(data: Record<string, any>) {return new ManInfo(
+    static parse(data: ManInfo) {return new ManInfo(
         data.name, data.short_name, data.k, data.position, BoxLocation.parse(data.start),
         BoxLocation.parse(data.end), data.centre_loc
     )}
+
+    static default() {return new ManInfo(
+        'new manoeuvre', 'man', 0, "CENTRE",
+        new BoxLocation("BTM", "UPWIND", "UPRIGHT"),
+        new BoxLocation("BTM", "DRIVEN", "DRIVEN"),
+        -1
+    )}
 }
+
+
+
+
 
 export class ManParm{
     constructor (readonly name: string, readonly criteria: Record<string, any>, 
@@ -35,6 +52,7 @@ export class ManParm{
     static parse(data: Record<string, any>) {return new ManParm(
         data.name, data.criteria, data.default, data.collectors
     )}
+
 }
 
 export class ManDef{

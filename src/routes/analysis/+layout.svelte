@@ -1,42 +1,15 @@
 
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import {flightdata, mouse, flightmenu} from '$lib/stores';
-  import {Drawer, Button, CloseButton, Alert } from 'flowbite-svelte';
+  import {flightdata} from '$lib/stores';
+  import SideBar from '$lib/SideBar.svelte';
   import ManSummary from './ManSummary.svelte';
-  import { sineIn } from 'svelte/easing';
-	import { onMount, onDestroy, tick} from 'svelte';
-  import {align} from '$lib/api_calls';
-
+  
   let mannames = flightdata.mannames;
-
-  let space_show = false; 
-  function onKeyDown(e: KeyboardEvent) {
-    switch (e.key) {
-      case " ":
-        space_show =! space_show;
-        break;
-    }
-  }
-
-  function onMouse(mx: number) {
-    if (hidden && mx < 10) {
-      hidden = false;
-    } else if (mx>300 && !space_show) {
-        hidden = true;
-    }
-  }
-
-  $: onMouse($mouse.x)
-
-  $: hidden = !space_show
 
 </script>
 
 
-<svelte:window on:keydown={onKeyDown} />
-
-<Drawer transitionType="fly" transitionParams={{x: -320,duration: 200,easing: sineIn}} bind:hidden={hidden}>
+<SideBar>
   <div id="table">
       <div>Manoeuvre</div>
       <div>K</div>
@@ -46,7 +19,7 @@
         <ManSummary manname={manname}/>
       {/each}
   </div>
-</Drawer>
+</SideBar>
   
 <slot id="contents"/>
 
@@ -63,7 +36,6 @@
   #contents {
       height: 100%;
       width: 100%;
-      background-color: red;
   }
   div {
     text-align: center;

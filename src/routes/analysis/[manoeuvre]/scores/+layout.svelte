@@ -8,13 +8,13 @@
   import { goto } from '$app/navigation';
 
 
-  $: man = flightdata.man($page.params['manoeuvre']);
+  $: man = flightdata.mans[$page.params['manoeuvre']];
 
 </script>
 
   <Tabs>
     <TabItem open title="Summary">
-      <slot/>  
+      <slot />  
     </TabItem>
     <TabItem title="Templates"><Templates man={$man}/></TabItem>
     <TabItem title="Intra"><Intra 

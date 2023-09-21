@@ -20,7 +20,7 @@
         total: 0
       };
     
-    flightdata.man(mn).subscribe((man)=>{
+    flightdata.mans[mn].subscribe((man)=>{
       row.aligned = 'al' in man;
       const st = ('al' in man) ? man.al[0] : man.fl[0]; 
       row.entry = State.parse(st).direction();
@@ -61,7 +61,7 @@
       let sts: State[] = [];
       let mdefs: ManDef[] =[];
       Object.keys($mannames).forEach(mn => {
-        flightdata.man(mn).subscribe(man=>{
+        flightdata.mans[mn].subscribe(man=>{
           if (kind=='intended') {
             sts = sts.concat(man.intended_template);
           } else {

@@ -3,7 +3,7 @@
 <script lang="ts">
 import {page} from '$app/stores';
 	import { flightdata } from '$lib/stores';
-  $: man = flightdata.man($page.params['manoeuvre']);
+  $: man = flightdata.mans[$page.params['manoeuvre']];
   import Plotly from '$lib/plots/Plotly.svelte'; 
   import {coloured_ribbons} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';    

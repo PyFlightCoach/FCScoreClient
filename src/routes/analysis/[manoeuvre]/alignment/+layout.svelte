@@ -7,7 +7,7 @@
   import {Tooltip, Input, BottomNav, BottomNavItem, Select} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
 
-  $: man = flightdata.man($page.params['manoeuvre']);
+  $: man = flightdata.mans[$page.params['manoeuvre']];
   $: manname = $man.mdef.info.short_name;
   let mannames = flightdata.mannames;
 

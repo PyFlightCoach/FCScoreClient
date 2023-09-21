@@ -36,8 +36,6 @@ export async function align(mdef: Record<string, any>, fl: Record<string, any>){
     }
 }
 
-
-
 export async function score(mdef: Record<string, any>, al: Record<string, any>, direction: number){
     const data: Record<string, any> = await server_func('score', {mdef, al, direction});
     return {
@@ -50,31 +48,14 @@ export async function score(mdef: Record<string, any>, al: Record<string, any>, 
     };
 }
 
-export async function example(man: string){
-    const data = await server_func('example', {man});
-    return {
-        status: 'example',
-        mdef: ManDef.parse(data.mdef),
-        al: State.parse_arr(data.al),
-        dist: data.dist,
-        intended: data.intended,
-        intended_template: State.parse_arr(data.intended_template),
-        corrected: data.corrected,
-        corrected_template: State.parse_arr(data.corrected_template),
-        score: ManoeuvreResult.parse(data.score)
-    };
-}
-
-
-export async function example_manlist(){
-    return server_func('example_manlist');
-}
-
-
 export async function create_fc_json(sts: State[], mdefs: ManDef[], name: string, category: string) {
     return await server_func('create_fc_json', {sts, mdefs, name, category});
 }
 
 export async function server_version(){
     return await server_func('version').then(v=>v.version);
+}
+
+export async function standard_f3a_mps(){
+    return await server_func('standard_f3a_mps')
 }
