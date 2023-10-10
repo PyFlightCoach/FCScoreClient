@@ -69,7 +69,7 @@ export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
     let info: string[] = [];
     for (let i = 0; i < result.keys.length; i++) {
         info.push(
-            'measurement = ' + (result.measurement.value[result.keys[i]].length() * scale).toFixed(2) +  
+            'measurement = ' + (result.measurement.value[result.keys[i]] * scale).toFixed(2) +  
             '<br>error = ' + (result.errors[i]*scale).toFixed(1).toString() + 
             '<br>visibility = ' + result.measurement.visibility[result.keys[i]].toFixed(2).toString() +
             '<br>downgrade = ' + result.dgs[i].toFixed(2).toString() 
@@ -79,7 +79,7 @@ export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
     return [
         {
             type: 'scatter',
-            y: result.measurement.value.map(p=>p.length()*scale),
+            y: result.measurement.value,
             name: 'measurement',
             line: {color: 'black', width: 1},
             hoverinfo:'skip',
@@ -104,14 +104,6 @@ export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
             ),
             name: 'downgradable error',
             line: {width: 3},
-            hoverinfo:'skip',
-            yaxis: 'y'
-        },
-        {
-            type: 'scatter',
-            y: result.measurement.expected.map(p=>p.length()*scale),
-            line: {color: 'black', width: 1, dash: 'dash'},
-            name: 'expected',
             hoverinfo:'skip',
             yaxis: 'y'
         },

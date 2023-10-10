@@ -59,36 +59,28 @@ export class ManDef{
     constructor (readonly info: ManInfo, readonly mps: Record<string, ManParm>, readonly eds: Record<string, any>) {}
     static parse(data: Record< string, any> ) {
         return new ManDef(
-        ManInfo.parse(data.info), 
-        parse_dict(data.mps, ManParm.parse),
-        data.eds,
+            ManInfo.parse(data.info), 
+            parse_dict(data.mps, ManParm.parse),
+            data.eds,
     )}
 }
 
 
 export class Measurement{
     constructor(
-        readonly value: Point[],
-        readonly expected: Point[],
+        readonly value: number[],
+        readonly expected: number,
+        readonly direction: Point[],
         readonly visibility: number[]
     ) {}
 
     static parse(data: Record<string, any> ) {
-        if (data.value[0].constructor == Object) {
-            return new Measurement(
-                data.value.map(p=>new Point(p.x, p.y, p.z)),
-                data.expected.map(p=>new Point(p.x, p.y, p.z)),
-                data.visibility
-            )
-        } else {
-            return new Measurement(
-                data.value.map(p=>new Point(p, 0, 0)),
-                data.expected.map(p=>new Point(p, 0, 0)),
-                data.visibility
-            )
-        }
-
-    }
+        return new Measurement(
+            data.value,
+            data.expected,
+            Object.values(data.direction).map(p => new Point(p.x, p.y, p.z)),
+            data.visibility
+    )}
 
 }
 
@@ -96,7 +88,7 @@ export class Measurement{
 export class Result{
     constructor (
         readonly name: string, 
-        readonly measurement: Measurement |  number[],
+        readonly measurement: Measurement,
         readonly sample: number[],
         readonly errors: number[],
         readonly dgs: number[],
@@ -104,9 +96,6 @@ export class Result{
         readonly total: number
     ) {}
     static parse(data: Record<string, any>) {
-        if (data == null) {
-            return new Result('', new Measurement([], [], []), [],[], [], '', 0);
-        }
         let m: Measurement | number[];
         if (typeof data.measurement === 'undefined') {
             m=[];
