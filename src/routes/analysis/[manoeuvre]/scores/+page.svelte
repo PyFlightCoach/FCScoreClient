@@ -16,9 +16,6 @@
 <p>Downgrades:</p>
 <p>Intra = {score.intra.total.toFixed(2)}</p>
 <p>Inter = {score.inter.total.toFixed(2)}</p>
-{#if $man.mdef.info.position=="CENTRE"}
-  <p>Centre = {score.centre.total.toFixed(2)} </p>
-{:else}
-  <p>Side Box = {score.side_box.total.toFixed(2)} </p>
-{/if}
-<p>Distance = {score.distance.total.toFixed(2)}</p>
+{#each Object.values(score.positioning.data) as pos}
+  <p>{pos.name} = {pos.total.toFixed(2)}</p>
+{/each}

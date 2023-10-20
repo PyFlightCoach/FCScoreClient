@@ -5,6 +5,7 @@
   import Templates from './templates.svelte';
   import Intra from './intra.svelte';
   import Inter from './inter.svelte';
+  import Positioning from './positioning.svelte';
   import { goto } from '$app/navigation';
 
 
@@ -28,7 +29,11 @@
       state={$man.al} 
       mdef={$man.mdef}
       /></TabItem>
-    <TabItem title="Positioning"><div>Positioning</div></TabItem>
+    <TabItem title="Positioning"><Positioning
+      results={$man.score.positioning}
+      state={$man.al}
+      info={$man.mdef.info}
+      /></TabItem>
     <TabItem title="Back" on:click={()=>{goto('/analysis')}}/>
   </Tabs>
 

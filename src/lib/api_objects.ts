@@ -133,8 +133,6 @@ export class Results{
 
 }
 
-
-
 export class ElementsResults{
     constructor(
         readonly data: Record<string, Results>, 
@@ -153,20 +151,14 @@ export class ManoeuvreResult{
     constructor (
         readonly inter: Results,
         readonly intra: ElementsResults,
-        readonly side_box: Result,
-        readonly top_box: Result,
-        readonly centre: Result,
-        readonly distance: Result,
+        readonly positioning: Results,
         readonly summary: Record<string, number>,
         readonly score: number
     ) {}
     static parse(data: Record<string, any>) {return new ManoeuvreResult(
         Results.parse(data.inter),
         ElementsResults.parse(data.intra),
-        Result.parse(data.side_box),
-        Result.parse(data.top_box),
-        Result.parse(data.centre),
-        Result.parse(data.distance),
+        Results.parse(data.positioning),
         data.summary,
         data.score
     )}
