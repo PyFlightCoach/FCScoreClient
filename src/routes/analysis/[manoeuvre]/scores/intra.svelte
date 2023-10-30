@@ -74,6 +74,22 @@
     );
   }
 
+  function biggest_dg(_intra: ElementsResults) {
+    let bigdg: number = 0;
+    Object.values(_intra.data).forEach(result => {
+      Object.values(result.data).forEach(res => {
+        if (res.total > bigdg) {bigdg = res.total;}
+      })
+    })
+    return bigdg;
+  }
+  $: bigdg = biggest_dg(intra);
+  
+  function get_colour(dg: number) {
+    const val = (255 * dg / bigdg).toFixed(0);
+    return 'rgb('.concat(val).concat(',0,0)');
+  }
+
 </script>
 
 
@@ -90,9 +106,9 @@
       <TableBodyRow>
         <TableBodyCell>{name}</TableBodyCell>
         {#each unique_fields as unfn}
-          <TableBodyCell on:click={(event)=>openpop(name, unfn)}>
+          <TableBodyCell tdclass='px-2 py-2 whitespace-nowrap font-medium'  on:click={(event)=>openpop(name, unfn)}>
             {#if unfn in result.data}
-              {result.data[unfn].total.toFixed(2)}
+              <div style:color={get_colour(result.data[unfn].total)} >{result.data[unfn].total.toFixed(2)}</div>
             {:else}
               -
             {/if}

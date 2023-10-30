@@ -28,17 +28,18 @@ export class ManInfo{
         readonly name: string, readonly short_name: string, 
         readonly k: number, readonly position: Position, 
         readonly start: BoxLocation, readonly end: BoxLocation, 
-        readonly centre_loc: number) {}
+        readonly centre_points: number[], readonly centred_els: number[][]) {}
+
     static parse(data: ManInfo) {return new ManInfo(
         data.name, data.short_name, data.k, data.position, BoxLocation.parse(data.start),
-        BoxLocation.parse(data.end), data.centre_loc
+        BoxLocation.parse(data.end), data.centre_points, data.centred_els
     )}
 
     static default() {return new ManInfo(
         'new manoeuvre', 'man', 0, "CENTRE",
         new BoxLocation("BTM", "UPWIND", "UPRIGHT"),
         new BoxLocation("BTM", "DRIVEN", "DRIVEN"),
-        -1
+        [],[]
     )}
 }
 

@@ -65,6 +65,24 @@ export const single_point = (x=0, y=0, z=0) => {
 }
 
 
+export const points = (pos: Point[], text: string[] | null = null): Record<string, any>[] => {
+    let trs: Record<string, any>[] = [];
+    for (let i = 0; i < pos.length; i++) {
+        trs.push({
+            type:'scatter3d',
+            x:[pos[i].x],
+            y:[pos[i].y],
+            z:[pos[i].z],
+            mode:'markers',
+            marker: {color: 'black', size: 3},
+            showlegend: false,
+            text: (text==null)?'':text[i]
+        });
+    }
+
+    return trs;
+}
+
 export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
     let info: string[] = [];
     for (let i = 0; i < result.keys.length; i++) {
@@ -79,7 +97,13 @@ export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
     return [
         {
             type: 'scatter',
-            y: result.measurement.value,
+            y: result.measurement.value.map(p=>{
+                if(p!=null) {
+                    return p*scale;
+                } else {
+                    return null;
+                }}
+            ),
             name: 'measurement',
             line: {color: 'black', width: 1},
             hoverinfo:'skip',
@@ -115,7 +139,11 @@ export const downgrade_info = (result: Record<string, any>, scale=1.0) => {
             hovertext: info,
             name: 'downgrades',
             mode: 'markers+text',
-            marker: {size:12, color:'red'},
+            marker: {
+                size:12, 
+                color:result.dgs,
+                colorscale: 'Reds'
+            },
             textposition:"bottom center",
             yaxis: 'y'
         }
@@ -132,4 +160,20 @@ export const criteria_info = (criteria: Record<string, any>, scale: number) => {
 
     return {type: 'scatter',x, y, line: {color: 'black'}}
 
+}
+
+export const boxtrace = () => {
+    const xlim=170*Math.tan(60 * Math.PI / 180);
+    const ylim=170;
+
+    return {
+        x:[0, xlim, 0,    -xlim, xlim, 0,   -xlim], 
+        y:[0, ylim, ylim,  ylim, ylim, ylim, ylim], 
+        z:[0, 0,    0,     0,    xlim, xlim, xlim], 
+        i:[0, 0, 0, 0, 0], 
+        j:[1, 2, 1, 3, 4], 
+        k:[2, 3, 4, 6, 6],
+        opacity:0.4,
+        color:'grey',
+        type: 'mesh3d'}
 }

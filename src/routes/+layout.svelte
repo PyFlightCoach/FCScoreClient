@@ -38,11 +38,18 @@
           <DropdownItem on:click={()=>{clearflight('/')}}>clear</DropdownItem>
         {/if}
       </Dropdown> 
-      <NavLi id="schedulemenu" class="cursor-pointer"><Chevron aligned>Schedule</Chevron></NavLi>
-      <Dropdown triggeredBy="#schedulemenu" class="w-44 z-20">
-        <DropdownItem href='/schedule/browse'>browse</DropdownItem>
-        <DropdownItem href='/schedule/create'>create</DropdownItem>
-        <DropdownItem href='/schedule/create/manoeuvre'>create manoeuvre</DropdownItem>
+      <!-- 
+        <NavLi id="schedulemenu" class="cursor-pointer"><Chevron aligned>Schedule</Chevron></NavLi>
+        <Dropdown triggeredBy="#schedulemenu" class="w-44 z-20">
+          <DropdownItem href='/schedule/browse'>browse</DropdownItem>
+          <DropdownItem href='/schedule/create'>create</DropdownItem>
+          <DropdownItem href='/schedule/create/manoeuvre'>create manoeuvre</DropdownItem>
+        </Dropdown>
+      -->
+      <NavLi id='info' class="curser-pointer"><Chevron aligned>Info</Chevron></NavLi>
+      <Dropdown triggeredBy="#info" class="w-44 z-20">
+        <DropdownItem href='/info'>global</DropdownItem>
+        <DropdownItem href='/info/current'>current page</DropdownItem>
       </Dropdown>
     </NavUl>
 

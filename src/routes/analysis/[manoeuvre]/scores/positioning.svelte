@@ -4,20 +4,38 @@
 
   export let results: Results;
   export let state: State[];
-  export let info: ManInfo[];
+  export let info: ManInfo;
 
   import {split_states, type State, Point} from '$lib/geometry';
   import type { Results, ManInfo } from "$lib/api_objects";
   import { Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
   import Plotly from '$lib/plots/Plotly.svelte'; 
-  import {coloured_ribbons, criteria_info, single_point, downgrade_info} from '$lib/plots/traces';
+  import {coloured_ribbons, criteria_info, points, boxtrace} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';
   
+
   $: sts = split_states(state)
 
-  
-  //$: points: Point[] = [];
+  const get_points = (states: Record<string, State[]>) => {
+    let sts: State[][] = Object.values(states);
+    return info.centre_points.map(i=>{
+      let el = sts[i].at(-1);
+      return el.pos();
+    })
+  }
 
+  const get_el_points = (states: Record<string, State[]>) => {
+    let sts: State[][] = Object.values(states);
+    return info.centred_els.map(i=>{
+      let el = sts[i[0]+1];
+      return el[Math.round(i[1] * el.length)].pos()
+    })
+  }
+
+  $: centre_points = get_points(sts);
+  $: el_points = get_el_points(sts);
+  // , info.centre_points.map(i=>'centre point '.concat(i.toString()))
+  // info.centred_els.map(i=>'centred element '.concat(i[0].toString()))
 </script>
 
 <div>
@@ -43,5 +61,14 @@
     {/each}
   </Table>
 
-  <Plotly data={coloured_ribbons(sts,2)} layout={layout3d}/>
+  <Plotly 
+    data={
+      coloured_ribbons(sts,2)
+      .concat(points(centre_points, info.centre_points.map(i=>'centre point '.concat(i.toString())) )) 
+      .concat(points(el_points, info.centred_els.map(i=>'centred el '.concat(i[0].toString()))))
+      .concat([boxtrace()])
+    } 
+    layout={layout3d}
+  />
+
 </div>

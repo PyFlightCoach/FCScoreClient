@@ -4,6 +4,7 @@
     import Plotly from '$lib/plots/Plotly.svelte'; 
     import {coloured_ribbons, criteria_info, single_point, downgrade_info} from '$lib/plots/traces';
     import {layout3d} from '$lib/plots/layouts';    
+	import { error } from '@sveltejs/kit';
     export let result: Result;
     export let flown: State[];
     export let template: State[];
@@ -58,7 +59,10 @@
         layout={{
             yaxis:{
                 title:'measurement',
-                range: [0, Math.max(...result.measurement.value) * 1.5 * scale]
+                range: [
+                    Math.min(...result.measurement.value, 0) * 1.5 * scale, 
+                    Math.max(...result.measurement.value, 0) * 1.5 * scale
+                ]
             },
             yaxis2:{
                 title:'visibility',
