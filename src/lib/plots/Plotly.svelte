@@ -1,16 +1,16 @@
 
-<script lang="ts">
+<script>
 	/*https://github.com/aknakos/sveltekit-plotly/tree/master*/
 	import { PlotlyLib } from '$lib/stores';
 
 	import { createEventDispatcher, onMount } from 'svelte';
 	const dispatch = createEventDispatcher();
 
-	export let id: string = 'plot-' + Math.floor(Math.random() * 100).toString();
-	export let data: Array<Record<string, any>>;
-	export let layout: Record<string, any> = {};
-	export let config: Record<string, any> = {};
-	export let loaded: boolean = false;
+	export let id = 'plot-' + Math.floor(Math.random() * 100).toString();
+	export let data;
+	export let layout = {};
+	export let config = {};
+	export let loaded = false;
 	export let reloadPlot = 0;
 
 	function init() {
@@ -73,5 +73,5 @@
 
 
 <style>
-	div {height: 100%; width: 100%}
+	div {height: 100%; width: 100%; position:fixed;}
 </style>

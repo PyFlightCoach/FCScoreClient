@@ -54,9 +54,9 @@
     </NavUl>
 
   </Navbar>
-  	<div id='page'>
-		<slot />
-	</div>
+  <div id='page'>
+    <slot />
+  </div>
 </div>
 
 <style>

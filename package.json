@@ -38,6 +38,7 @@
 		"flowbite": "^1.8.0",
 		"flowbite-svelte": "^0.40.2",
 		"flowbite-svelte-icons": "^0.3.6",
+		"obj-file-parser": "^0.6.2",
 		"plotly.js-dist": "^2.25.0",
 		"tailwind-merge": "^1.14.0"
 	}

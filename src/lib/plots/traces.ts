@@ -1,8 +1,10 @@
 
 import {State, Point, Quaternion} from '$lib/geometry';
 import {linspace} from '$lib/arrays';
+import ObjFile from 'obj-file-parser';
 
-export const ribbon = (st: State[], sp: number) => {
+
+export const ribbon = (st: State[], sp: number, props: Record<string, any>={}) => {
     const semisp = sp / 2;
 
     let points: Point[] = [];
@@ -23,7 +25,7 @@ export const ribbon = (st: State[], sp: number) => {
         data.x.push(val.x); data.y.push(val.y); data.z.push(val.z);
     })
 
-    return {...data, i:_i, j:_j, k:_k, type: 'mesh3d'};
+    return {...data, i:_i, j:_j, k:_k, type: 'mesh3d', ...props};
 };
 
 
@@ -176,4 +178,81 @@ export const boxtrace = () => {
         opacity:0.4,
         color:'grey',
         type: 'mesh3d'}
+}
+
+
+export class OBJ{
+    vertices: Point[];
+    faces: number[][];
+    normals: Point[];
+    constructor(vertices: Point[], faces: number[][], normals: Point[]) {
+        this.vertices = vertices;
+        this.faces = faces;
+        this.normals = normals;
+    }
+    
+    static from_objfile(file: string) {
+        const obj = new ObjFile(file).parse();
+        const vertices = obj.models[0].vertices.map(v=>new Point(v.x, v.y, v.z));
+        const faces = obj.models[0].faces.map(f=>[f.vertices[0].vertexIndex, f.vertices[1].vertexIndex, f.vertices[2].vertexIndex]);
+        const normals = obj.models[0].vertexNormals.map(v=>new Point(v.x, v.y, v.z));
+
+        return new OBJ(vertices, faces, normals);
+    }
+
+    static parse(file: string, offset:Point|null=null, rotate:Quaternion|null=null) {
+        const lines = file.split('\n')
+        let vertices: Point[] = [];
+        const faces: number[][] = [];
+        let normals: Point[] = [];
+
+        lines.forEach((line) => {
+            const tokens = line.split(' ');
+            if (tokens[0] == 'v') {
+                vertices.push(new Point(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3])));
+            } else if (tokens[0] == 'f') {
+                faces.push(tokens.slice(1).map(t=>parseInt(t)-1));
+            } else if (tokens[0] == 'vn') {
+                normals.push(new Point(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3])));
+            }
+        })
+        if (rotate!=null) {
+            vertices = vertices.map(v=>rotate.transform_point(v));
+            normals.forEach(n=>rotate.transform_point(n));
+        }
+        if (offset!=null) {
+            vertices = vertices.map(v=>v.offset(offset));
+        }
+
+
+        return new OBJ(vertices, faces, normals);
+
+    }
+
+    scale(s: number) {
+        return new OBJ(this.vertices.map(v=>v.mul(s)), this.faces, this.normals);
+    }
+
+    to_mesh3d(p: Point, q: Quaternion, props: Record<string, any>={}) {
+        const vertices = this.vertices.map(v=>p.offset(q.transform_point(v)));
+        return {
+            x: vertices.map(v=>v.x), 
+            y: vertices.map(v=>v.y), 
+            z: vertices.map(v=>v.z), 
+            i: this.faces.map(f=>f[0]), 
+            j: this.faces.map(f=>f[1]), 
+            k: this.faces.map(f=>f[2]),
+            type: 'mesh3d',
+            showscale: false,
+            ...props,
+            //flatshading: true,
+            lighting: {ambient: 0.5, diffuse: 1.0, fresnel: 0.2, specular: 0.1, roughness: 0.1, facenormalsepsilon: 1e-6, vertexnormalsepsilon: 1e-12},
+            lightposition: {x: 100, y: 0, z: 1000}
+        }
+    }
+}
+
+
+export const modeltrace = (sts: State[], model: OBJ, props: Record<string, any>={}) => {
+    return sts.map(st=>model.to_mesh3d(st.pos(), st.att(), props));
 }

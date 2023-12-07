@@ -1,8 +1,11 @@
-import { writable } from 'svelte/store';
-import type { Writable } from 'svelte/store';
+import { writable, readable } from 'svelte/store';
+import type { Writable, Readable } from 'svelte/store';
+import { align, score } from '$lib/api_calls';
+import {OBJ} from '$lib/plots/traces';
+
 
 export const PlotlyLib = writable(null);
-import { align, score } from '$lib/api_calls';
+
 
 
 class FlightData {
@@ -115,3 +118,6 @@ export const mouse = writable({ x: 0, y: 0 });
 export const flightmenu: Writable<Record<string, any>> = writable({});
 export const schedulemenu: Writable<Record<string, any>> = writable({});
 
+
+
+//export const colddraft: Readable<OBJ> = readable(await loadobj());
