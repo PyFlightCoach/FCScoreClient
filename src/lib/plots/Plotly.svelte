@@ -39,7 +39,6 @@
 
 	const updatePlot = (node, data, layout, config, reloadPlot) => {
 		return $PlotlyLib.react(node, data, layout, config).then(() => {
-			console.debug('update ploty', data);
 			loaded = true;
 		});
 	};

@@ -2,31 +2,34 @@
 
   export let man: Record<string, any> = {};
   import Plotly from '$lib/plots/Plotly.svelte'; 
-  import {coloured_ribbons, vectors} from '$lib/plots/traces';
+  import {coloured_ribbons, ribbon} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';    
   import {Checkbox, Tooltip, Input, BottomNav, BottomNavItem, Select} from 'flowbite-svelte';
+  import Plotsec from '$lib/plots/Plotsec.svelte';
+  import { colddraft } from '$lib/stores';
+  import type {State} from '$lib/geometry';
 
-  let states:Record<string, any>={};
+  let all_traces:Record<string, any>={
+    flown: ribbon(man.al, 3, {name:'flown', color:'red', showlegend:true}),
+    intended: ribbon(man.intended_template, 3, {name:'intended', color:'blue', showlegend:true}),
+    corrected: ribbon(man.corrected_template, 3, {name:'corrected', color:'green', showlegend:true})
+  };
+  
   let fl=true; let intended=true; let corrected=true;
-  $: {
-    states = {}
-    if (fl) {states['flown'] = man.al };
-    if (intended) {states['intended'] = man.intended_template };
-    if (corrected) {states['corrected'] = man.corrected_template };
-  }
-  //
+  let traces = Object.values(all_traces).map(v=>v);
+  
 </script>
 
 
 <div id='parent'>
   
-  <Plotly data={coloured_ribbons(states, 5)} layout={layout3d}/>
-  
-  <BottomNav classInner="grid-cols-3" >
+  <Plotly data={traces} layout={layout3d}  />
+  <BottomNav classInner="grid-cols-5" >
     <BottomNavItem><Checkbox bind:checked={fl}>Flown</Checkbox></BottomNavItem>
     <BottomNavItem><Checkbox bind:checked={intended}>intended</Checkbox></BottomNavItem>
     <BottomNavItem><Checkbox bind:checked={corrected}>corrected</Checkbox></BottomNavItem>
-  </BottomNav>  
+  </BottomNav>
+  
   
   
 
@@ -34,11 +37,7 @@
 
 
 <style>
-  #parent {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    grid-template-rows: 800px max-content;
-  }
+  #parent {height: 100%; position:fixed}
 
 
 </style>

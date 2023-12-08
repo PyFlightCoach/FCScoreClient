@@ -118,6 +118,4 @@ export const mouse = writable({ x: 0, y: 0 });
 export const flightmenu: Writable<Record<string, any>> = writable({});
 export const schedulemenu: Writable<Record<string, any>> = writable({});
 
-
-
-//export const colddraft: Readable<OBJ> = readable(await loadobj());
+export const colddraft: Writable<OBJ|null> = writable(null);

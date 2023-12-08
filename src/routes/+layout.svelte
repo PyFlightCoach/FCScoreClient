@@ -3,8 +3,10 @@
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem, Chevron,
     DropdownDivider, Helper, NavHamburger} from 'flowbite-svelte'
   import { mouse } from '$lib/stores';
-  import {flightdata} from '$lib/stores';
-
+  import {flightdata, colddraft} from '$lib/stores';
+  import { OBJ } from '$lib/plots/traces.js';
+  export let data;
+  
   let mannanes = flightdata.mannames;
   let name = flightdata.name;
   const clearflight = (target: string = '/') => {
@@ -15,7 +17,12 @@
   function handleMousemove(event) {
     $mouse = {x: event.clientX, y: event.clientY}
   }
-
+  
+  $: if ($colddraft==null) {
+    $colddraft = OBJ.parse_dict(data.colddraft);
+  }
+  
+ 
 </script>
 
 
