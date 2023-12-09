@@ -37,7 +37,7 @@
 
 
 <style>
-  #parent {height: 100%; position:fixed}
+  #parent {height: 100%; width:100%; position:fixed}
 
 
 </style>

@@ -94,7 +94,7 @@
     <BottomNavItem id="stepsize"><Input placeholder='step' bind:value={step}/></BottomNavItem>
     <BottomNavItem  id="adjustback" on:click={() => {editsplit(-Number(step), element)}}>&#60</BottomNavItem>
     <BottomNavItem  id="adjustfor" on:click={() => {editsplit(Number(step), element)}}>&#62</BottomNavItem>
-    <BottomNavItem  id="back" on:click={() => {goto('/analysis')}}>back</BottomNavItem>
+    <BottomNavItem  id="back" on:click={() => {goto('/analysis/'+data.analysis_name)}}>back</BottomNavItem>
   </BottomNav>
   <Tooltip triggeredBy="[id='stepsize']">Enter step size in seconds</Tooltip>
   <Tooltip triggeredBy="[id='selectelement']">Select element to edit</Tooltip>
@@ -107,5 +107,5 @@
 </div>
 
 <style>
-  #parent {height: 100%; position:fixed}
+  #parent {height: 100%; width:100%; position:fixed}
 </style>

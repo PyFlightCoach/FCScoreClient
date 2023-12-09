@@ -60,7 +60,7 @@
         </TableBodyRow>
     {/each}
   </Table>
-
+  <div id='parent'>
   <Plot 
     data={
       coloured_ribbons(sts,2)
@@ -71,5 +71,12 @@
     layout={layout3d}
     fillParent={true}
   />
-
 </div>
+</div>
+
+
+<style>
+  #parent {height: 800px; width:100%; position:fixed}
+
+
+</style>

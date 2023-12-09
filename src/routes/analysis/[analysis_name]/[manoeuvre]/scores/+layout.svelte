@@ -34,6 +34,6 @@
       state={$man.al}
       info={$man.mdef.info}
       /></TabItem>
-    <TabItem title="Back" on:click={()=>{goto('/analysis')}}/>
+    <TabItem title="Back" on:click={()=>{goto('/analysis/'+data.analysis_name)}}/>
   </Tabs>
 
