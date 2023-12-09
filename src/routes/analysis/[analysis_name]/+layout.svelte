@@ -3,9 +3,10 @@
   import {flightdata} from '$lib/stores';
   import SideBar from '$lib/SideBar.svelte';
   import ManSummary from './ManSummary.svelte';
-  
+  export let data;
   let mannames = flightdata.mannames;
 
+  
 </script>
 
 
@@ -16,7 +17,7 @@
       <div>Status</div>
       <div>Score</div>
       {#each Object.keys($mannames) as manname}
-        <ManSummary manname={manname}/>
+        <ManSummary manname={manname} analysis_name={data.analysis_name}/>
       {/each}
   </div>
 </SideBar>

@@ -1,5 +1,5 @@
 <script lang='ts'>
-  import {page} from '$app/stores';
+  
 	import { flightdata } from '$lib/stores';
   import { Tabs, TabItem } from 'flowbite-svelte';
   import Templates from './templates.svelte';
@@ -7,9 +7,9 @@
   import Inter from './inter.svelte';
   import Positioning from './positioning.svelte';
   import { goto } from '$app/navigation';
+  export let data;
 
-
-  $: man = flightdata.mans[$page.params['manoeuvre']];
+  $: man = flightdata.mans[data.mname];
 
 </script>
 

@@ -60,7 +60,7 @@
 {#if $name}
   <p>category={$sinfo.category}</p> 
   <p>schedule={$sinfo.name}</p>
-  <Button on:click={convert_json} href='/analysis'>
+  <Button on:click={convert_json} href={'/analysis/' + $sinfo.name}>
     Prepare Analysis
   </Button>
 {/if}

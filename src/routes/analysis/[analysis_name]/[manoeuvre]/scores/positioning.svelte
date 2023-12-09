@@ -9,7 +9,7 @@
   import {split_states, type State, Point} from '$lib/geometry';
   import type { Results, ManInfo } from "$lib/api_objects";
   import { Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-  import Plotly from '$lib/plots/Plotly.svelte'; 
+  import Plot from 'svelte-plotly.js';
   import {coloured_ribbons, criteria_info, points, boxtrace} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';
   
@@ -61,7 +61,7 @@
     {/each}
   </Table>
 
-  <Plotly 
+  <Plot 
     data={
       coloured_ribbons(sts,2)
       .concat(points(centre_points, info.centre_points.map(i=>'centre point '.concat(i.toString())) )) 
@@ -69,6 +69,7 @@
       .concat([boxtrace()])
     } 
     layout={layout3d}
+    fillParent={true}
   />
 
 </div>

@@ -1,6 +1,5 @@
 <script lang='ts'>
-  
-  import Plotly from '$lib/plots/Plotly.svelte'; 
+  import Plot from 'svelte-plotly.js';
   import {alignment_traces} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';  
   import {split_states, type State} from '$lib/geometry';
@@ -19,19 +18,31 @@
   
   $: states = split_states(state);
 
-  let element = "select element";
+  let element = "Select Element";
   $: if (highlight!=null) {
     element=Object.keys(states)[highlight]
   };
 
+  const change_element = (ename: string) => {
+    if (ename == 'Select Element') {
+      highlight=null; 
+      show_models=false;
+    } else {
+      highlight=Object.keys(states).indexOf(ename); 
+      show_models=true;
+    }
+  }
   
 </script>
 
 <div id="parent">
   
-  <Plotly 
+  <Plot 
     data={alignment_traces(states, show_models, show_box, $colddraft, nmodels, highlight)} 
     layout={layout3d}
+    fillParent={true}
+    on:click={e => {change_element(e.detail.points[0].data.name)}}
+        
   />
 
   {#if show_controls}
@@ -39,15 +50,7 @@
       <Select 
         bind:value={element} 
         items={['Select Element'].concat(...Object.keys(states)).map((el) => {return {value: el, name: el};})}
-        on:change={() => {
-          if (element == 'Select Element') {
-            highlight=null; 
-            show_models=false;
-          } else {
-            highlight=Object.keys(states).indexOf(element); 
-            show_models=true;
-          }
-        }}
+        on:change={()=>change_element(element)}
       />
       <slot />
     </BottomNav>
@@ -58,5 +61,5 @@
 
 
 <style>
-  #parent {height: 100%; position:fixed}
+  #parent {height: 100%; width: 100%; position:fixed}
 </style>

@@ -1,7 +1,7 @@
 <script lang='ts'>
 	import type {Result} from '$lib/api_objects';
     import type {State,  Point} from '$lib/geometry';
-    import Plotly from '$lib/plots/Plotly.svelte'; 
+    import Plot from 'svelte-plotly.js';
     import {coloured_ribbons, criteria_info, single_point, downgrade_info} from '$lib/plots/traces';
     import {layout3d} from '$lib/plots/layouts';    
 	import { error } from '@sveltejs/kit';
@@ -42,9 +42,9 @@
         Criteria:   {downgrade.criteria.kind}<br/>
     </div>
 
-    <div id='plotone'><Plotly data={traces_3d} layout={layout3d}/></div>
+    <div id='plotone'><Plot data={traces_3d} layout={layout3d} fillParent={true}/></div>
 
-    <div id='plottwo'><Plotly 
+    <div id='plottwo'><Plot 
         data={[criteria_info(downgrade.criteria, scale)]} 
         layout={{
             yaxis:{title:'downgrade',range:[0,10]}, 
@@ -52,9 +52,10 @@
             autosize: true,
             margin: {l:30, r:0, t:0, b:30},
         }}
+        fillParent={true}
     /></div>
 
-    <div id='plotthree'><Plotly 
+    <div id='plotthree'><Plot 
         data={downgrade_info(result, scale)}
         layout={{
             yaxis:{
@@ -75,6 +76,7 @@
             autosize: true,
             margin: {l:30, r:30, t:0, b:0},
         }}
+        fillParent={true}
     /></div>
 
 </div>

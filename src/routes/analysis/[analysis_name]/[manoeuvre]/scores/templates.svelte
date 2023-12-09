@@ -1,7 +1,7 @@
 <script lang='ts'>
 
   export let man: Record<string, any> = {};
-  import Plotly from '$lib/plots/Plotly.svelte'; 
+  import Plot from 'svelte-plotly.js';
   import {coloured_ribbons, ribbon} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';    
   import {Checkbox, Tooltip, Input, BottomNav, BottomNavItem, Select} from 'flowbite-svelte';
@@ -23,7 +23,7 @@
 
 <div id='parent'>
   
-  <Plotly data={traces} layout={layout3d}  />
+  <Plot data={traces} layout={layout3d} fillParent={true} />
   <BottomNav classInner="grid-cols-5" >
     <BottomNavItem><Checkbox bind:checked={fl}>Flown</Checkbox></BottomNavItem>
     <BottomNavItem><Checkbox bind:checked={intended}>intended</Checkbox></BottomNavItem>

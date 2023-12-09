@@ -5,6 +5,7 @@
   import { goto } from '$app/navigation';
   import {flightdata} from '$lib/stores';
   import {Button, Dropdown, Chevron, DropdownItem} from 'flowbite-svelte';
+  export let analysis_name: string;
 
   $: man = flightdata.mans[manname];
   $: aligned = !('fl' in $man); 
@@ -20,11 +21,11 @@
     <Button  color="alternative" ><Chevron>{manname}</Chevron></Button>
     <Dropdown bind:open={dropdownOpen}>
       {#if aligned}
-        <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + manname + '/alignment');}}>edit alignment</DropdownItem>
+        <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + analysis_name + '/' + manname + '/alignment');}}>edit alignment</DropdownItem>
         {#if !scored}
           <DropdownItem  on:click={() => {dropdownOpen=false; flightdata.scoreman(manname);}}>calculate scores</DropdownItem>
         {:else}
-          <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + manname + '/scores');}}>score info</DropdownItem>
+          <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + analysis_name + '/' + manname + '/scores');}}>score info</DropdownItem>
         {/if}
       {:else}
         <DropdownItem  on:click={()=> {dropdownOpen=false; flightdata.alignman(manname);}}>Align</DropdownItem>

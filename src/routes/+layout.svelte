@@ -41,9 +41,11 @@
         {#if Object.values(flightdata.mans).length > 0}
           <DropdownDivider/>
           <Helper>{$name}</Helper>
-          <DropdownItem href='/analysis'>analysis</DropdownItem>
+          <DropdownItem href={'/analysis/' + $name}>analysis</DropdownItem>
           <DropdownItem on:click={()=>{clearflight('/')}}>clear</DropdownItem>
-        {/if}
+        {:else}
+        <DropdownItem href='/analysis/example'>example</DropdownItem>
+        {/if} 
       </Dropdown> 
       <!-- 
         <NavLi id="schedulemenu" class="cursor-pointer"><Chevron aligned>Schedule</Chevron></NavLi>

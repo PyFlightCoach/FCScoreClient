@@ -1,12 +1,8 @@
 import { writable, readable } from 'svelte/store';
 import type { Writable, Readable } from 'svelte/store';
 import { align, score } from '$lib/api_calls';
-import {OBJ} from '$lib/plots/traces';
-
 
 export const PlotlyLib = writable(null);
-
-
 
 class FlightData {
     name: Writable<string|null> = writable(null);

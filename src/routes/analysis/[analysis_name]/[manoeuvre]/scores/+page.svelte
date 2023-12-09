@@ -1,9 +1,8 @@
 <script lang='ts'>
 
-  import {page} from '$app/stores';
 	import { flightdata } from '$lib/stores';
-
-  $: man = flightdata.mans[$page.params['manoeuvre']];
+  export let data;
+  $: man = flightdata.mans[data.mname];
   $: score = $man.score;
  
 
