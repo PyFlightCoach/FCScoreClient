@@ -2,15 +2,23 @@ import { State, Point, Quaternion } from '$lib/geometry';
 import { linspace } from '$lib/arrays';
 import ObjFile from 'obj-file-parser';
 
-export const ribbon = (st: State[], sp: number, props: Record<string, any> = {}) => {
+export const ribbon = (st: State[], sp: number, expandprops: Record<string, any[]>={}, props: Record<string, any> = {}) => {
 	const semisp = sp / 2;
 
 	let points: Point[] = [];
 
-	st.forEach((_s: State) => {
-		points.push(_s.body_to_world(new Point(0, semisp, 0)));
-		points.push(_s.body_to_world(new Point(0, -semisp, 0)));
-	});
+
+	Object.keys(expandprops).forEach(key => {
+		props[key] = [];
+	})
+
+	for (let i = 0; i < st.length; i++) {
+
+		points.push(st[i].body_to_world(new Point(0, semisp, 0)));
+		points.push(st[i].body_to_world(new Point(0, -semisp, 0)));
+
+	}
+
 
 	let _i: number[] = [];
 	let _j: number[] = [];
@@ -22,6 +30,13 @@ export const ribbon = (st: State[], sp: number, props: Record<string, any> = {})
 		_i.push(i + 1);
 		_j.push(i + 3);
 		_k.push(i + 2);
+		Object.entries(expandprops).forEach(([key, val]) => {
+			props[key].push(val[i]);
+			props[key].push(val[i]);
+			props[key].push(val[i]);
+			props[key].push(val[i]);
+		})
+
 	}
 
 	let data: Record<string, number[]> = { x: [], y: [], z: [] };
@@ -303,7 +318,7 @@ export const downsample_states = (st: State[], n:number) => {
 	return sts;
 };
 
-import {colours} from '$lib/plots/styling';
+import {d3Colors} from '$lib/plots/styling';
 
 export const alignment_traces = (sts: Record<string, State[]>, showmodels: boolean, 
     showbox: boolean, obj: OBJ|null, nmodels: number, hid: number|null) => {
@@ -315,7 +330,7 @@ export const alignment_traces = (sts: Record<string, State[]>, showmodels: boole
       let v = Object.values(sts)[i];
       
       const props = {
-        color: colours[i % colours.length],
+        color: d3Colors[i % d3Colors.length],
         name: k
       };
       if ((i == hid) || (hid == null)) {
@@ -329,9 +344,9 @@ export const alignment_traces = (sts: Record<string, State[]>, showmodels: boole
         }
         
 
-        trs.push(ribbon(v, 3, {opacity: 0.8, showlegend:true, ...props}));
+        trs.push(ribbon(v, 3, {}, {opacity: 0.8, showlegend:false, ...props}));
       } else {
-        trs.push(ribbon(v, 3, {opacity: 0.2, ...props}));
+        trs.push(ribbon(v, 3, {}, {opacity: 0.2, ...props}));
       } 
       
     }

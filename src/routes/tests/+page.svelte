@@ -1,5 +1,0 @@
-
-
-
-
-<div>Test page</div>

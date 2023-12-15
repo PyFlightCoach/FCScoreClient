@@ -1,9 +1,9 @@
 <script lang="ts">
   import '../app.postcss';
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem, Chevron,
-    DropdownDivider, Helper, NavHamburger} from 'flowbite-svelte'
+    DropdownDivider, Helper, NavHamburger, Button, ButtonGroup} from 'flowbite-svelte'
   import { mouse } from '$lib/stores';
-  import {flightdata, colddraft} from '$lib/stores';
+  import {flightdata, colddraft, navitems, NavContent} from '$lib/stores';
   import { OBJ } from '$lib/plots/traces.js';
   export let data;
   
@@ -35,6 +35,23 @@
     </NavBrand>
 	<NavHamburger on:click={toggle} />
     <NavUl {hidden}>
+      
+      {#each $navitems as ni}
+        <NavLi class="cursor-pointer" href={ni.href} on:click={ni.onclick}>{ni.name}</NavLi>
+      {/each}
+      
+      
+    </NavUl>
+    <NavUl {hidden}>
+      {#if Object.keys($mannanes).length > 0}
+        <NavLi id="manoeuvremenu" class="cursor-pointer"><Chevron aligned>Manoeuvres</Chevron></NavLi>
+        <Dropdown triggeredBy="#manoeuvremenu" class="w-44 z-20">
+          {#each Object.keys($mannanes) as mname}
+            <DropdownItem href={'/analysis/example/' + mname + '/summary'}>{mname}</DropdownItem>
+          {/each}    
+        </Dropdown>
+      {/if} 
+
       <NavLi id="flightmenu" class="cursor-pointer"><Chevron aligned>Flight</Chevron></NavLi>
       <Dropdown triggeredBy="#flightmenu" class="w-44 z-20">
         <DropdownItem on:click={()=>{clearflight('/upload')}}>load</DropdownItem>
@@ -44,7 +61,7 @@
           <DropdownItem href={'/analysis/' + $name}>analysis</DropdownItem>
           <DropdownItem on:click={()=>{clearflight('/')}}>clear</DropdownItem>
         {:else}
-        <DropdownItem href='/analysis/example'>example</DropdownItem>
+          <DropdownItem href='/analysis/example'>example</DropdownItem>
         {/if} 
       </Dropdown> 
       <!-- 
@@ -55,7 +72,7 @@
           <DropdownItem href='/schedule/create/manoeuvre'>create manoeuvre</DropdownItem>
         </Dropdown>
       -->
-      <NavLi id='info' class="curser-pointer"><Chevron aligned>Info</Chevron></NavLi>
+      <NavLi id='info' class="cursor-pointer"><Chevron aligned>Info</Chevron></NavLi>
       <Dropdown triggeredBy="#info" class="w-44 z-20">
         <DropdownItem href='/info'>global</DropdownItem>
         <DropdownItem href='/info/current'>current page</DropdownItem>

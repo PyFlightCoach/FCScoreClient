@@ -6,7 +6,7 @@
 
   import { Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import type {ElementsResults, Result} from '$lib/api_objects';
-  import IntraPlot from './intra_plot.svelte';
+  import IntraPlot from '../scores/intra_plot.svelte';
   import {split_states, type State} from '$lib/geometry';
   import { Tooltip } from 'flowbite-svelte';
   

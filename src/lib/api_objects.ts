@@ -67,6 +67,7 @@ export class ManDef{
 }
 
 
+
 export class Measurement{
     constructor(
         readonly value: number[],
@@ -115,6 +116,8 @@ export class Result{
     }
 }
 
+
+
 export class Results{
     constructor(
         readonly name: string, 
@@ -131,7 +134,6 @@ export class Results{
             data.total
         )
     }
-
 }
 
 export class ElementsResults{
@@ -146,7 +148,63 @@ export class ElementsResults{
         data.summary,
         data.total
     )}
+
+    all_fields() {
+        const af: string[] = [];
+        $: Object.values(this.data).forEach((results) => {
+            Object.values(results.data).forEach(result => {
+                af.push(result.name);
+            });
+        });
+        return Array.from(new Set(af));
+    }
+
+    get_downgrades(field='Total') {
+        const scores: Record<string, number> = {};
+        Object.entries(this.data).forEach(([k, v]) => {
+            if (field == 'Total') {
+                scores[k] = v.total;
+            } else if (field in v.data) {
+                scores[k] = v.data[field].total;
+            } else {
+                scores[k] = 0;
+            } 
+        })
+        
+        return scores
+    }
+
+    check_field(field='Total') {
+        const scores: Record<string, boolean> = {};
+        Object.entries(this.data).forEach(([k, v]) => {
+            if (field == 'Total') {
+                scores[k] = true;
+            } else if (field in v.data) {
+                scores[k] = true;
+            } else {
+                scores[k] = false;
+            } 
+        })
+        
+        return scores
+    }
+
+    summaries() {
+        const summaries: Record<string, Record<string, number|null>> = {};
+        const allfields: string[] = this.all_fields();
+
+        Object.entries(this.data).forEach(([k, v]) => {
+            summaries[k] = {}
+            allfields.forEach(f => {
+                if (f in v.data) {summaries[k][f] = v.data[f].total;} else {summaries[k][f] = null;}
+            });
+            summaries[k]['Total'] = v.total;
+        })
+        return summaries;
+    }
 }
+
+
 
 export class ManoeuvreResult{
     constructor (
@@ -165,3 +223,43 @@ export class ManoeuvreResult{
     )}
 }
 
+
+
+
+
+export function getEl(ename: string, man: Record<string, any>) {
+    if (ename == 'entry_line') {
+        return man.entry_line;
+    }
+    for (let i=0; i<man.elements.length; i++) {
+        if (man.elements[i].uid == ename) {
+        return man.elements[i];
+        }
+    }
+}
+
+function remove_ret(name:string, data: Record<string, any>) {
+    let outp: Record<string, any> = {};
+    Object.entries(data).forEach(v=>{
+        if (v[0] != name) {
+        outp[v[0]] = v[1];
+        }
+    });
+    return outp;
+}
+
+export function elInfo(name: string, man: Record<string, any>) {
+    const el = remove_ret('scoring', getEl(name, man));
+
+    function format(input: any) {
+      if (typeof input == 'number') {
+        return input.toFixed(2)
+      } else {
+        return String(input)
+      }
+    }
+
+    return Object.entries(el).map(
+      row=>String(row[0]) + '=' + format(row[1])
+    );
+}

@@ -1,4 +1,20 @@
 
+export const max = (arr: number[]) => {
+    return arr.reduce((a, b) => Math.max(a, b), -Infinity);
+}
+
+export const min = (arr: number[]) => {
+    return arr.reduce((a, b) => Math.min(a, b), Infinity);
+}
+
+export const sum = (arr: number[]) => {
+    return arr.reduce((a, b) => (a + b));
+}
+
+export const mean = (arr: number[]) => {
+    return sum(arr) / arr.length;
+}
+
 export class Point {
     x: number; y: number; z: number;
     constructor(x: number, y: number, z: number) {this.x = x; this.y = y; this.z = z;};
@@ -20,7 +36,25 @@ export class Point {
         );
     }
 
-    mul (val: number): Point {return new Point(val * this.x, val * this.y, val * this.z);}
+    mul (val: number|Point): Point {
+        if (typeof(val) == 'number') {
+            return new Point(val * this.x, val * this.y, val * this.z);
+        } else if (typeof(val) == typeof(this)) {
+            return new Point(val.x * this.x, val.y * this.y, val.z * this.z);
+        } else {
+            throw new Error('Invalid type for Point.mul')
+        }
+    }
+    
+    div(val: number|Point) {
+        if (typeof val == 'number') {
+            return new Point(this.x / val, this.y / val, this.z / val);
+        } else if (typeof(val) == typeof(this)) {
+            return new Point(this.x / val.x, this.y / val.x, this.z / val.z);
+        } else {
+            throw new Error('Invalid');
+        }
+    }
 
     static add (a: Point, b: Point): Point {
         return new Point(a.x + b.x, a.y + b.y, a.z + b.z);
@@ -28,13 +62,35 @@ export class Point {
 
     offset(other: Point): Point {return Point.add(this, other);}
 
-    static sum(ps: Point[]): Point {
-        let op = new Point(0,0,0);
-        ps.forEach((p) => {op=Point.add(op, p);});
-        return op;
+    static sum(ps: Point[]): Point {return new Points(ps).sum();}
+
+    static distance(a: Point, b: Point) {
+        return new Point(b.x - a.x, b.y - a.y, b.z - a.z);
     }
 
 }
+
+export class Points {
+    data: Point[] = [];
+    constructor(data: Point[]) {this.data=data;}
+    x () {return this.data.map((p) => p.x)}
+    y () {return this.data.map((p) => p.y)}
+    z () {return this.data.map((p) => p.z)}
+    mean () {return new Point(mean(this.x()), mean(this.y()), mean(this.z()))}
+    norm () {return this.data.map((p) => p.norm())}
+    length () {return this.data.map((p) => p.length())}
+    min () {return new Point(min(this.x()), min(this.y()), min(this.z()))}
+    max () {return new Point(max(this.x()), max(this.y()), max(this.z()))}
+    range() { return new Points([this.min(), this.max()])}
+    sum() {return new Point(sum(this.x()), sum(this.y()), sum(this.z()))}
+    
+    static concat(ps: Points[]) {
+        const ops: Point[] = [];
+        ps.forEach(p => ops.push(...p.data));
+        return new Points(ops);
+    }
+}
+
 
 export class Quaternion {
     w: number; x: number; y: number; z: number;
@@ -132,6 +188,88 @@ export class State {
     }
 
 }
+
+
+export class States {
+    data: State[];
+    constructor(data: State[]) {this.data=data;}
+
+    parse (data: Record<string, any>[]) {
+        return new States(data.map(st => State.parse(st)))
+    }
+    pos () {return this.data.map(state => state.pos())}
+    att () {return this.data.map(state => state.att())}
+    vel () {return this.data.map(state => state.vel())}
+    rvel () {return this.data.map(state => state.rvel())}
+    acc () {return this.data.map(state => state.acc())}
+    manoeuvre () {return this.data.map(state => state.manoeuvre)}
+    element () {return this.data.map(state => state.element)}
+    body_to_world (p: Point)  {return this.data.map((st) => st.body_to_world(p))}
+
+    range (col:string) {
+        return [
+            Math.min.apply(0, this.data.map((st) => st[col])) , 
+            Math.max.apply(0, this.data.map((st) => st[col])) 
+        ];
+    }
+
+    centre (col:string) {
+        const srange = this.range(col);
+        return (srange[0] + srange[1]) / 2;
+    }
+
+    split() {
+        let states: Record<string, States> = {};
+        this.data.forEach((st) => {
+            if (st.element in states) {
+                states[st.element].data.push(st);
+            } else {
+                states[st.element] = new States([st]);
+            }
+        });
+        return states;
+    }
+
+    downsample (n:number) {
+        //reduce a list of states to n equally spaced ones, include the first and last ones
+        const spacing = Math.floor(this.data.length / (n - 1));
+        const sts = [];
+        for (let i = 0; i <= n - 2; i++) {
+            sts.push(this.data[i * spacing]);
+        }
+        if (n >= 1) {
+            sts.push(this.data[this.data.length - 1]);
+        }
+        return new States(sts);
+    };
+    
+    
+
+}
+
+
+
+export function state_range(state: State[], col: string, extend: number = 0) {
+    return [
+        Math.min.apply(0, state.map((st) => st[col])) , 
+        Math.max.apply(0, state.map((st) => st[col])) 
+    ];
+}
+
+export function state_centre(state: State[], col: string) {
+    const srange = state_range(state, col);
+    return (srange[0] + srange[1]) / 2
+}
+
+export function state_multi(state: State[], cols: string[], func: any) {
+    let ranges: Record<string, number> = {};
+    cols.forEach((col) => {
+        ranges[col] = func(state, col);
+    });
+    return ranges;
+}
+
+
 
 
 export function split_states(state: State[]) {

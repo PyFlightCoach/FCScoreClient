@@ -9,13 +9,17 @@ export async function load({fetch, params}) {
     if (params.analysis_name=='example') {
         const examples = import.meta.glob("/static/examples/*.json");
 
+        const p23mans = ["tHat", "hSqL", "hB", "hSqLC", "upL", "h8L", "rollC", "pImm", "iSp", "hB2", "rEt", "sqL", "M", "fTrn", "trgle", "sFin", "loop"]
+        
+
         let name = flightdata.name;
         name.update(v=>'example');
 
 
-        for (const path in examples) {
-            const mnames = path.split('/')
-            const res = await (await fetch('/examples/' + mnames[mnames.length - 1])).json();           
+        for (let i = 0; i<p23mans.length; i++) {
+            const mname = p23mans[i];
+
+            const res = await (await fetch('/examples/' + mname + '.json')).json();           
 
             const man = flightdata.addMan(res.mdef.info.short_name);
 

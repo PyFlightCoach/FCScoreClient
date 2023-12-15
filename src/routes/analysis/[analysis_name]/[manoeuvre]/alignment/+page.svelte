@@ -75,6 +75,9 @@
 
   $: states = split_states($man['al']);
   $: traces = alignment_traces(states, show_models, false, $colddraft, 1, eid)
+  //$: layout = get_ar(traces, 20);
+
+
 </script>
 
 

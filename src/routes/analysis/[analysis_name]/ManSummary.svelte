@@ -1,53 +1,48 @@
 
 <script lang="ts">
+
+  import {flightdata} from '$lib/stores';
+  import {d3Colors, colscale, redsColors} from '$lib/plots/styling';
+  
+  export let analysisName: string;
   export let manname: string;
 
-  import { goto } from '$app/navigation';
-  import {flightdata} from '$lib/stores';
-  import {Button, Dropdown, Chevron, DropdownItem} from 'flowbite-svelte';
-  export let analysis_name: string;
 
   $: man = flightdata.mans[manname];
   $: aligned = !('fl' in $man); 
   $: busy = $man.busy;
   $: scored = 'score' in $man;
 
-  let dropdownOpen = false;
-
 </script>
 
 
-<div>
-    <Button  color="alternative" ><Chevron>{manname}</Chevron></Button>
-    <Dropdown bind:open={dropdownOpen}>
-      {#if aligned}
-        <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + analysis_name + '/' + manname + '/alignment');}}>edit alignment</DropdownItem>
-        {#if !scored}
-          <DropdownItem  on:click={() => {dropdownOpen=false; flightdata.scoreman(manname);}}>calculate scores</DropdownItem>
-        {:else}
-          <DropdownItem  on:click={() => {dropdownOpen=false; goto('/analysis/' + analysis_name + '/' + manname + '/scores');}}>score info</DropdownItem>
-        {/if}
-      {:else}
-        <DropdownItem  on:click={()=> {dropdownOpen=false; flightdata.alignman(manname);}}>Align</DropdownItem>
-        <DropdownItem  on:click={()=> {dropdownOpen=false; flightdata.alignman(manname).then(()=>{flightdata.scoreman(manname)});}}>Score</DropdownItem>
-      {/if}  
-    </Dropdown>
-
-</div>
+<div>{manname}</div>
 <div>{$man.mdef.info.k}</div>
+
+{#if scored}
+  <a style:background-color={colscale($man.score.intra.total, 6, redsColors)} href='{analysisName}/{manname}/intra'>{$man.score.intra.total.toFixed(2)}</a>
+  <a style:background-color={colscale($man.score.inter.total, 6, redsColors)} href='{analysisName}/{manname}/inter'>{$man.score.inter.total.toFixed(2)}</a>
+  <a style:background-color={colscale($man.score.positioning.total, 6, redsColors)} href='{analysisName}/{manname}/positioning'>{$man.score.positioning.total.toFixed(2)}</a>
+{:else}
+  <div>-</div>
+  <div>-</div>
+  <div>-</div>
+{/if}
+
+
 <div>
   {#if busy}
-    preparing...
+    <div>Busy</div>
+  {:else if scored}
+    <a href='{analysisName}/{manname}/summary'>{$man.score.score.toFixed(1)}</a>
+  {:else if aligned}
+    <button color='light' on:click={() => {flightdata.scoreman(manname);}}>Score</button>
   {:else}
-    {#if aligned}aligned ({$man.dist.toFixed(0)}){:else}read{/if}
-  {/if}
-</div>
-<div>
-  {#if scored}{$man.score.score.toFixed(1)}{:else}-{/if}
+    <button color='light' on:click={()=> {flightdata.alignman(manname);}}>Align</button>
+  {/if} 
 </div>
 
+
 <style>
-  div {
-    text-align: center;
-  }
+  div {text-align: center;}
 </style>

@@ -1,7 +1,9 @@
 import { writable, readable } from 'svelte/store';
 import type { Writable, Readable } from 'svelte/store';
-import { align, score } from '$lib/api_calls';
-
+import { align, score, create_fc_json } from '$lib/api_calls';
+import type {State} from '$lib/geometry';
+import type { ManDef } from '$lib/api_objects';
+import { saveAs } from 'file-saver';
 export const PlotlyLib = writable(null);
 
 class FlightData {
@@ -30,6 +32,7 @@ class FlightData {
         this.sinfo.set({category: null, name: null});
         this.direction.set(0);
     }
+
 
     async alignman(name: string) {
         let rman = this.mans[name];
@@ -63,13 +66,17 @@ class FlightData {
         uns();
     }
 
+    async alignlist(names: string[]) {
+        names.forEach(name => {this.alignman(name);});
+    }
+
     async scoreman(name: string) {
         let rman = this.mans[name];
         let man: Record<string, any> = {};
         rman.subscribe((val) => { man = val })();
         
         let direction: number;
-        this.direction.subscribe(di=>direction=di)();
+        this.direction.subscribe(di=>{direction=di})();
 
         if (!('score' in man) && !man.busy) {
             rman.update(man => { man.busy = true; return man; });
@@ -94,6 +101,41 @@ class FlightData {
         }
     }
 
+    async scorelist(names: string[]) {
+        names.forEach(name => {
+            this.alignman(name).then(()=>this.scoreman(name));
+        });
+    }
+
+    async downloadTemplate (kind: string) {
+        let sts: State[] = [];
+        let mdefs: ManDef[] =[];
+        let mannames: Record<string, any>;
+
+        this.mannames.subscribe(mn => {mannames = mn})();
+
+        Object.keys(mannames).forEach(mn => {
+        flightdata.mans[mn].subscribe(man=>{
+            if (kind=='intended') {
+            sts = sts.concat(man.intended_template);
+            } else {
+            sts = sts.concat(man.corrected_template);
+            }
+            
+            mdefs.push(man.mdef);
+        })();
+        });
+        let fcj = await create_fc_json(sts, mdefs, 'kind', 'F3A');
+        var fileToSave = new Blob(
+        [JSON.stringify(fcj)], 
+        {type: 'application/json'}
+        );
+
+        saveAs(fileToSave, kind + '_template.json');
+    }
+    
+
+
     export(): Record<string, any> {
         // export the stored manoeuvre analysis, might be useful one day
         let expd: Record<string, any> = {};
@@ -111,7 +153,22 @@ class FlightData {
 export const flightdata = new FlightData();
 export const schedule = new FlightData();
 export const mouse = writable({ x: 0, y: 0 });
-export const flightmenu: Writable<Record<string, any>> = writable({});
-export const schedulemenu: Writable<Record<string, any>> = writable({});
 
+
+
+
+export class NavContent {
+    name: string;
+    href: string='';
+    onclick: () => void = () => { };
+    constructor(name: string, href: string, onclick: () => void) {
+        this.name = name;
+        this.href = href;
+        this.onclick = onclick;
+    }
+
+}
+export const navitems: Writable<NavContent[]> = writable([]);
+
+import type {OBJ} from '$lib/plots/traces';
 export const colddraft: Writable<OBJ|null> = writable(null);
