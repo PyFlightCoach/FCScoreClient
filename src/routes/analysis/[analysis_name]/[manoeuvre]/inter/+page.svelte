@@ -1,18 +1,20 @@
 <script lang='ts'>
-	import type { ManDef, Results } from "$lib/api_objects";
-    import type {State} from '$lib/geometry';
+    import { flightdata } from '$lib/stores';
+    import {States} from '$lib/geometry';
     import {P} from 'flowbite-svelte';
     import { AccordionItem, Accordion } from 'flowbite-svelte';
-    import { Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+    import { Table, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 
-    export let inter: Results;
-    export let state: State;
-    export let mdef: ManDef;
+    export let data;
 
+    $: man = flightdata.mans[data.mname];
+  
+    $: state = new States($man.al);
+    $: states = state.split();
 
 
     function collid(mpname: string, collname: string) {
-        return inter.data[mpname].keys.findIndex(v=>v==collname);
+        return $man.score.inter.data[mpname].keys.findIndex(v=>v==collname);
     }
 
     function colinfo(mp: Record<string, any>) {
@@ -20,10 +22,10 @@
             let colid = collid(mp.name, co);
             return [
                 co,
-                inter.data[mp.name].sample[colid].toFixed(2),
-                inter.data[mp.name].errors[colid].toFixed(2),
-                inter.data[mp.name].measurement.visibility[colid].toFixed(2),
-                inter.data[mp.name].dgs[colid].toFixed(2),
+                $man.score.inter.data[mp.name].sample[colid].toFixed(2),
+                $man.score.inter.data[mp.name].errors[colid].toFixed(2),
+                $man.score.inter.data[mp.name].measurement.visibility[colid].toFixed(2),
+                $man.score.inter.data[mp.name].dgs[colid].toFixed(2),
             ]
         })
     }
@@ -32,11 +34,11 @@
 
 <Accordion>
 
-    {#each Object.values(mdef.mps) as mp}
+    {#each Object.values($man.mdef.mps) as mp}
         
         <AccordionItem>
-            <span slot="header">{mp.name} (dg={mp.name in inter.data ? inter.data[mp.name].total.toFixed(2) : 0})</span>
-            {#if mp.name in inter.data}
+            <span slot="header">{mp.name} (dg={mp.name in $man.score.inter.data ? $man.score.inter.data[mp.name].total.toFixed(2) : 0})</span>
+            {#if mp.name in $man.score.inter.data}
             
                 <Table hoverable={true}>
                     <TableHead>

@@ -1,4 +1,4 @@
-import { State, Point, Quaternion } from '$lib/geometry';
+import { State, Point, Quaternion, States } from '$lib/geometry';
 import { linspace } from '$lib/arrays';
 import ObjFile from 'obj-file-parser';
 
@@ -49,9 +49,9 @@ export const ribbon = (st: State[], sp: number, expandprops: Record<string, any[
 	return { ...data, i: _i, j: _j, k: _k, type: 'mesh3d', ...props };
 };
 
-export const coloured_ribbons = (states: Record<string, State[]>, span: number) => {
+export const coloured_ribbons = (states: Record<string, States>, span: number) => {
 	return Object.keys(states).map((el) => {
-		return { ...ribbon(states[el], span), name: el };
+		return { ...ribbon(states[el].data, span), name: el };
 	});
 };
 

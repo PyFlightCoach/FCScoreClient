@@ -161,7 +161,7 @@ export class NavContent {
     name: string;
     href: string='';
     onclick: () => void = () => { };
-    constructor(name: string, href: string, onclick: () => void) {
+    constructor(name: string, href: string, onclick = () => {}) {
         this.name = name;
         this.href = href;
         this.onclick = onclick;

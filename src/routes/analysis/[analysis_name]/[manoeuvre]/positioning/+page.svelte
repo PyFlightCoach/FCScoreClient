@@ -1,82 +1,77 @@
 
 <script lang="ts">
-	
-
-  export let results: Results;
-  export let state: State[];
-  export let info: ManInfo;
-
-  import {split_states, type State, Point} from '$lib/geometry';
+	import { flightdata, colddraft } from '$lib/stores';
+  import {split_states, States, type State} from '$lib/geometry';
   import type { Results, ManInfo } from "$lib/api_objects";
-  import { Popover, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
   import Plot from 'svelte-plotly.js';
-  import {coloured_ribbons, criteria_info, points, boxtrace} from '$lib/plots/traces';
+  import {coloured_ribbons, points, boxtrace} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';
-  
 
-  $: sts = split_states(state)
+  export let data;
+
+  $: man = flightdata.mans[data.mname];
+  
+  $: state = new States($man.al);
+  $: states = state.split();
 
   const get_points = (states: Record<string, State[]>) => {
-    let sts: State[][] = Object.values(states);
-    return info.centre_points.map(i=>{
-      let el = sts[i].at(-1);
-      return el.pos();
+    return $man.mdef.info.centre_points.map(i=>{
+      return Object.values(states)[i].data.at(-1).pos();
     })
   }
 
   const get_el_points = (states: Record<string, State[]>) => {
-    let sts: State[][] = Object.values(states);
-    return info.centred_els.map(i=>{
-      let el = sts[i[0]+1];
-      return el[Math.round(i[1] * el.length)].pos()
+    
+    return $man.mdef.info.centred_els.map(i=>{
+      let el = Object.values(states)[i[0]+1].data;
+      return el[Math.round(i[1] * el.length)].pos();
     })
   }
 
-  $: centre_points = get_points(sts);
-  $: el_points = get_el_points(sts);
+  $: centre_points = get_points(states);
+  $: el_points = get_el_points(states);
   // , info.centre_points.map(i=>'centre point '.concat(i.toString()))
   // info.centred_els.map(i=>'centred element '.concat(i[0].toString()))
 </script>
 
-<div>
 
-  <Table hoverable={true}>
-    <TableHead>
-        <TableHeadCell>name</TableHeadCell>
-        <TableHeadCell>Error</TableHeadCell>
-        <TableHeadCell>Downgrade</TableHeadCell>
-    </TableHead>
-
-    {#each Object.values(results.data) as pos}
-        <TableBodyRow>
-            
-            <TableBodyCell>{pos.name}</TableBodyCell>
-            {#if pos.name=="distance"}
-              <TableBodyCell>{pos.errors[0].toFixed(0)} m;</TableBodyCell>
-            {:else}
-              <TableBodyCell>{(pos.errors[0] * 180 / Math.PI).toFixed(2)} &deg</TableBodyCell>
-            {/if}
-            <TableBodyCell>{pos.total.toFixed(2)}</TableBodyCell>
-        </TableBodyRow>
+<div id='parent'>
+  <div id='table'>
+    
+    <div>Name</div>
+    <div>Error</div>
+    <div>Downgrade</div>
+    
+    {#each Object.values($man.score.positioning.data) as pos}
+                      
+          <div>{pos.name}</div>
+          {#if pos.name=="distance"}
+            <div>{pos.errors[0].toFixed(0)} m;</div>
+          {:else}
+            <div>{(pos.errors[0] * 180 / Math.PI).toFixed(2)} &deg</div>
+          {/if}
+          <div>{pos.total.toFixed(2)}</div>
+        
     {/each}
-  </Table>
-  <div id='parent'>
-  <Plot 
-    data={
-      coloured_ribbons(sts,2)
-      .concat(points(centre_points, info.centre_points.map(i=>'centre point '.concat(i.toString())) )) 
-      .concat(points(el_points, info.centred_els.map(i=>'centred el '.concat(i[0].toString()))))
-      .concat([boxtrace()])
-    } 
-    layout={layout3d}
-    fillParent={true}
-  />
-</div>
+  </div>
+  <div>
+    <Plot 
+      data={
+        coloured_ribbons(states,2)
+        .concat(points(centre_points, $man.mdef.info.centre_points.map(i=>'centre point '.concat(i.toString())) )) 
+        .concat(points(el_points, $man.mdef.info.centred_els.map(i=>'centred el '.concat(i[0].toString()))))
+        .concat([boxtrace()])
+      } 
+      layout={layout3d}
+      fillParent={true}
+    />
+  </div>
 </div>
 
 
 <style>
-  #parent {height: 800px; width:100%; position:fixed}
+  #parent {display: grid; height:100%; width:100%; grid-template-columns: 1fr 2fr; position: fixed}
+  #table {display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; align-self: start;}
 
 
 </style>

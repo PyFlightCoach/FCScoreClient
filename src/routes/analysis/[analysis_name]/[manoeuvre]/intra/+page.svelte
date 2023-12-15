@@ -6,7 +6,6 @@
   import {layout3d} from '$lib/plots/layouts';
   import {ribbon, modeltrace} from '$lib/plots/traces';
   import {d3Colors} from '$lib/plots/styling';
-	import IntraPlot from './intra_plot.svelte';
   import CriteriaPlot from './CriteriaPlot.svelte';
   import DGPlot from './DGPlot.svelte';
 	import ColouedTable from '$lib/ColouedTable.svelte';
@@ -114,14 +113,7 @@
         result={$man.score.intra.data[activeElName].data[activeCriteria]}
         element={getEl(activeElName, $man.intended)}          
       /></div>
-        
-      
-      <!--IntraPlot 
-        result={$man.score.intra.data[activeElName].data[activeCriteria]} 
-        flown={states[activeElName]} 
-        template={templates[activeElName]} 
-        element={getEl(activeElName, $man.intended)}
-      /-->
+
     {/if}
   </div>
 

@@ -44,8 +44,7 @@
   {#each rowNames as row} 
     <button 
         on:click={(e)=>{activateCell(row, null);}} 
-        class = 'cell'
-        class:selected={row==activeRow}
+        class = 'cell' class:selected={row==activeRow}
         style:background-color={d3Colors[rowNames.indexOf(row)% d3Colors.length]}
         >
       {row}
