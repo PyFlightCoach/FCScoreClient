@@ -58,8 +58,8 @@
                     {/each}
                 </Table>
             {:else}
-                <P>This parameter is not downgradable. Usually this is because it is covered by the 
-                    intra element scoring, the parameter is just used to create the templates.
+                <P>This parameter is not downgradable. This is usually this is because it is covered by the 
+                    intra element scoring.
                 </P>
             {/if}
         </AccordionItem>

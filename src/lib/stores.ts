@@ -134,8 +134,6 @@ class FlightData {
         saveAs(fileToSave, kind + '_template.json');
     }
     
-
-
     export(): Record<string, any> {
         // export the stored manoeuvre analysis, might be useful one day
         let expd: Record<string, any> = {};
@@ -146,6 +144,25 @@ class FlightData {
             });
         });
         return expd;
+    }
+
+
+    manScore(mname :string) {
+        let man: Record<string, any> = {};
+        const uns = this.mans[mname].subscribe((val) => { man = val })();
+        return man.mdef.info.k * man.score.score;
+        uns()
+    }
+
+    totalScore() {
+        let mannames: Record<string, any>;
+
+        this.mannames.subscribe(mn => {mannames = mn})();
+        let total = 0;
+        Object.keys(mannames).forEach(mn => {
+            total+=this.manScore(mn);
+        })
+        return total
     }
 
 }

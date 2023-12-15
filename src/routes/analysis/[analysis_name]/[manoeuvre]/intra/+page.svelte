@@ -9,6 +9,7 @@
   import CriteriaPlot from './CriteriaPlot.svelte';
   import DGPlot from './DGPlot.svelte';
 	import ColouedTable from '$lib/ColouedTable.svelte';
+	
 
   export let data;
 
@@ -26,6 +27,16 @@
   let layout = layout3d;
 
 
+  const getElement = (elName: string|null) => {
+    const elnames = $man.intended.elements.map(el=>el.uid);
+    if (elName != null && elName != "entry_line") {
+      return $man.intended.elements[elnames.indexOf(activeElName)];
+    } else {
+      return null;
+    }
+  }
+  $: element = getElement(activeElName);
+  
   const dgtraces = (sts: Record<string, States>, tps: Record<string, States>, hel: string | null = null) => {
     
     const trs: Record<string, any>[] = [];
@@ -103,11 +114,33 @@
     </div>
     
     {#if showintra}  
-      <div class='plot'>
-        <CriteriaPlot
+      <div class='plot split'>
+        <div>
+          {#if activeElName == 'entry_line'}
+            <p>The entry line is assessed for roll angle and track only.</p>
+          {:else}
+            <p>{activeCriteria} downgrade for {element.kind} element {activeElName}</p>
+            {#if Object.keys(element).indexOf('length') >=0}<p>length = {element.length.toFixed(0)} m</p>{/if}
+            {#if Object.keys(element).indexOf('radius') >=0}<p>radius = {element.radius.toFixed(0)} m</p>{/if}
+            {#if Object.keys(element).indexOf('roll') >=0}<p>roll = {(element.roll * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
+            {#if Object.keys(element).indexOf('angle') >=0}<p>angle = {(element.angle * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
+          {/if}
+          <p>
+            {#if $man.score.intra.data[activeElName].data[activeCriteria].measurement.value.length == 1}
+              This is a single analysis, only the end point of the element is assessed. The downgrade is based on absolute difference to the template.
+            {:else}
+              This is a continuous analysis, all changes in the measured value are downgraded. 
+            {/if}
+          </p>
+          
+          <p>downgrade = {$man.score.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
+          
+        </div>
+        <div><CriteriaPlot
           result={$man.score.intra.data[activeElName].data[activeCriteria]}
           element={getEl(activeElName, $man.intended)}
-        />
+        /></div>
+        
       </div>  
       <div class='plot fullwidth'><DGPlot 
         result={$man.score.intra.data[activeElName].data[activeCriteria]}
@@ -128,6 +161,8 @@
   .plot.fullwidth {grid-column: 1 / 3;}
   .plot.fullheight {grid-row: 1 / 3;}
   
+  .plot.split {height: 100%; width: 100%; display: grid; grid-template-rows: 1fr 1fr;}
+
   #intra_summary {
     display: grid;
     grid-template-columns: 1fr 1fr;

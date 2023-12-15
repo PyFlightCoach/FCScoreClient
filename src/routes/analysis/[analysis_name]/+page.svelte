@@ -11,12 +11,18 @@
     new NavContent('Corrected FC Json', '', () => {flightdata.downloadTemplate('corrected')}),
   ];
 
+
+  $: total = flightdata.totalScore();  
+
 </script>
 
 <div id='parent'>
-  <div/>
-  <div><AnalysisSummary analysisName={data.analysis_name}/></div>
+  
+  <div style='grid-column:2;'><AnalysisSummary analysisName={data.analysis_name}/></div>
+  
+  <h2  style='grid-column:2;'>Total Score = {total.toFixed(1)}</h2>
 </div>
+
 <style>
   #parent {
     display: grid;
@@ -25,5 +31,12 @@
 
     height: 100%;
     width: 100%;
+  }
+
+  h2 {
+    font-size: large;
+    font-weight: bold;
+    
+    justify-self: end;
   }
 </style>

@@ -22,8 +22,8 @@
       yaxis:{
           title:'measurement',
           range: [
-              Math.min(...result.measurement.value, 0) * 1.5 * scale, 
-              Math.max(...result.measurement.value, 0) * 1.5 * scale
+              Math.min(...result.sample, 0) * 2 * scale, 
+              Math.max(...result.sample, 0) * 2 * scale
           ]
       },
       yaxis2:{
