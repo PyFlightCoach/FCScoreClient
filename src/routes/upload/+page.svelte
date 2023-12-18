@@ -21,7 +21,7 @@
             category: data.parameters.schedule[0], 
             name: data.parameters.schedule[1]
           };
-          $name=data.name;
+          $name=data.name.replace(/\.[^/.]+$/, "");
         };
         console.log(file);
         fr.readAsText(file);
@@ -60,7 +60,7 @@
 {#if $name}
   <p>category={$sinfo.category}</p> 
   <p>schedule={$sinfo.name}</p>
-  <Button on:click={convert_json} href={'/analysis/' + $sinfo.name}>
+  <Button on:click={convert_json} href={'/analysis/' + $name}>
     Prepare Analysis
   </Button>
 {/if}

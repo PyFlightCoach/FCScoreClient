@@ -67,7 +67,9 @@ class FlightData {
     }
 
     async alignlist(names: string[]) {
-        names.forEach(name => {this.alignman(name);});
+        for (let i=0; i<names.length; i++) {
+            await this.alignman(names[i]);
+        }
     }
 
     async scoreman(name: string) {
@@ -102,9 +104,10 @@ class FlightData {
     }
 
     async scorelist(names: string[]) {
-        names.forEach(name => {
-            this.alignman(name).then(()=>this.scoreman(name));
-        });
+        await this.alignlist(names);
+        for (let i=0; i<names.length; i++) {
+            await this.scoreman(names[i]);
+        }
     }
 
     async downloadTemplate (kind: string) {
@@ -149,15 +152,18 @@ class FlightData {
 
     manScore(mname :string) {
         let man: Record<string, any> = {};
-        const uns = this.mans[mname].subscribe((val) => { man = val })();
-        return man.mdef.info.k * man.score.score;
-        uns()
+        this.mans[mname].subscribe((val) => { man = val })();
+        if ('score' in man) {
+            return man.mdef.info.k * man.score.score;
+        } else {
+            return 0;
+        }
+          // TODO this falls over when manoeuvre has not been run
+        
     }
 
-    totalScore() {
-        let mannames: Record<string, any>;
-
-        this.mannames.subscribe(mn => {mannames = mn})();
+    totalScore(mannames: Record<string, any>) {
+        
         let total = 0;
         Object.keys(mannames).forEach(mn => {
             total+=this.manScore(mn);

@@ -4,8 +4,7 @@ import { ManDef, ManoeuvreResult } from '$lib/api_objects';
 import type { Writable } from 'svelte/store';
 
 export async function load({fetch, params}) {
-    let analysis = params.analysis_name;
-    
+        
     if (params.analysis_name=='example') {
         const examples = import.meta.glob("/static/examples/*.json");
 

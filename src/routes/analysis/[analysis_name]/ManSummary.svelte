@@ -36,9 +36,9 @@
   {:else if scored}
     <a href='{analysisName}/{manname}/summary'>{$man.score.score.toFixed(1)}</a>
   {:else if aligned}
-    <button color='light' on:click={() => {flightdata.scoreman(manname);}}>Score</button>
+    <button color='light' on:click={() => {flightdata.scoreman(manname);}}>calculate_scores</button>
   {:else}
-    <button color='light' on:click={()=> {flightdata.alignman(manname);}}>Align</button>
+    <button color='light' on:click={()=> {flightdata.alignman(manname);}}>run_alignment</button>
   {/if} 
 </div>
 

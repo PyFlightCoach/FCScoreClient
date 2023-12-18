@@ -12,7 +12,7 @@
   ];
 
 
-  $: total = flightdata.totalScore();  
+  $: total = flightdata.totalScore($mannames);  
 
 </script>
 

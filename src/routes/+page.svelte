@@ -16,7 +16,7 @@
 
   <div>
     <Heading>Flight Coach Score</Heading>
-    <div>WIP example of automatic judging process based on Flight Coach JSON files</div>    
+    <div>WIP example of automatic judging for precision aerobatics based on Flight Coach JSON files</div>    
 
     <br/>
     <div>Client:{PUBLIC_VERSION}</div>

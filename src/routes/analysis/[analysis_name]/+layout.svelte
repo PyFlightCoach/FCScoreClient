@@ -1,4 +1,19 @@
+<script>
 
+  import {goto} from '$app/navigation';
+  import {onMount} from 'svelte';
+  export let data;
+  $: name = flightdata.name;
+  import {flightdata} from '$lib/stores';
+
+  onMount(()=>{
+    if ($name == null) {
+      goto('/upload');
+    }
+  })
+
+
+</script>
 
   
 <slot id="contents"/>

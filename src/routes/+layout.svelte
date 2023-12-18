@@ -47,7 +47,7 @@
         <NavLi id="manoeuvremenu" class="cursor-pointer"><Chevron aligned>Manoeuvres</Chevron></NavLi>
         <Dropdown triggeredBy="#manoeuvremenu" class="w-44 z-20">
           {#each Object.keys($mannanes) as mname}
-            <DropdownItem href={'/analysis/example/' + mname + '/summary'}>{mname}</DropdownItem>
+            <DropdownItem href={'/analysis/' + $name + '/' + mname + '/summary'}>{mname}</DropdownItem>
           {/each}    
         </Dropdown>
       {/if} 

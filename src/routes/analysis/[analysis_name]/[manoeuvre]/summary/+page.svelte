@@ -10,15 +10,27 @@
 
     export let data;
     $: man = flightdata.mans[data.mname];
+    $: mannames = flightdata.mannames;
+
+    
 
 </script>
 
-<p>{$man.mdef.info.name}</p>
-<p>Add some summary info here</p>
-{#if 'al' in $man}
-  <Plot
-    data={[ribbon($man.al, 3)]}
-    layout={layout3d}
-    fillParent={true}
-  />
-{/if}
+<div>
+
+  <p>{$man.mdef.info.name}, Status = {['Read', 'Aligned', 'Scored'][$mannames[data.mname]-1]}</p>
+    
+  
+  {#if 'al' in $man}
+    <Plot
+      data={[ribbon($man.al, 3)]}
+      layout={layout3d}
+      fillParent={true}
+    />
+  
+  {/if}
+</div>
+
+<style>
+  div {height:100%}
+</style>
