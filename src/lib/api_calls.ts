@@ -1,10 +1,10 @@
 import {ManDef, ManoeuvreResult} from '$lib/api_objects';
 import {State} from '$lib/geometry';
-import { f } from 'vitest/dist/types-3c7dbfa5';
+
 
 async function server_func(func_name: string, kwargs: Record<string, any>={}) {
     const response = await fetch(
-        'http://localhost:5000/' + func_name, 
+        'http://0.0.0.0:5000/' + func_name, 
         {
             method: "POST", mode: "cors", 
             //cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
