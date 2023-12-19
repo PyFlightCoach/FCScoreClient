@@ -1,11 +1,33 @@
 <script lang="ts">
+	import { sum } from '$lib/geometry';
   import {flightdata} from '$lib/stores';
   import ManSummary from './ManSummary.svelte';
 
   export let analysisName: string;
+  export let total: number = 0;
 
   let mannames = flightdata.mannames;
   
+  let totals: Record<string, number> = {};
+
+  Object.keys($mannames).forEach((mn) => {
+    totals[mn] = 0;
+  });
+
+  export let difficulty;
+
+  const getTotal = (ttls: Record<string, number>) => {
+    let total = 0;
+    Object.keys($mannames).forEach((mn) => {
+      total += ttls[mn];
+    });
+    return total;
+  };
+
+
+  $: total = getTotal(totals);
+
+
 </script>
 
 
@@ -18,7 +40,12 @@
   <div>Inter</div>
   <div>Position</div>
   {#each Object.keys($mannames) as mn}
-    <ManSummary analysisName={analysisName} manname={mn} />
+    <ManSummary 
+      analysisName={analysisName} 
+      manname={mn} 
+      bind:total={totals[mn]} 
+      difficulty={difficulty}
+    />
   {/each}
 
 

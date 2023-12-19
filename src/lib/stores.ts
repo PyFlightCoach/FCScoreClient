@@ -158,8 +158,6 @@ class FlightData {
         } else {
             return 0;
         }
-          // TODO this falls over when manoeuvre has not been run
-        
     }
 
     totalScore(mannames: Record<string, any>) {

@@ -1,4 +1,4 @@
-import {Point, State} from '$lib/geometry';
+import {Point, sum} from '$lib/geometry';
 
 
 export function parse_dict(data: Record<string, any>, parser) {
@@ -104,16 +104,14 @@ export class Result{
         } else {
             if (data.measurement.constructor == Object) {m=Measurement.parse(data.measurement);} else {m=data.measurement;}
         }
-        return new Result(
-            data.name, 
-            m, 
-            data.sample,
-            data.errors,
-            data.dgs, 
-            data.keys, 
-            data.total
-        )
+        return new Result(data.name, m, data.sample, data.errors, data.dgs, data.keys, data.total);
     }
+
+    factoredDG(difficulty: (v: number)=>number) {
+        if (this.dgs.length == 0) {return 0;}
+        return sum(this.dgs.map(v=>difficulty(v)));
+    }
+
 }
 
 
@@ -134,6 +132,13 @@ export class Results{
             data.total
         )
     }
+
+    factoredDG(difficulty: (v: number)=>number) {
+        if (Object.values(this.data).length == 0) {return 0;}
+        return sum(Object.values(this.data).map(v=>v.factoredDG(difficulty)));
+    }
+
+
 }
 
 export class ElementsResults{
@@ -202,6 +207,11 @@ export class ElementsResults{
         })
         return summaries;
     }
+
+    factoredDG(difficulty: (v: number)=>number) {
+        return sum(Object.values(this.data).map(v=>v.factoredDG(difficulty)));
+    }
+
 }
 
 

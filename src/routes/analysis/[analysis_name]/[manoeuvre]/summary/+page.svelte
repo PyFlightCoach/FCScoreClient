@@ -32,5 +32,5 @@
 </div>
 
 <style>
-  div {height:100%}
+  div {height:94%}
 </style>

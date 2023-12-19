@@ -70,7 +70,8 @@ export const redblueColors = ['rgb(0,0,255)',
 
 
 export const colscale = (v: number, vmax: number, scale: string[]) => {
-    return scale[Math.round((scale.length-1)*v/vmax)];
+
+    return scale[Math.round((scale.length-1)*Math.min(v,vmax)/vmax)];
 
 }
 

@@ -1,9 +1,11 @@
 <script lang="ts">
   import {flightdata, navitems, NavContent} from '$lib/stores';
   import AnalysisSummary from './AnalysisSummary.svelte';
+  import Difficulty from './Difficulty.svelte';
   export let data;
   let mannames = flightdata.mannames;
-  
+  let difficulty: (v:number)=>v;
+
   $navitems=[
     new NavContent('Align All', '', ()=>{flightdata.alignlist(Object.keys($mannames))}),
     new NavContent('Score All', '', ()=>{flightdata.scorelist(Object.keys($mannames))}),
@@ -11,16 +13,21 @@
     new NavContent('Corrected FC Json', '', () => {flightdata.downloadTemplate('corrected')}),
   ];
 
-
-  $: total = flightdata.totalScore($mannames);  
+  let total=0;
+//  $: total = flightdata.totalScore($mannames);  
 
 </script>
 
 <div id='parent'>
+  <Difficulty bind:difficulty={difficulty}/>
+  <div style='grid-column:2;'><AnalysisSummary 
+    analysisName={data.analysis_name} 
+    bind:total={total}
+    difficulty={difficulty}
+  /></div>
+  <h2>Total Score = {total.toFixed(1)}</h2>
   
-  <div style='grid-column:2;'><AnalysisSummary analysisName={data.analysis_name}/></div>
   
-  <h2  style='grid-column:2;'>Total Score = {total.toFixed(1)}</h2>
 </div>
 
 <style>
@@ -28,7 +35,6 @@
     display: grid;
     grid-template-columns: 1fr 2fr 1fr ;
     align-items: start;
-
     height: 100%;
     width: 100%;
   }
@@ -36,7 +42,7 @@
   h2 {
     font-size: large;
     font-weight: bold;
-    
     justify-self: end;
+    grid-column:2;
   }
 </style>

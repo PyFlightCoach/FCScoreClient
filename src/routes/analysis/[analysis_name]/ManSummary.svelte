@@ -6,12 +6,24 @@
   
   export let analysisName: string;
   export let manname: string;
-
+  export let difficulty = (v: number) => v;
+  export let total = 0;
 
   $: man = flightdata.mans[manname];
   $: aligned = !('fl' in $man); 
   $: busy = $man.busy;
   $: scored = 'score' in $man;
+
+  $: intra = scored ? $man.score.intra.factoredDG(difficulty) : 0;
+  $: inter = scored ? $man.score.inter.factoredDG(difficulty) : 0;
+  $: position = scored ? $man.score.positioning.factoredDG(difficulty) : 0;
+
+
+  $: score = scored ? Math.max((10 - intra - inter - position), 0) : 0;
+  $: total = score * $man.mdef.info.k;
+
+
+
 
 </script>
 
@@ -20,9 +32,9 @@
 <div>{$man.mdef.info.k}</div>
 
 {#if scored}
-  <a style:background-color={colscale($man.score.intra.total, 6, redsColors)} href='{analysisName}/{manname}/intra'>{$man.score.intra.total.toFixed(2)}</a>
-  <a style:background-color={colscale($man.score.inter.total, 6, redsColors)} href='{analysisName}/{manname}/inter'>{$man.score.inter.total.toFixed(2)}</a>
-  <a style:background-color={colscale($man.score.positioning.total, 6, redsColors)} href='{analysisName}/{manname}/positioning'>{$man.score.positioning.total.toFixed(2)}</a>
+  <a style:background-color={colscale(intra, 6, redsColors)} href='{analysisName}/{manname}/intra'>{intra.toFixed(2)}</a>
+  <a style:background-color={colscale(inter, 6, redsColors)} href='{analysisName}/{manname}/inter'>{inter.toFixed(2)}</a>
+  <a style:background-color={colscale(position, 6, redsColors)} href='{analysisName}/{manname}/positioning'>{position.toFixed(2)}</a>
 {:else}
   <div>-</div>
   <div>-</div>
@@ -34,11 +46,11 @@
   {#if busy}
     <div>Busy</div>
   {:else if scored}
-    <a href='{analysisName}/{manname}/summary'>{$man.score.score.toFixed(1)}</a>
+    <a href='{analysisName}/{manname}/summary'>{score.toFixed(1)}</a>
   {:else if aligned}
-    <button color='light' on:click={() => {flightdata.scoreman(manname);}}>calculate_scores</button>
+    <button color='light' style='width:200px' on:click={() => {flightdata.scoreman(manname);}}>Calculate Scores</button>
   {:else}
-    <button color='light' on:click={()=> {flightdata.alignman(manname);}}>run_alignment</button>
+    <button color='light' style='width:200px' on:click={()=> {flightdata.alignman(manname);}}>Run Alignment</button>
   {/if} 
 </div>
 
