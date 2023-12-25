@@ -2,7 +2,7 @@ import { State, Point, Quaternion, States } from '$lib/geometry';
 import { linspace } from '$lib/arrays';
 import ObjFile from 'obj-file-parser';
 
-export const ribbon = (st: State[], sp: number, expandprops: Record<string, any[]>={}, props: Record<string, any> = {}) => {
+export const ribbon = (st: States, sp: number, expandprops: Record<string, any[]>={}, props: Record<string, any> = {}) => {
 	const semisp = sp / 2;
 
 	let points: Point[] = [];
@@ -12,11 +12,9 @@ export const ribbon = (st: State[], sp: number, expandprops: Record<string, any[
 		props[key] = [];
 	})
 
-	for (let i = 0; i < st.length; i++) {
-
-		points.push(st[i].body_to_world(new Point(0, semisp, 0)));
-		points.push(st[i].body_to_world(new Point(0, -semisp, 0)));
-
+	for (let i = 0; i < st.data.length; i++) {
+		points.push(st.data[i].body_to_world(new Point(0, semisp, 0)));
+		points.push(st.data[i].body_to_world(new Point(0, -semisp, 0)));
 	}
 
 
@@ -24,12 +22,9 @@ export const ribbon = (st: State[], sp: number, expandprops: Record<string, any[
 	let _j: number[] = [];
 	let _k: number[] = [];
 	for (let i = 0; i < points.length - 2; i += 2) {
-		_i.push(i);
-		_j.push(i + 1);
-		_k.push(i + 2);
-		_i.push(i + 1);
-		_j.push(i + 3);
-		_k.push(i + 2);
+		_i.push(i);      _j.push(i + 1); _k.push(i + 2);
+		_i.push(i + 1);  _j.push(i + 3); _k.push(i + 2);
+		
 		Object.entries(expandprops).forEach(([key, val]) => {
 			props[key].push(val[i]);
 			props[key].push(val[i]);
@@ -51,7 +46,7 @@ export const ribbon = (st: State[], sp: number, expandprops: Record<string, any[
 
 export const coloured_ribbons = (states: Record<string, States>, span: number) => {
 	return Object.keys(states).map((el) => {
-		return { ...ribbon(states[el].data, span), name: el };
+		return { ...ribbon(states[el], span), name: el };
 	});
 };
 
@@ -178,7 +173,7 @@ export const downgrade_info = (result: Record<string, any>, scale = 1.0) => {
 	];
 };
 
-export const criteria_info = (criteria: Record<string, any>, scale: number) => {
+export const criteriaInfo = (criteria: Record<string, any>, scale: number) => {
 	const x =
 		criteria.comparison == 'absolute' ? linspace(0.0, 90.0, 20.0) : linspace(0.0, 5.0, 20.0);
 
@@ -301,26 +296,13 @@ export class OBJ {
 	}
 }
 
-export const modeltrace = (sts: State[], model: OBJ, props: Record<string, any> = {}) => {
-	return sts.map((st) => model.to_mesh3d(st.pos(), st.att(), props));
-};
-
-export const downsample_states = (st: State[], n:number) => {
-    //reduce a list of states to n equally spaced ones, include the first and last ones
-	const spacing = Math.floor(st.length / (n - 1));
-	const sts = [];
-	for (let i = 0; i <= n - 2; i++) {
-		sts.push(st[i * spacing]);
-	}
-	if (n >= 1) {
-		sts.push(st[st.length - 1]);
-	}
-	return sts;
+export const modeltrace = (sts: States, model: OBJ, props: Record<string, any> = {}) => {
+	return sts.data.map((st) => model.to_mesh3d(st.pos(), st.att(), props));
 };
 
 import {d3Colors} from '$lib/plots/styling';
 
-export const alignment_traces = (sts: Record<string, State[]>, showmodels: boolean, 
+export const alignment_traces = (sts: Record<string, States>, showmodels: boolean, 
     showbox: boolean, obj: OBJ|null, nmodels: number, hid: number|null) => {
     const trs = [];
 
@@ -337,7 +319,7 @@ export const alignment_traces = (sts: Record<string, State[]>, showmodels: boole
 
         if (showmodels && (obj != null)){
           trs.push(...modeltrace(
-            downsample_states(v, nmodels), 
+            v.downsample(nmodels), 
             obj, 
             {opacity: 1.0, ...props}
           ));

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { sum } from '$lib/geometry';
-  import {flightdata} from '$lib/stores';
+	import {flightdata} from '$lib/stores';
   import ManSummary from './ManSummary.svelte';
 
   export let analysisName: string;
   export let total: number = 0;
+  export let difficulty: (v: number)=>number;
 
   let mannames = flightdata.mannames;
   
@@ -14,7 +14,7 @@
     totals[mn] = 0;
   });
 
-  export let difficulty;
+  
 
   const getTotal = (ttls: Record<string, number>) => {
     let total = 0;

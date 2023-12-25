@@ -1,5 +1,5 @@
 <script lang='ts'>
-	import type {Result} from '$lib/api_objects';
+	import type {Result} from '$lib/api_objects/scores';
     import Plot from 'svelte-plotly.js';
     import { downgrade_info} from '$lib/plots/traces';
     export let result: Result;

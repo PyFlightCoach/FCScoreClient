@@ -1,7 +1,8 @@
 <script lang="ts">
   import Plot from 'svelte-plotly.js';
   import { flightdata, colddraft } from '$lib/stores';
-  import {type ElementsResults, getEl} from '$lib/api_objects';
+  import {ScoredMan} from '$lib/api_objects/mandata';
+  import { goto } from '$app/navigation';
   import {States, Points, Point  } from '$lib/geometry';
   import {layout3d} from '$lib/plots/layouts';
   import {ribbon, modeltrace} from '$lib/plots/traces';
@@ -13,29 +14,19 @@
 
   export let data;
 
+
   $: man = flightdata.mans[data.mname];
   $: summaries = $man.score.intra.summaries();
 
-  $: state = new States($man.al);
-  $: states = state.split();
-  $: template = new States($man.intended_template);
-  $: templates = template.split();
+  $: states = $man.al.split();
+  $: templates = $man.intended_template.split();
   
   let activeCriteria: null|string = null;
   let activeElName: null|string = null;
 
   let layout = layout3d;
 
-
-  const getElement = (elName: string|null) => {
-    const elnames = $man.intended.elements.map(el=>el.uid);
-    if (elName != null && elName != "entry_line") {
-      return $man.intended.elements[elnames.indexOf(activeElName)];
-    } else {
-      return null;
-    }
-  }
-  $: element = getElement(activeElName);
+  $: element = $man.intended.getEl(activeElName);
   
   const dgtraces = (sts: Record<string, States>, tps: Record<string, States>, hel: string | null = null) => {
     
@@ -47,15 +38,15 @@
       const props = {color: d3Colors[i % d3Colors.length],name: k};
 
       if (k == hel) {
-        trs.push(...modeltrace(st.downsample(3).data, $colddraft, {opacity: 1.0, ...props}));
-        trs.push(...modeltrace(tp.downsample(3).data, $colddraft, {opacity: 0.5, ...props}));
-        trs.push(ribbon(st.data, 2, {}, {opacity: 0.8, showlegend:false, ...props}));
-        trs.push(ribbon(tp.data, 2, {}, {opacity: 0.4, showlegend:false, ...props}));
+        trs.push(...modeltrace(st.downsample(3), $colddraft, {opacity: 1.0, ...props}));
+        trs.push(...modeltrace(tp.downsample(3), $colddraft, {opacity: 0.5, ...props}));
+        trs.push(ribbon(st, 2, {}, {opacity: 0.8, showlegend:false, ...props}));
+        trs.push(ribbon(tp, 2, {}, {opacity: 0.4, showlegend:false, ...props}));
 
       } else if (hel == null) {
-        trs.push(ribbon(st.data, 3, {}, {opacity: 0.8, showlegend:false, ...props}));
+        trs.push(ribbon(st, 3, {}, {opacity: 0.8, showlegend:false, ...props}));
       } else {
-        trs.push(ribbon(st.data, 2, {}, {opacity: 0.4, ...props}));
+        trs.push(ribbon(st, 2, {}, {opacity: 0.4, ...props}));
       } 
     }
     
@@ -96,7 +87,7 @@
     }
   }
 
-  $: layout = update_layout(state, states, activeElName);
+  $: layout = update_layout($man.al, states, activeElName);
   $: showintra = activeElName != null && activeCriteria != null  && activeCriteria != 'Total';
 
 </script>
@@ -109,7 +100,7 @@
   <div id='intra_summary'>
     <div class='plot' class:fullwidth={!showintra} class:fullheight={!showintra}> 
       <Plot layout={layout} data={traces} fillParent={true}
-        on:click={(e) => {activeElName = e.detail.points[0].data.name;}}
+        on:click={(e) => {activeCriteria = null;activeElName = e.detail.points[0].data.name;}}
       />
     </div>
     
@@ -138,13 +129,13 @@
         </div>
         <div><CriteriaPlot
           result={$man.score.intra.data[activeElName].data[activeCriteria]}
-          element={getEl(activeElName, $man.intended)}
+          element={$man.intended.getEl(activeElName)}
         /></div>
         
       </div>  
       <div class='plot fullwidth'><DGPlot 
         result={$man.score.intra.data[activeElName].data[activeCriteria]}
-        element={getEl(activeElName, $man.intended)}          
+        element={$man.intended.getEl(activeElName)}          
       /></div>
 
     {/if}

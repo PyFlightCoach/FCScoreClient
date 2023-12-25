@@ -11,17 +11,15 @@
 
   $: man = flightdata.mans[data.mname];
   
-  $: state = new States($man.al);
-  $: states = state.split();
+  $: states = $man.al.split();
 
-  const get_points = (states: Record<string, State[]>) => {
+  const get_points = (states: Record<string, States>) => {
     return $man.mdef.info.centre_points.map(i=>{
       return Object.values(states)[i].data.at(-1).pos();
     })
   }
 
-  const get_el_points = (states: Record<string, State[]>) => {
-    
+  const get_el_points = (states: Record<string, States>) => {
     return $man.mdef.info.centred_els.map(i=>{
       let el = Object.values(states)[i[0]+1].data;
       return el[Math.round(i[1] * el.length)].pos();
@@ -30,8 +28,7 @@
 
   $: centre_points = get_points(states);
   $: el_points = get_el_points(states);
-  // , info.centre_points.map(i=>'centre point '.concat(i.toString()))
-  // info.centred_els.map(i=>'centred element '.concat(i[0].toString()))
+
 </script>
 
 

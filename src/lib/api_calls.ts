@@ -1,7 +1,8 @@
-import {ManDef, ManoeuvreResult} from '$lib/api_objects';
+import {ManDef} from '$lib/api_objects/mandef';
+import {ManoeuvreResult} from '$lib/api_objects/scores';
 import {State} from '$lib/geometry';
 
-
+//0.0.0.0:5000/
 async function server_func(func_name: string, kwargs: Record<string, any>={}) {
     const response = await fetch(
         'http://0.0.0.0:5000/' + func_name, 

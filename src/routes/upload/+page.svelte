@@ -1,14 +1,13 @@
 <script lang="ts">
   import { Fileupload, Label, Button } from 'flowbite-svelte'
   import {convert_fcj} from '$lib/api_calls';
-
+  import {ReadMan} from '$lib/api_objects/mandata';
   let data: Record<string, any>;
   import { flightdata } from '$lib/stores.js';
   import { State} from '$lib/geometry';
 
   let name = flightdata.name;
 	let sinfo = flightdata.sinfo;
-  let direction = flightdata.direction;
   
   function readjson(event) {
     if (event.target.files.length > 0) {
@@ -29,14 +28,9 @@
 
   const convert_json = () => {
     if (data) {
-      convert_fcj(data, $sinfo)
-      .then((res: Record<string, any>) => {
+      convert_fcj(data, $sinfo).then((res: Record<string, any>) => {
         for (const [key, value] of Object.entries(res)) {
-          value['busy'] = false;
-          flightdata.addMan(key).set(value);
-          if (Object.keys(flightdata.mans).length == 1) {
-            $direction = State.parse(value.fl[0]).direction()
-          }
+          flightdata.addMan(key, ReadMan.parse(value));
         }
       });
     }

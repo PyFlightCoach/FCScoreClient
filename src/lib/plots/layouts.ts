@@ -1,4 +1,4 @@
-import {max, min} from '$lib/geometry';
+import {max, min} from '$lib/arrays';
 
 
 export let layout3d = {

@@ -4,7 +4,7 @@
   import Difficulty from './Difficulty.svelte';
   export let data;
   let mannames = flightdata.mannames;
-  let difficulty: (v:number)=>v;
+  let difficulty: (v:number)=>number;
 
   $navitems=[
     new NavContent('Align All', '', ()=>{flightdata.alignlist(Object.keys($mannames))}),
@@ -14,7 +14,7 @@
   ];
 
   let total=0;
-//  $: total = flightdata.totalScore($mannames);  
+
 
 </script>
 

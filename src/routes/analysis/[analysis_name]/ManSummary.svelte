@@ -2,8 +2,9 @@
 <script lang="ts">
 
   import {flightdata} from '$lib/stores';
-  import {d3Colors, colscale, redsColors} from '$lib/plots/styling';
-  
+  import {colscale, redsColors} from '$lib/plots/styling';
+  import {ScoredMan} from '$lib/api_objects/mandata';
+
   export let analysisName: string;
   export let manname: string;
   export let difficulty = (v: number) => v;
@@ -12,18 +13,14 @@
   $: man = flightdata.mans[manname];
   $: aligned = !('fl' in $man); 
   $: busy = $man.busy;
-  $: scored = 'score' in $man;
+  
+  $: intra = $man instanceof ScoredMan ? $man.score.intra.factoredDG(difficulty) : 0;
+  $: inter = $man instanceof ScoredMan ? $man.score.inter.factoredDG(difficulty) : 0;
+  $: position = $man instanceof ScoredMan ? $man.score.positioning.factoredDG(difficulty) : 0;
 
-  $: intra = scored ? $man.score.intra.factoredDG(difficulty) : 0;
-  $: inter = scored ? $man.score.inter.factoredDG(difficulty) : 0;
-  $: position = scored ? $man.score.positioning.factoredDG(difficulty) : 0;
 
-
-  $: score = scored ? Math.max((10 - intra - inter - position), 0) : 0;
+  $: score = $man instanceof ScoredMan ? Math.max((10 - intra - inter - position), 0) : 0;
   $: total = score * $man.mdef.info.k;
-
-
-
 
 </script>
 
@@ -31,7 +28,7 @@
 <div>{manname}</div>
 <div>{$man.mdef.info.k}</div>
 
-{#if scored}
+{#if $man instanceof ScoredMan}
   <a style:background-color={colscale(intra, 6, redsColors)} href='{analysisName}/{manname}/intra'>{intra.toFixed(2)}</a>
   <a style:background-color={colscale(inter, 6, redsColors)} href='{analysisName}/{manname}/inter'>{inter.toFixed(2)}</a>
   <a style:background-color={colscale(position, 6, redsColors)} href='{analysisName}/{manname}/positioning'>{position.toFixed(2)}</a>
@@ -45,7 +42,7 @@
 <div>
   {#if busy}
     <div>Busy</div>
-  {:else if scored}
+  {:else if $man instanceof ScoredMan}
     <a href='{analysisName}/{manname}/summary'>{score.toFixed(1)}</a>
   {:else if aligned}
     <button color='light' style='width:200px' on:click={() => {flightdata.scoreman(manname);}}>Calculate Scores</button>

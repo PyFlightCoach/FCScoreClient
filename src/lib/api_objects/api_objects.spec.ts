@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {BoxLocation, parse_dict, Height, Direction, Orientation} from '$lib/api_objects';
-
+import {BoxLocation, Height, Direction, Orientation} from '$lib/api_objects';
+import {parse_dict} from '$lib/arrays';
 
 describe("boxloc", () => {
     it("fromdata", () => {

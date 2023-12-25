@@ -1,7 +1,5 @@
 <script lang="ts">
   import Plot from 'svelte-plotly.js';
-
-
   import { Tooltip } from 'flowbite-svelte';
 
   export let difficulty = (v: number) => v;

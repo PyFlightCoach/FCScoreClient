@@ -4,40 +4,34 @@
   import Plot from 'svelte-plotly.js';
   import {alignment_traces} from '$lib/plots/traces';
 	import { flightdata, colddraft } from '$lib/stores';
-  
-  import {Tooltip, Input, BottomNavItem, BottomNav, Select} from 'flowbite-svelte';
+  import {ReadMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
+  import {Tooltip, Input, BottomNavItem, BottomNav, Select, ScoreRating} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
   import {layout3d} from '$lib/plots/layouts';  
   import {split_states} from '$lib/geometry';
   export let data;
 
-  $: man = flightdata.mans[data.mname];
-  $: manname = $man.mdef.info.short_name;
+  let man = flightdata.mans[data.mname];
   let mannames = flightdata.mannames;
+
+  $: if ($man instanceof ReadMan) {
+    goto('/analysis/'+data.analysis_name + '/' + data.mname + '/summary');
+  }
 
   let step: number = 0.1;
   let eid: number | null = null;
   let show_models=false;
-  let all_elements: string[];   $: all_elements = $man.al.map((el: Record<string, any>) => el.element);
-  let elements: string[];       $: elements = [...new Set(all_elements)];
-
-  $: end_info = Object.fromEntries(elements.map((el) => {
-      const lastid = all_elements.lastIndexOf(el);
-      const firstid = all_elements.indexOf(el);
-      return [el, {lastid: lastid,lastt: $man.al[lastid].t, firstid: firstid, firstt:$man.al[firstid].t}];
-  }));
+  
+  $: elements = $man.al.elements();
+  $: end_info = $man.al.end_info();
   
   let element = 'Select Element'
   $: if (eid != null) {element = elements[eid]} else {element = 'Select Element'};
 
-
   const editsplit = (stp: number, elname: string) => {
+
     man.update((val) => {
-      if ('score' in val) {
-        delete val['score'];
-        delete val['analysis'];
-      }
-      $mannames[manname]=2;
+      $mannames[data.mname]=2;
 
       const elindex = elements.indexOf(elname);
       let i=0;
@@ -46,8 +40,8 @@
           end_info[elname].lastt + stp, 
           end_info[elements[elindex+1]].lastt - 0.1
         );
-        while (val.al[end_info[elements[elindex]].lastid + i].t < endt) {
-          val.al[end_info[elements[elindex]].lastid + i].element = elname; i++;
+        while (val.al.data[end_info[elements[elindex]].lastid + i].t < endt) {
+          val.al.data[end_info[elements[elindex]].lastid + i].element = elname; i++;
         }
 
       } else {
@@ -55,11 +49,11 @@
           end_info[elname].lastt + stp, 
           end_info[elname].firstt + 0.1
         );
-        while (val.al[end_info[elements[elindex]].lastid - i].t > endt) {
-          val.al[end_info[elements[elindex]].lastid - i].element = elements[elindex+1]; i++;
+        while (val.al.data[end_info[elements[elindex]].lastid - i].t > endt) {
+          val.al.data[end_info[elements[elindex]].lastid - i].element = elements[elindex+1]; i++;
         }
       }
-      return val
+      return new AlignedMan(val.mdef, false, 0, val.al);
     });
   };
 
@@ -73,7 +67,7 @@
     }
   }
 
-  $: states = split_states($man['al']);
+  $: states = $man.al.split();
   $: traces = alignment_traces(states, show_models, false, $colddraft, 1, eid)
   //$: layout = get_ar(traces, 20);
 
@@ -83,9 +77,7 @@
 
 <div id="parent">
   <Plot 
-    data={traces} 
-    layout={layout3d}
-    fillParent={true}
+    data={traces} layout={layout3d} fillParent={true}
     on:click={(e) => {change_element(e.detail.points[0].data.name)}}
   />
   <BottomNav classInner="grid-cols-5" >

@@ -1,8 +1,8 @@
 <script lang='ts'>
-  import type {Result} from '$lib/api_objects';
+  import type {Result} from '$lib/api_objects/scores';
   
   import Plot from 'svelte-plotly.js';
-  import {criteria_info} from '$lib/plots/traces';
+  import {criteriaInfo} from '$lib/plots/traces';
   
   export let result: Result;
   export let element: Record<string, any>;
@@ -20,7 +20,7 @@
 
 
 <Plot 
-  data={[criteria_info(downgrade.criteria, scale)]} 
+  data={[criteriaInfo(downgrade.criteria, scale)]} 
   layout={{
       yaxis:{title:'downgrade',range:[0,10]}, 
       xaxis:{title: downgrade.criteria.comparison + ' error'},

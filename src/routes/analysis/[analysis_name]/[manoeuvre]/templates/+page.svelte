@@ -14,22 +14,19 @@
 
 
   const make_trace = (tp: States, models: boolean, name: string, color: string) => {
-    const trs = [ribbon(tp.data, 3, {}, {name, color})]
+    const trs = [ribbon(tp, 3, {}, {name, color})]
 
     if (models && ($colddraft != null)) {
-      trs.push(...modeltrace(tp.downsample(20).data, $colddraft, {name, color}));
+      trs.push(...modeltrace(tp.downsample(20), $colddraft, {name, color}));
     }
     return trs;
   }
 
   const make_traces = (_man: Record<string, any>, bf: boolean, bi: boolean, bc: boolean) => {
     const trs = [];
-    if (bf) {trs.push(...make_trace(new States($man.al), true, 'flown', 'red'))}
-    if (bi) {trs.push(...make_trace(new States($man.intended_template), true, 'intended', 'blue'))}
-    if (bc) {trs.push(...make_trace(new States($man.corrected_template), true, 'corrected', 'green'))}
-
-//    if (bi) {trs.push(ribbon($man.intended_template, 3, {name:'intended', color:'blue', showlegend:true}))}
- //   if (bc) {trs.push(ribbon($man.corrected_template, 3, {name:'corrected', color:'green', showlegend:true}))}
+    if (bf) {trs.push(...make_trace($man.al, true, 'flown', 'red'))}
+    if (bi) {trs.push(...make_trace($man.intended_template, true, 'intended', 'blue'))}
+    if (bc) {trs.push(...make_trace($man.corrected_template, true, 'corrected', 'green'))}
     return trs
   }
 

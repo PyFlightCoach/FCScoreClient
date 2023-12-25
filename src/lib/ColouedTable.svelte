@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { max  } from '$lib/geometry';
+  import { max  } from '$lib/arrays';
   import {d3Colors, colscale, redsColors} from '$lib/plots/styling';
 
 	export let data: Record<string, Record<string, number>>;
@@ -17,8 +17,14 @@
 
   const activateCell = (row: string|null, col: string|null) => {
     console.log(colNames)
-    activeRow = row;
-    activeCol = col;
+    if (row == null || col == null) {
+      activeRow = row;
+      activeCol = col;
+    } else if (data[row][col] != null) {
+      activeRow = row;
+      activeCol = col;
+    }
+    
   }
 
   const getColor = (row: string, col: string) => {

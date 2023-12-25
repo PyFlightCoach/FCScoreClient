@@ -1,19 +1,4 @@
-
-export const max = (arr: number[]) => {
-    return arr.reduce((a, b) => Math.max(a, b), -Infinity);
-}
-
-export const min = (arr: number[]) => {
-    return arr.reduce((a, b) => Math.min(a, b), Infinity);
-}
-
-export const sum = (arr: number[]) => {
-    return arr.reduce((a, b) => (a + b));
-}
-
-export const mean = (arr: number[]) => {
-    return sum(arr) / arr.length;
-}
+import {min, max, sum, mean} from '$lib/arrays';
 
 export class Point {
     x: number; y: number; z: number;
@@ -194,7 +179,7 @@ export class States {
     data: State[];
     constructor(data: State[]) {this.data=data;}
 
-    parse (data: Record<string, any>[]) {
+    static parse (data: Record<string, any>[]) {
         return new States(data.map(st => State.parse(st)))
     }
     pos () {return this.data.map(state => state.pos())}
@@ -243,7 +228,25 @@ export class States {
         return new States(sts);
     };
     
-    
+    elements() {
+        return [...new Set(this.element())];
+    }    
+
+    end_info() {
+        const all_elements = this.element();
+        return Object.fromEntries(this.elements().map((el) => {
+            const lastid = all_elements.lastIndexOf(el);
+            const firstid = all_elements.indexOf(el);
+            return [
+                el, 
+                {
+                    lastid,
+                    lastt: this.data[lastid].t, 
+                    firstid, 
+                    firstt:this.data[firstid].t
+                }];
+        }));
+    }
 
 }
 
