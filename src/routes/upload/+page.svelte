@@ -4,27 +4,41 @@
   import {ReadMan} from '$lib/api_objects/mandata';
   let data: Record<string, any>;
   import { flightdata } from '$lib/stores.js';
-  import { State} from '$lib/geometry';
+  import { goto } from '$app/navigation';
+
+  import { Alert } from 'flowbite-svelte';
 
   let name = flightdata.name;
 	let sinfo = flightdata.sinfo;
-  
+  let warning=false;
+
   function readjson(event) {
+    flightdata.clear();
+    warning=false;
     if (event.target.files.length > 0) {
       let file = event.target.files[0];
       if (file.name.split('.').pop() == "json") {
         let fr = new FileReader();
         fr.onload = (event) => {
           data=JSON.parse(event.target.result);
-          $sinfo = {
-            category: data.parameters.schedule[0], 
-            name: data.parameters.schedule[1]
-          };
-          $name=data.name.replace(/\.[^/.]+$/, "");
+
+          if ('comments' in data) {
+            $sinfo = {
+              category: data.parameters.schedule[0], 
+              name: data.parameters.schedule[1]
+            };
+            $name=data.name.replace(/\.[^/.]+$/, "");
+          } else if ('client_version' in data) {
+            flightdata.import(data);
+            goto('/analysis/' + $name);
+          } else {
+            warning=true;
+          }
+          
         };
         console.log(file);
         fr.readAsText(file);
-  }}}
+  }else{warning=true;}}}
 
   const convert_json = () => {
     if (data) {
@@ -44,11 +58,13 @@
     {#if $name}
       <p>{$name}</p>
     {:else}
-      <p>select a Flight Coach json file</p>
+      <p>select a Flight Coach json file or a FCScore Analysis json file</p>
     {/if}
   </Label>
   <Fileupload on:change={readjson}/>
-  
+  {#if warning}
+    <Alert>This file doesn't look like a FC json or a FCScore json</Alert>
+  {/if}
 </div>
 
 {#if $name}

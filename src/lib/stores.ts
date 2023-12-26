@@ -1,11 +1,11 @@
-import { writable, readable } from 'svelte/store';
-import type { Writable, Readable } from 'svelte/store';
-import { align, score, create_fc_json } from '$lib/api_calls';
-import {type State, States} from '$lib/geometry';
+import { writable, type Writable } from 'svelte/store';
+import { align, score, create_fc_json, server_version } from '$lib/api_calls';
+import type {State} from '$lib/geometry';
 import type { ManDef } from '$lib/api_objects/mandef';
 import {type ReadMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
-//import { saveAs } from 'file-saver';
 import pkg from 'file-saver';
+import {PUBLIC_VERSION} from '$env/static/public';
+
 const { saveAs } = pkg;
 export const PlotlyLib = writable(null);
 
@@ -59,9 +59,7 @@ class FlightData {
         console.log('Aligment error, man=' + name + ', ' + err);
         rman.update(man => {man.busy = false; return man;});
       }
-
     }
-
   }
 
   async alignlist(names: string[]) {
@@ -123,25 +121,61 @@ class FlightData {
     });
     let fcj = await create_fc_json(sts, mdefs, 'kind', 'F3A');
     var fileToSave = new Blob(
-    [JSON.stringify(fcj)], 
-    {type: 'application/json'}
+      [JSON.stringify(fcj)], 
+      {type: 'application/json'}
     );
 
     saveAs(fileToSave, kind + '_template.json');
   }
   
-  export(): Record<string, any> {
-    // export the stored manoeuvre analysis, might be useful one day
-    let expd: Record<string, any> = {};
+  get_value (name: string) {
+    let outv: any;
+    this[name].subscribe(v => {outv=v})();
+    return outv
+  }
+
+  set_value (name: string, value: any) {
+    this[name].set(value);
+  }
+
+  async export() {
+    let name: string = this.get_value('name');
+    let mnames: Record<string, any> = this.get_value('mannames');
+        
+    let expd: Record<string, any> = {
+      name,
+      client_version: PUBLIC_VERSION,
+      server_version: await server_version(),
+      sinfo: this.get_value('sinfo'),
+      score: this.totalScore(mnames),
+      manscores: Object.fromEntries(Object.keys(this.mans).map((mn)=>{
+        return [mn, this.manScore(mn)]
+      })),
+      data: {}
+    };
 
     Object.values(this.mans).forEach((man: Writable<Record<string, any>>) => {
       man.subscribe((val) => {
-        expd[val.mdef.info.short_name] = val;
+        expd.data[val.mdef.info.short_name] = val;
       });
     });
-    return expd;
+
+    var fileToSave = new Blob(
+      [JSON.stringify(expd)], 
+      {type: 'application/json'}
+    );   
+
+    saveAs(fileToSave, name + '_analysis.json');
   }
 
+  import (data: Record<string, any>) {
+    this.name.set(data.name);
+    this.sinfo.set(data.sinfo);
+    Object.entries(data.data).forEach((man)=>{
+      this.addMan(man[0], ScoredMan.parse(man[1]));
+    });
+
+  }
 
   manScore(mname :string) {
     let man: Record<string, any> = {};
@@ -161,6 +195,8 @@ class FlightData {
     })
     return total
   }
+
+
 
 }
 

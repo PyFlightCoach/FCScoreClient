@@ -179,8 +179,14 @@ export class States {
     data: State[];
     constructor(data: State[]) {this.data=data;}
 
-    static parse (data: Record<string, any>[]) {
-        return new States(data.map(st => State.parse(st)))
+    static parse (data: Record<string, any>[] | Record<string, Record<string, any[]>>): States{
+        if ('data' in data) {
+            return new States(data.data.map(st => State.parse(st)))
+        } else {
+            return new States(data.map(st => State.parse(st)))
+        }
+        
+
     }
     pos () {return this.data.map(state => state.pos())}
     att () {return this.data.map(state => state.att())}

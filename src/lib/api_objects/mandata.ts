@@ -57,17 +57,23 @@ export class ManData{
       super(mdef, busy, dist, al);
     }
     static parse(data: Record<string, any>) {
-      return new ScoredMan(
-        ManDef.parse(data.mdef),
-        false,
-        0, 
-        States.parse(data.al),
-        Manoeuvre.parse(data.intended),
-        States.parse(data.intended_template),
-        Manoeuvre.parse(data.corrected),
-        States.parse(data.corrected_template),
-        ManoeuvreResult.parse(data.score),
-      )
+      if ('score' in data) {
+        return new ScoredMan(
+          ManDef.parse(data.mdef),
+          false,
+          0, 
+          States.parse(data.al),
+          Manoeuvre.parse(data.intended),
+          States.parse(data.intended_template),
+          Manoeuvre.parse(data.corrected),
+          States.parse(data.corrected_template),
+          ManoeuvreResult.parse(data.score),
+        )
+      } else if ('al' in data) {
+        return AlignedMan.parse(data);
+      } else {
+        return ReadMan.parse(data);
+      } 
     }
     static partial_parse(md: AlignedMan, data: Record<string, any>) {
         return new ScoredMan(

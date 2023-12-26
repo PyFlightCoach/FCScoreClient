@@ -7,8 +7,8 @@ export async function load({fetch, params}) {
         
         const p23mans = ["tHat", "hSqL", "hB", "hSqLC", "upL", "h8L", "rollC", "pImm", "iSp", "hB2", "rEt", "sqL", "M", "fTrn", "trgle", "sFin", "loop"]
         
-        let name = flightdata.name;
-        name.update(v=>'example');
+        flightdata.set_value('name', 'example');
+        flightdata.set_value('sinfo', {category: 'f3a', name: 'p23'});
 
         for (let i = 0; i<p23mans.length; i++) {
             const mname = p23mans[i];

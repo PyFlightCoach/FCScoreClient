@@ -59,6 +59,7 @@
           <DropdownDivider/>
           <Helper>{$name}</Helper>
           <DropdownItem href={'/analysis/' + $name}>analysis</DropdownItem>
+          <DropdownItem on:click={()=>{flightdata.export()}}>export</DropdownItem>
           <DropdownItem on:click={()=>{clearflight('/')}}>clear</DropdownItem>
         {:else}
           <DropdownItem href='/analysis/example'>example</DropdownItem>
