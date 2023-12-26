@@ -73,11 +73,7 @@
           <DropdownItem href='/schedule/create/manoeuvre'>create manoeuvre</DropdownItem>
         </Dropdown>
       -->
-      <NavLi id='info' class="cursor-pointer"><Chevron aligned>Info</Chevron></NavLi>
-      <Dropdown triggeredBy="#info" class="w-44 z-20">
-        <DropdownItem href='/info'>global</DropdownItem>
-        <DropdownItem href='/info/current'>current page</DropdownItem>
-      </Dropdown>
+      <NavLi id='info' class="cursor-pointer" href="https://pfcdocumentation.readthedocs.io/fcscore/index.html" target="_blank">Info</NavLi>
     </NavUl>
 
   </Navbar>
