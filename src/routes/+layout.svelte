@@ -62,7 +62,7 @@
           <DropdownItem on:click={()=>{flightdata.export()}}>export</DropdownItem>
           <DropdownItem on:click={()=>{clearflight('/')}}>clear</DropdownItem>
         {:else}
-          <DropdownItem href='/analysis/example'>example</DropdownItem>
+          <DropdownItem href='/analysis/example' data-sveltekit-preload-data="tap">example</DropdownItem>
         {/if} 
       </Dropdown> 
       <!-- 
