@@ -1,8 +1,8 @@
 import { writable, type Writable } from 'svelte/store';
-import { align, score, create_fc_json, server_version } from '$lib/api_calls';
+import { analyse_manoeuvre, score_manoeuvre, create_fc_json, server_version } from '$lib/api_calls';
 import type {State} from '$lib/geometry';
 import type { ManDef } from '$lib/api_objects/mandef';
-import {type ReadMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
+import {ReadMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
 import pkg from 'file-saver';
 import {PUBLIC_VERSION} from '$env/static/public';
 
@@ -23,10 +23,13 @@ class FlightData {
     this.mans[name] = writable(man);
     this.mannames.update((mnames) => {
       mnames[name] = 1;
+      if (man instanceof AlignedMan) {mnames[name] = 2;} 
+      if (man instanceof ScoredMan) {mnames[name] = 3;}
+      
       return mnames;
     });
     if (Object.keys(this.mans).length == 1) {
-      const st = 'fl' in man ? man.fl : man.al;
+      const st = 'fl' in man ? man.fl : man.aligned;
       this.direction.set(st.data[0].direction());
     }
     return this.mans[name];
@@ -41,65 +44,37 @@ class FlightData {
   }
 
 
-  async alignman(name: string) {
+  async analyseManoeuvre(name: string, force: boolean = false) {
     let rman = this.mans[name];
-    let man: ReadMan;
-    rman.subscribe((val) => { man = val })();
     
-    if (('fl' in man) && !man.busy) {
-      rman.update(man => { man.busy = true; return man; });
-      try {
-
-        await align(man.mdef, man.fl.data).then(res => {
-          rman.set(AlignedMan.partial_parse(man, res));
-          this.mannames.update(mnames => { mnames[name] = 2; return mnames; })
-        });
-        
-      } catch (err) {
-        console.log('Aligment error, man=' + name + ', ' + err);
-        rman.update(man => {man.busy = false; return man;});
-      }
-    }
-  }
-
-  async alignlist(names: string[]) {
-    for (let i=0; i<names.length; i++) {
-      await this.alignman(names[i]);
-    }
-  }
-
-  async scoreman(name: string) {
-    let rman = this.mans[name];
-    let man: AlignedMan | ReadMan | ScoredMan;
-    rman.subscribe((val) => { man = val })();
+    const direction = this.get_value('direction');
     
-    let direction: number=0;
-    this.direction.subscribe(di=>{direction=di})();
+    async function score(man: ReadMan | AlignedMan | ScoredMan) {
+      if ((man instanceof AlignedMan) || (man instanceof ScoredMan && force)) {
+        return await score_manoeuvre(man.mdef, man.manoeuvre, man.aligned, man.template);
+      } else if (man instanceof ScoredMan) {
+        man.busy = false;
+        return man;
+      } else {
+        return await analyse_manoeuvre(man.mdef, man.fl, direction);
+      } 
+    }
 
-    if ((man instanceof AlignedMan) && !man.busy) {
-      rman.update(man => { man.busy = true; return man; });
-      try {
+    let man: ReadMan | AlignedMan | ScoredMan;
+    rman.subscribe((val) => { man = val })();
+    if (!man.busy) {
+      rman.update(v=>{v.busy=true; return v})
+      score(man).then(res=>{rman.set(res)})
+    }
         
-        await score(man.mdef, man.al.data, direction).then(res => {
-          rman.set(ScoredMan.partial_parse(man, res));
-          this.mannames.update((mnames) => { mnames[name] = 3; return mnames; });
-        });
-   
-      } catch (err) {
-
-        console.log('Scoring error, man=' + name + ', ' + err);
-        rman.update(man => {man.busy = false; return man; });
-
-      }
-    }
   }
 
-  async scorelist(names: string[]) {
+  async analyseList(names: string[]) {
     for (let i=0; i<names.length; i++) {
-      await this.alignman(names[i]);
-      await this.scoreman(names[i]);
+      await this.analyseManoeuvre(names[i]);
     }
   }
+
 
   async downloadTemplate (kind: string) {
     let sts: State[] = [];
@@ -110,14 +85,17 @@ class FlightData {
 
     Object.keys(mannames).forEach(mn => {
     flightdata.mans[mn].subscribe(man=>{
-      if (kind=='intended') {
-      sts = sts.concat(man.intended_template);
-      } else {
-      sts = sts.concat(man.corrected_template);
+      if (man instanceof ScoredMan) {
+        if (kind=='intended') {
+          sts = sts.concat(man.template);
+        } else {
+          sts = sts.concat(man.corrected_template);
+        }  
       }
       
       mdefs.push(man.mdef);
     })();
+
     });
     let fcj = await create_fc_json(sts, mdefs, 'kind', 'F3A');
     var fileToSave = new Blob(

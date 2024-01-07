@@ -18,15 +18,15 @@
   $: man = flightdata.mans[data.mname];
   $: summaries = $man.score.intra.summaries();
 
-  $: states = $man.al.split();
-  $: templates = $man.intended_template.split();
+  $: states = $man.aligned.split();
+  $: templates = $man.template.split();
   
   let activeCriteria: null|string = null;
   let activeElName: null|string = null;
 
   let layout = layout3d;
 
-  $: element = $man.intended.getEl(activeElName);
+  $: element = $man.manoeuvre.getEl(activeElName);
   
   const dgtraces = (sts: Record<string, States>, tps: Record<string, States>, hel: string | null = null) => {
     
@@ -87,7 +87,7 @@
     }
   }
 
-  $: layout = update_layout($man.al, states, activeElName);
+  $: layout = update_layout($man.aligned, states, activeElName);
   $: showintra = activeElName != null && activeCriteria != null  && activeCriteria != 'Total';
 
 </script>
@@ -115,27 +115,19 @@
             {#if Object.keys(element).indexOf('radius') >=0}<p>radius = {element.radius.toFixed(0)} m</p>{/if}
             {#if Object.keys(element).indexOf('roll') >=0}<p>roll = {(element.roll * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
             {#if Object.keys(element).indexOf('angle') >=0}<p>angle = {(element.angle * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
-          {/if}
-          <p>
-            {#if $man.score.intra.data[activeElName].data[activeCriteria].measurement.value.length == 1}
-              This is a single analysis, only the end point of the element is assessed. The downgrade is based on absolute difference to the template.
-            {:else}
-              This is a continuous analysis, all changes in the measured value are downgraded. 
-            {/if}
-          </p>
-          
+          {/if}          
           <p>downgrade = {$man.score.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
           
         </div>
-        <div><CriteriaPlot
+        <CriteriaPlot
           result={$man.score.intra.data[activeElName].data[activeCriteria]}
-          element={$man.intended.getEl(activeElName)}
-        /></div>
+          element={$man.manoeuvre.getEl(activeElName)}
+        />
         
       </div>  
       <div class='plot fullwidth'><DGPlot 
         result={$man.score.intra.data[activeElName].data[activeCriteria]}
-        element={$man.intended.getEl(activeElName)}          
+        element={$man.manoeuvre.getEl(activeElName)}          
       /></div>
 
     {/if}
@@ -145,21 +137,17 @@
 
 
 <style>
-
-
-  #container {height: 92%; width:100%; position:fixed; display:grid; grid-template-columns:1fr 2fr;  }
+  #container {display:grid; grid-template-columns:1fr 2fr;  }
   .plot {height: 100%;  width: 100%;}
   .plot.fullwidth {grid-column: 1 / 3;}
   .plot.fullheight {grid-row: 1 / 3;}
   
-  .plot.split {height: 100%; width: 100%; display: grid; grid-template-rows: 1fr 1fr;}
+  .plot.split {display: grid; grid-template-rows: min-content 1fr;}
 
   #intra_summary {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 3fr 2fr;
     grid-template-rows: 1fr 1fr;
-    height: 100%;
-    width: 100%;
   }
 
 </style>

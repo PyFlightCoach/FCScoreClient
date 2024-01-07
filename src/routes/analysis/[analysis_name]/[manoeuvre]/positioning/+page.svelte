@@ -11,7 +11,7 @@
 
   $: man = flightdata.mans[data.mname];
   
-  $: states = $man.al.split();
+  $: states = $man.aligned.split();
 
   const get_points = (states: Record<string, States>) => {
     return $man.mdef.info.centre_points.map(i=>{
@@ -67,8 +67,13 @@
 
 
 <style>
-  #parent {display: grid; height:100%; width:100%; grid-template-columns: 1fr 2fr; position: fixed}
-  #table {display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; align-self: start;}
+  #parent {display: grid; height:100%; width:100%; grid-template-columns: max-content 1fr;}
+  #table {
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    align-items: start; 
+    align-self: start; 
+  }
 
 
 </style>

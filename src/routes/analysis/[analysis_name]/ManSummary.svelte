@@ -44,10 +44,8 @@
     <div>Busy</div>
   {:else if $man instanceof ScoredMan}
     <a href='{analysisName}/{manname}/summary'>{score.toFixed(1)}</a>
-  {:else if aligned}
-    <button color='light' style='width:200px' on:click={() => {flightdata.scoreman(manname);}}>Calculate Scores</button>
   {:else}
-    <button color='light' style='width:200px' on:click={()=> {flightdata.alignman(manname);}}>Run Alignment</button>
+    <button color='light' style='width:200px' on:click={()=> {flightdata.analyseManoeuvre(manname);}}>Run Analysis</button>
   {/if} 
 </div>
 

@@ -1,11 +1,13 @@
 import {ManDef} from '$lib/api_objects/mandef';
 import {ManoeuvreResult} from '$lib/api_objects/scores';
-import {State} from '$lib/geometry';
+import type {Manoeuvre} from '$lib/api_objects/manoeuvre';
+import { type AlignedMan, type ReadMan, ScoredMan } from '$lib/api_objects/mandata';
+import {State, States} from '$lib/geometry';
 
 //0.0.0.0:5000/
 async function server_func(func_name: string, kwargs: Record<string, any>={}) {
     const response = await fetch(
-        'http://0.0.0.0:5000/' + func_name, 
+        `${import.meta.env.VITE_BACKEND_URL}/${func_name}`, 
         {
             method: "POST", mode: "cors", 
             //cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -29,24 +31,31 @@ export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string
 }
 
 
-export async function align(mdef: Record<string, any>, fl: Record<string, any>){
-    const res = await server_func('align', {'mdef':mdef, 'fl':fl});
-    return {
-        dist: res.dist,
-        al: State.parse_arr(res.al)
+function parseAnalysis(res: Record<string, any>): AlignedMan | ScoredMan | ReadMan {
+    const output: Record<string, any> = {
+        mdef: ManDef.parse(res.mdef),
+        manoeuvre: res.manoeuvre,
+        aligned: States.parse(res.aligned),
+        template: States.parse(res.template)
+    };
+
+    if ('score' in res) {
+        
+        output.corrected = res.corrected;
+        output.corrected_template= States.parse(res.corrected_template);
+        output.score = ManoeuvreResult.parse(res.score);
+        
     }
+    return ScoredMan.parse(output);
 }
 
-export async function score(mdef: Record<string, any>, al: Record<string, any>, direction: number){
-    const data: Record<string, any> = await server_func('score', {mdef, al, direction});
-    return {
-        mdef: ManDef.parse(data.mdef),
-        intended: data.intended,
-        intended_template: State.parse_arr(data.intended_template),
-        corrected: data.corrected,
-        corrected_template: State.parse_arr(data.corrected_template),
-        score: ManoeuvreResult.parse(data.score)
-    };
+
+export async function analyse_manoeuvre(mdef: Record<string, any>, fl: Record<string, any>, direction: number){
+    return parseAnalysis(await server_func('analyse_manoeuvre', {mdef, fl:fl.data, direction}));
+}
+
+export async function score_manoeuvre(mdef: ManDef, manoeuvre: Manoeuvre, aligned: States, template: States){
+    return parseAnalysis(await server_func('score_manoeuvre', {mdef, manoeuvre, aligned: aligned.data, template:template.data}));
 }
 
 export async function create_fc_json(sts: State[], mdefs: ManDef[], name: string, category: string) {

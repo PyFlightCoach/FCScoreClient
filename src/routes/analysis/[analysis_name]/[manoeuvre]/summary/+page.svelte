@@ -12,19 +12,27 @@
   $: man = flightdata.mans[data.mname];
   $: mannames = flightdata.mannames;
 
-  $: st = $man instanceof ReadMan ? $man.fl : $man.al;
+  $: st = $man instanceof ReadMan ? $man.fl : $man.aligned;
 
 </script>
 
-<div>
-  <p>{$man.mdef.info.name}, Status = {['Read', 'Aligned', 'Scored'][$mannames[data.mname]-1]}</p>
-  <Plot
-    data={[ribbon(st, 3)]}
-    layout={layout3d}
-    fillParent={true}
-  />
+<div style:height=100%>
+  <div>
+    {$man.mdef.info.name}, Status = {['Read', 'Aligned', 'Scored'][$mannames[data.mname]-1]}
+  </div>
+  <div style:height=100%>
+    <Plot
+      data={[ribbon(st, 3)]}
+      layout={layout3d}
+      fillParent={true}
+    />
+    
+  </div>
 </div>
 
+
 <style>
-  div {height:94%}
+  #parent {
+    display: grid; grid-template-columns: min-content 1fr; align-items: stretch;
+  }
 </style>

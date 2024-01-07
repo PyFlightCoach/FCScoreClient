@@ -22,8 +22,8 @@
   let eid: number | null = null;
   let show_models=false;
   
-  $: elements = $man.al.elements();
-  $: end_info = $man.al.end_info();
+  $: elements = $man.aligned.elements();
+  $: end_info = $man.aligned.end_info();
   
   let element = 'Select Element'
   $: if (eid != null) {element = elements[eid]} else {element = 'Select Element'};
@@ -67,7 +67,7 @@
     }
   }
 
-  $: states = $man.al.split();
+  $: states = $man.aligned.split();
   $: traces = alignment_traces(states, show_models, false, $colddraft, 1, eid)
   //$: layout = get_ar(traces, 20);
 
@@ -75,11 +75,13 @@
 </script>
 
 
-<div id="parent">
-  <Plot 
-    data={traces} layout={layout3d} fillParent={true}
-    on:click={(e) => {change_element(e.detail.points[0].data.name)}}
-  />
+<div>
+  <div style:height=100%>
+    <Plot 
+      data={traces} layout={layout3d} fillParent={true}
+      on:click={(e) => {change_element(e.detail.points[0].data.name)}}
+    />
+  </div>
   <BottomNav classInner="grid-cols-5" >
     <Select  id="selectelement"
       bind:value={element} 
@@ -96,11 +98,4 @@
   <Tooltip triggeredBy="[id='adjustback']">Adjust split location backwards</Tooltip>
   <Tooltip triggeredBy="[id='adjustfor']">Adjust split location forwards</Tooltip>
   <Tooltip triggeredBy="[id='back']">Back to Main Page</Tooltip>
-  
-  
-
 </div>
-
-<style>
-  #parent {height: 100%; width:100%; position:fixed}
-</style>

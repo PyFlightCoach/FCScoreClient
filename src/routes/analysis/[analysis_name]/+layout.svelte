@@ -16,14 +16,6 @@
 </script>
 
   
-<slot id="contents"/>
+<slot/>
 
   
-<style >
-
-  #contents {
-      height: 100%;
-      width: 100%;
-  }
-
-</style>

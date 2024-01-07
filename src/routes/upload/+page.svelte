@@ -53,24 +53,37 @@
 
 </script>
 
-<div>
-  <Label>
-    {#if $name}
-      <p>{$name}</p>
-    {:else}
-      <p>select a Flight Coach json file or a FCScore Analysis json file</p>
+
+<div class ='centered'>
+  <div >
+    <Label>
+      {#if $name}
+        <p>{$name}</p>
+      {:else}
+        <p>select a Flight Coach json file or a FCScore Analysis json file</p>
+      {/if}
+    </Label>
+    <Fileupload on:change={readjson}/>
+    {#if warning}
+      <Alert>This file doesn't look like a FC json or a FCScore json</Alert>
     {/if}
-  </Label>
-  <Fileupload on:change={readjson}/>
-  {#if warning}
-    <Alert>This file doesn't look like a FC json or a FCScore json</Alert>
+  </div>
+
+  {#if $name}
+    <p>category={$sinfo.category}</p> 
+    <p>schedule={$sinfo.name}</p>
+    <Button on:click={convert_json} href={'/analysis/' + $name}>
+      Prepare Analysis
+    </Button>
   {/if}
 </div>
 
-{#if $name}
-  <p>category={$sinfo.category}</p> 
-  <p>schedule={$sinfo.name}</p>
-  <Button on:click={convert_json} href={'/analysis/' + $name}>
-    Prepare Analysis
-  </Button>
-{/if}
+<style>
+  .centered { 
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    width: 50%;
+    transform: translate(-50%, -50%);
+  }
+</style>

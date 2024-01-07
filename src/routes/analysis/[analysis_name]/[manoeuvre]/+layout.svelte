@@ -27,7 +27,7 @@
           nitems.push(new NavContent('Align', '', ()=>flightdata.alignman(data.mname)));
         }
       } 
-      
+      nitems.push(new NavContent('Back', '/analysis/'+data.analysis_name))
       return nitems;
     });
   }
