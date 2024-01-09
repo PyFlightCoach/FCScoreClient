@@ -7,7 +7,6 @@ import pkg from 'file-saver';
 import {PUBLIC_VERSION} from '$env/static/public';
 
 const { saveAs } = pkg;
-export const PlotlyLib = writable(null);
 
 
 class FlightData {
@@ -30,7 +29,7 @@ class FlightData {
     });
     if (Object.keys(this.mans).length == 1) {
       const st = 'fl' in man ? man.fl : man.aligned;
-      this.direction.set(st.data[0].direction());
+      this.direction.set(-st.data[0].direction());
     }
     return this.mans[name];
   };
@@ -51,7 +50,7 @@ class FlightData {
     
     async function score(man: ReadMan | AlignedMan | ScoredMan) {
       if ((man instanceof AlignedMan) || (man instanceof ScoredMan && force)) {
-        return await score_manoeuvre(man.mdef, man.manoeuvre, man.aligned, man.template);
+        return await score_manoeuvre(man.mdef, man.manoeuvre, man.aligned, direction);
       } else if (man instanceof ScoredMan) {
         man.busy = false;
         return man;
@@ -182,7 +181,7 @@ export const flightdata = new FlightData();
 export const schedule = new FlightData();
 export const mouse = writable({ x: 0, y: 0 });
 
-
+export const server = writable('http://localhost:5000');
 
 
 export class NavContent {

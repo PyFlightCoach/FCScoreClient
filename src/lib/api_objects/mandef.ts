@@ -40,6 +40,7 @@ export class BoxLocation{
   export class ManParm{
     constructor (readonly name: string, readonly criteria: Record<string, any>, 
       readonly defaul: any, readonly collectors: Record<string, any>) {}
+      
     static parse(data: Record<string, any>) {return new ManParm(
       data.name, data.criteria, data.default, data.collectors
     )}

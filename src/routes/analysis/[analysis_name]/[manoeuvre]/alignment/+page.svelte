@@ -40,8 +40,8 @@
           end_info[elname].lastt + stp, 
           end_info[elements[elindex+1]].lastt - 0.1
         );
-        while (val.al.data[end_info[elements[elindex]].lastid + i].t < endt) {
-          val.al.data[end_info[elements[elindex]].lastid + i].element = elname; i++;
+        while (val.aligned.data[end_info[elements[elindex]].lastid + i].t < endt) {
+          val.aligned.data[end_info[elements[elindex]].lastid + i].element = elname; i++;
         }
 
       } else {
@@ -49,11 +49,11 @@
           end_info[elname].lastt + stp, 
           end_info[elname].firstt + 0.1
         );
-        while (val.al.data[end_info[elements[elindex]].lastid - i].t > endt) {
-          val.al.data[end_info[elements[elindex]].lastid - i].element = elements[elindex+1]; i++;
+        while (val.aligned.data[end_info[elements[elindex]].lastid - i].t > endt) {
+          val.aligned.data[end_info[elements[elindex]].lastid - i].element = elements[elindex+1]; i++;
         }
       }
-      return new AlignedMan(val.mdef, false, 0, val.al);
+      return new AlignedMan(val.mdef, false, val.manoeuvre, val.aligned);
     });
   };
 

@@ -6,11 +6,12 @@
 
   let version: string = 'not connected';
 
-  onMount(()=>{
-    server_version().then(v=>{version=v});
-  });
+  const getVersion = async () => {version = await server_version()};
+
+  onMount(getVersion);
       
   import {PUBLIC_VERSION} from '$env/static/public';
+
 
 </script>
 
@@ -20,7 +21,7 @@
 
     <br/>
     <div>Client:{PUBLIC_VERSION}</div>
-    <div>Server:{version}</div>
+    <div>Server:<button on:click={()=>getVersion()}>{version}</button></div>
 
     <A href="https://github.com/PyFlightCoach/FCScore/blob/main/changelog.md">Version Info</A>
 

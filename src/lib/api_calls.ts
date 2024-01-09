@@ -5,20 +5,15 @@ import { type AlignedMan, type ReadMan, ScoredMan } from '$lib/api_objects/manda
 import {State, States} from '$lib/geometry';
 
 //0.0.0.0:5000/
-async function server_func(func_name: string, kwargs: Record<string, any>={}) {
+async function server_func(func_name: string, kwargs: Record<string, any>={}, method='POST') {
     const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/${func_name}`, 
         {
-            method: "POST", mode: "cors", 
-            //cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            //credentials: "same-origin", // include, *same-origin, omit
-            headers: {
-            "Content-Type": "application/json",
-        },
-    //    redirect: "follow", // manual, *follow, error
-    //    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(kwargs), // body data type must match "Content-Type" header
-    });
+            method, 
+            headers: {"Content-Type": "application/json"},
+            mode: "cors",
+            body: JSON.stringify(kwargs),
+        });
     if (!response.ok) {
         throw response.status;
     }
@@ -33,29 +28,27 @@ export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string
 
 function parseAnalysis(res: Record<string, any>): AlignedMan | ScoredMan | ReadMan {
     const output: Record<string, any> = {
-        mdef: ManDef.parse(res.mdef),
+        mdef: res.mdef,
         manoeuvre: res.manoeuvre,
-        aligned: States.parse(res.aligned),
-        template: States.parse(res.template)
+        aligned: res.aligned
     };
 
     if ('score' in res) {
-        
+        output.template =  res.template;
         output.corrected = res.corrected;
-        output.corrected_template= States.parse(res.corrected_template);
-        output.score = ManoeuvreResult.parse(res.score);
-        
+        output.corrected_template= res.corrected_template;
+        output.score = res.score;
     }
     return ScoredMan.parse(output);
 }
 
 
-export async function analyse_manoeuvre(mdef: Record<string, any>, fl: Record<string, any>, direction: number){
+export async function analyse_manoeuvre(mdef: ManDef, fl: States, direction: number){
     return parseAnalysis(await server_func('analyse_manoeuvre', {mdef, fl:fl.data, direction}));
 }
 
-export async function score_manoeuvre(mdef: ManDef, manoeuvre: Manoeuvre, aligned: States, template: States){
-    return parseAnalysis(await server_func('score_manoeuvre', {mdef, manoeuvre, aligned: aligned.data, template:template.data}));
+export async function score_manoeuvre(mdef: ManDef, manoeuvre: Manoeuvre, aligned: States, direction: number){
+    return parseAnalysis(await server_func('score_manoeuvre', {mdef, manoeuvre, aligned: aligned.data, direction}));
 }
 
 export async function create_fc_json(sts: State[], mdefs: ManDef[], name: string, category: string) {

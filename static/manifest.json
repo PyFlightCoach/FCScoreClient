@@ -1,0 +1,8 @@
+{
+    "name": "Flight Coach Score",
+    "short_name": "FCScore",
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#ffffff",
+    "background_color": "#000000",
+  }

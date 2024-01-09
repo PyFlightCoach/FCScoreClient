@@ -38,10 +38,14 @@
 		"flowbite": "^1.8.0",
 		"flowbite-svelte": "^0.40.2",
 		"flowbite-svelte-icons": "^0.3.6",
+		"node-fetch": "^3.3.2",
 		"obj-file-parser": "^0.6.2",
 		"plotly": "^1.0.6",
 		"plotly.js-dist": "^2.25.0",
+		"pyodide": "^0.24.1",
 		"svelte-plotly.js": "^0.3.2",
-		"tailwind-merge": "^1.14.0"
+		"tailwind-merge": "^1.14.0",
+		"workbox-precaching": "^7.0.0",
+		"xhr-shim": "^0.1.3"
 	}
 }

@@ -28,8 +28,7 @@ export class AlignedMan extends ManData{
   constructor(
     mdef: ManDef, busy: boolean, 
     readonly manoeuvre: Manoeuvre, 
-    readonly aligned: States, 
-    readonly template: States) {
+    readonly aligned: States) {
     super(mdef, busy);
   }
   static parse(data: Record<string, any>) {
@@ -37,29 +36,22 @@ export class AlignedMan extends ManData{
       ManDef.parse(data.mdef),
       false,
       Manoeuvre.parse(data.manoeuvre),
-      States.parse(data.aligned),
-      States.parse(data.template),
+      States.parse(data.aligned)
     );
   }
-  static partial_parse(md: ReadMan, data: Record<string, any>) {
-    return new AlignedMan(
-      md.mdef,
-      false,
-      Manoeuvre.parse(data.manoeuvre),
-      States.parse(data.aligned),
-      States.parse(data.template)
-    );
-  }
+  
+
 }
 
 export class ScoredMan extends AlignedMan{
   constructor(mdef: ManDef, busy: boolean, 
-    manoeuvre: Manoeuvre, aligned: States, template: States,
+    manoeuvre: Manoeuvre, aligned: States, 
+    readonly template: States,
     readonly corrected: Manoeuvre,
     readonly corrected_template: States,
     readonly score: ManoeuvreResult,
     ) {
-    super(mdef, busy, manoeuvre, aligned, template);
+    super(mdef, busy, manoeuvre, aligned);
   }
   static parse(data: Record<string, any>): ScoredMan | AlignedMan | ReadMan  {
     if (!('aligned' in data)) {
@@ -80,13 +72,4 @@ export class ScoredMan extends AlignedMan{
     }
   }
 
-
-  static partial_parse(md: AlignedMan, data: Record<string, any>) {
-      return new ScoredMan(
-        md.mdef,false, md.manoeuvre, md.aligned, md.template,
-        Manoeuvre.parse(data.corrected),
-        States.parse(data.corrected_template),
-        ManoeuvreResult.parse(data.score),
-      )
-  }
 }

@@ -1,9 +1,10 @@
 <script lang="ts">
   import '../app.postcss';
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem, Chevron,
-    DropdownDivider, Helper, NavHamburger, Button, ButtonGroup} from 'flowbite-svelte'
+    DropdownDivider, Helper, NavHamburger} from 'flowbite-svelte'
   import { mouse } from '$lib/stores';
-  import {flightdata, colddraft, navitems, NavContent} from '$lib/stores';
+  import {flightdata, colddraft, navitems, server} from '$lib/stores';
+  import {server_version } from '$lib/api_calls';
   import { OBJ } from '$lib/plots/traces.js';
   export let data;
   
@@ -21,6 +22,7 @@
   $: if ($colddraft==null) {
     $colddraft = OBJ.parse_dict(data.colddraft);
   }
+  
   
  
 </script>
