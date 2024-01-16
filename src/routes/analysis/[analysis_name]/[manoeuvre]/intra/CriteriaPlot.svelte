@@ -11,7 +11,7 @@
 
   let scale:number=1;
   $: {
-      if (downgrade.criteria.kind=='ContAbs') {
+      if (downgrade.criteria.kind in ['ContAbs', 'Single']) {
           scale=180/Math.PI;
       } else {scale=1}
   }

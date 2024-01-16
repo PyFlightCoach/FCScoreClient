@@ -1,7 +1,5 @@
 <script lang='ts'>
   import { flightdata } from '$lib/stores';
-  import {ScoredMan} from '$lib/api_objects/mandata';
-  import { goto } from '$app/navigation';
   import {P} from 'flowbite-svelte';
   import { AccordionItem, Accordion } from 'flowbite-svelte';
   import { Table, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
@@ -55,8 +53,7 @@
           {/each}
         </Table>
       {:else}
-        <P>This parameter is not downgradable. This is usually this is because it is covered by the 
-          intra element scoring.
+        <P>This parameter is not downgradable. This is probably because it is just used to ensure the correct manoeuvre is flown by constraining the options on roll direction.
         </P>
       {/if}
     </AccordionItem>

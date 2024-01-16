@@ -30,9 +30,9 @@
       return trs
     }
   
-    let fl=true; let intended=true; let corrected=true;
+    let flown=true; let intended=true; let corrected=true;
   
-    $: all_traces=make_traces($man, fl, intended, corrected);
+    $: all_traces=make_traces($man, flown, intended, corrected);
     
     
   </script>
@@ -46,7 +46,7 @@
     />
   </div>
   <BottomNav classInner="grid-cols-5" >
-    <BottomNavItem><Checkbox bind:checked={fl}>Flown</Checkbox></BottomNavItem>
+    <BottomNavItem><Checkbox bind:checked={flown}>Flown</Checkbox></BottomNavItem>
     <BottomNavItem><Checkbox bind:checked={intended}>intended</Checkbox></BottomNavItem>
     <BottomNavItem><Checkbox bind:checked={corrected}>corrected</Checkbox></BottomNavItem>
   </BottomNav>

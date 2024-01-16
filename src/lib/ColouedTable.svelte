@@ -16,7 +16,7 @@
 
 
   const activateCell = (row: string|null, col: string|null) => {
-    console.log(colNames)
+
     if (row == null || col == null) {
       activeRow = row;
       activeCol = col;

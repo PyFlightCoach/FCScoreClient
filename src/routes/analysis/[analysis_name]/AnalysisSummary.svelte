@@ -30,7 +30,6 @@
 
 </script>
 
-
 <div id='parent'>
   <div style:grid-row='1 / 3'>Manoeuvre</div>
   <div style:grid-row='1 / 3'>K Factor</div>

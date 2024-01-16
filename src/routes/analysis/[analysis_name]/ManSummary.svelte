@@ -11,7 +11,7 @@
   export let total = 0;
 
   $: man = flightdata.mans[manname];
-  $: aligned = !('fl' in $man); 
+  $: aligned = !('flown' in $man); 
   $: busy = $man.busy;
   
   $: intra = $man instanceof ScoredMan ? $man.score.intra.factoredDG(difficulty) : 0;

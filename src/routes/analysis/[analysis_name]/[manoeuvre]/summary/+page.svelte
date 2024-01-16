@@ -12,7 +12,7 @@
   $: man = flightdata.mans[data.mname];
   $: mannames = flightdata.mannames;
 
-  $: st = $man instanceof ReadMan ? $man.fl : $man.aligned;
+  $: st = $man instanceof ReadMan ? $man.flown : $man.aligned;
 
 </script>
 
@@ -26,7 +26,6 @@
       layout={layout3d}
       fillParent={true}
     />
-    
   </div>
 </div>
 

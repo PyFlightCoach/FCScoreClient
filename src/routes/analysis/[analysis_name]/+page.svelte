@@ -8,8 +8,8 @@
 
   $navitems=[
     new NavContent('Analyse All', '', ()=>{flightdata.analyseList(Object.keys($mannames))}),
-    new NavContent('Intended FC Json', '', () => {flightdata.downloadTemplate('intended')}),
-    new NavContent('Corrected FC Json', '', () => {flightdata.downloadTemplate('corrected')}),
+    //new NavContent('Intended FC Json', '', () => {flightdata.downloadTemplate('intended')}),
+    //new NavContent('Corrected FC Json', '', () => {flightdata.downloadTemplate('corrected')}),
   ];
 
   let total=0;

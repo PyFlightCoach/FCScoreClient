@@ -43,8 +43,8 @@ function parseAnalysis(res: Record<string, any>): AlignedMan | ScoredMan | ReadM
 }
 
 
-export async function analyse_manoeuvre(mdef: ManDef, fl: States, direction: number){
-    return parseAnalysis(await server_func('analyse_manoeuvre', {mdef, fl:fl.data, direction}));
+export async function analyse_manoeuvre(mdef: ManDef, flown: States, direction: number){
+    return parseAnalysis(await server_func('analyse_manoeuvre', {mdef, flown:flown.data, direction}));
 }
 
 export async function score_manoeuvre(mdef: ManDef, manoeuvre: Manoeuvre, aligned: States, direction: number){

@@ -28,7 +28,7 @@ class FlightData {
       return mnames;
     });
     if (Object.keys(this.mans).length == 1) {
-      const st = 'fl' in man ? man.fl : man.aligned;
+      const st = 'flown' in man ? man.flown : man.aligned;
       this.direction.set(-st.data[0].direction());
     }
     return this.mans[name];
@@ -55,7 +55,7 @@ class FlightData {
         man.busy = false;
         return man;
       } else {
-        return await analyse_manoeuvre(man.mdef, man.fl, direction);
+        return await analyse_manoeuvre(man.mdef, man.flown, direction);
       } 
     }
 

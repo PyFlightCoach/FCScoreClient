@@ -116,10 +116,11 @@ export const downgrade_info = (result: Record<string, any>, scale = 1.0) => {
 				result.dgs[i].toFixed(2).toString()
 		);
 	}
-
+	const x = linspace(0, result.sample.length -1, result.sample.length);
 	return [
 		{
 			type: 'scatter',
+			x,
 			y: result.measurement.value.map((p) => {
 				if (p != null) {
 					return p * scale;
@@ -134,6 +135,7 @@ export const downgrade_info = (result: Record<string, any>, scale = 1.0) => {
 		},
 		{
 			type: 'scatter',
+			x,
 			y: result.measurement.visibility,
 			name: 'visibility',
 			line: { color: 'blue', width: 1, dash: 'dot' },
@@ -142,6 +144,7 @@ export const downgrade_info = (result: Record<string, any>, scale = 1.0) => {
 		},
 		{
 			type: 'scatter',
+			x,
 			y: result.sample.map((p) => {
 				if (p != null) {
 					return p * scale;

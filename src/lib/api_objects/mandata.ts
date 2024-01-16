@@ -11,7 +11,7 @@ export class ManData{
 }
 
 export class ReadMan extends ManData{
-  constructor (mdef: ManDef, busy: boolean, readonly fl: States) {
+  constructor (mdef: ManDef, busy: boolean, readonly flown: States) {
     super(mdef, busy);
   }
 
@@ -19,7 +19,7 @@ export class ReadMan extends ManData{
     return new ReadMan(
       ManDef.parse(data.mdef),
       false,
-      States.parse(data.fl)
+      States.parse(data.flown)
     );
   }
 }
