@@ -12,6 +12,14 @@
 	let sinfo = flightdata.sinfo;
   let warning=false;
 
+  const fcj_schedule_names = {
+      'f3a': ['F3A', 'F3A FAI'],
+      'nsrca': ['F3A US'],
+      'f3auk': ['F3A UK'],
+      'imac': ['IMAC']
+  }
+
+
   function readjson(event) {
     flightdata.clear();
     warning=false;
@@ -23,14 +31,26 @@
           data=JSON.parse(event.target.result);
 
           if ('comments' in data) {
+
+            let schname: string = data.parameters.schedule[0];
+            for (const [key, value] of Object.entries(fcj_schedule_names)) {
+              if (value.includes(data.parameters.schedule[0])) {
+                schname = key;
+                break;
+              }
+            }
+
             $sinfo = {
-              category: data.parameters.schedule[0], 
+              category: schname, 
               name: data.parameters.schedule[1]
             };
             $name=data.name.replace(/\.[^/.]+$/, "");
+
           } else if ('client_version' in data) {
+
             flightdata.import(data);
             goto('/analysis/' + $name);
+
           } else {
             warning=true;
           }
