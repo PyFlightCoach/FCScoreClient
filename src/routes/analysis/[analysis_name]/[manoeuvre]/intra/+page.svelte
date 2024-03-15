@@ -23,11 +23,13 @@
   
   let activeCriteria: null|string = null;
   let activeElName: null|string = null;
-
+  let activeIndex: null|number = 0;
   let layout = layout3d;
 
   $: element = $man.manoeuvre.getEl(activeElName);
   
+  
+
   const dgtraces = (sts: Record<string, States>, tps: Record<string, States>, hel: string | null = null) => {
     
     const trs: Record<string, any>[] = [];
@@ -117,8 +119,9 @@
             {#if Object.keys(element).indexOf('angle') >=0}<p>angle = {(element.angle * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
           {/if}          
           <p>downgrade = {$man.score.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
-          
+          <p>{activeIndex}</p>  
         </div>
+        
         <CriteriaPlot
           result={$man.score.intra.data[activeElName].data[activeCriteria]}
           element={$man.manoeuvre.getEl(activeElName)}
@@ -127,7 +130,8 @@
       </div>  
       <div class='plot fullwidth'><DGPlot 
         result={$man.score.intra.data[activeElName].data[activeCriteria]}
-        element={$man.manoeuvre.getEl(activeElName)}          
+        element={$man.manoeuvre.getEl(activeElName)}  
+        bind:activeIndex={activeIndex}        
       /></div>
 
     {/if}

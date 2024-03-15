@@ -1,41 +1,60 @@
 <script lang='ts'>
-	import type {Result} from '$lib/api_objects/scores';
-    import Plot from 'svelte-plotly.js';
-    import { downgrade_info} from '$lib/plots/traces';
-    export let result: Result;
-    export let element: Record<string, any>;
+  import type {Result} from '$lib/api_objects/scores';
+  import Plot from 'svelte-plotly.js';
+  import { downgrade_info} from '$lib/plots/traces';
+  export let result: Result;
+  export let element: Record<string, any>;
+  export let activeIndex: null|number = null;
 
-    $: downgrade = element.scoring[result.name];
+  $: plotIndex = activeIndex == null ? 0 : activeIndex;
 
-    let scale:number=1;
-    $: {
-        if ((downgrade.criteria.kind == 'Single') ||  (downgrade.criteria.kind == 'ContAbs')) {
-            scale=180/Math.PI;
-        } else {scale=1}
-    }
+  $: downgrade = element.scoring[result.name];
+
+  let scale:number=1;
+  $: {
+    if ((downgrade.criteria.kind == 'Single') ||  (downgrade.criteria.kind == 'ContAbs')) {
+      scale=180/Math.PI;
+    } else {scale=1}
+  }
+
+  $: miny = Math.min(...result.sample, 0) * 2 * scale;
+  $: maxy = Math.max(...result.sample, 0) * 2 * scale;
 
 </script>
 
 <Plot 
-  data={downgrade_info(result, scale)}
+  data={
+    downgrade_info(result, scale).concat(
+      [{
+        type: 'line', 
+        x0: plotIndex, 
+        y0: miny, 
+        x1: plotIndex, 
+        y1: maxy, 
+        line: {color: 'black', width: 3},
+        yaxis: 'y'
+      }]
+    )
+  }
   layout={{
-      yaxis:{
-          title:'measurement',
-          range: [
-              Math.min(...result.sample, 0) * 2 * scale, 
-              Math.max(...result.sample, 0) * 2 * scale
-          ]
-      },
-      yaxis2:{
-          title:'visibility',
-          overlaying: 'y',
-          side: 'right',
-          range: [0, 1]
-      },
-      xaxis:{visible: false},
-      legend:{orientation: 'h', x:0.2, y:0},
-      autosize: true,
-      margin: {l:30, r:30, t:0, b:0},
+    yaxis:{
+      title:'measurement',
+      range: [
+        miny, 
+        maxy
+      ]
+    },
+    yaxis2:{
+      title:'visibility',
+      overlaying: 'y',
+      side: 'right',
+      range: [0, 1]
+    },
+    xaxis:{visible: false},
+    legend:{orientation: 'h', x:0.2, y:0},
+    autosize: true,
+    margin: {l:30, r:30, t:0, b:0},
   }}
   fillParent={true}
+  on:hover={(e) => {activeIndex=e.detail.points[0].x}}
 />

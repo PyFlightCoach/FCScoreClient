@@ -130,7 +130,7 @@ export const downgrade_info = (result: Record<string, any>, scale = 1.0) => {
 			}),
 			name: 'measurement',
 			line: { color: 'black', width: 1 },
-			hoverinfo: 'skip',
+			//hoverinfo: 'skip',
 			yaxis: 'y'
 		},
 		{

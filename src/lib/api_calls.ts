@@ -1,8 +1,8 @@
-import {ManDef} from '$lib/api_objects/mandef';
+import type {ManDef} from '$lib/api_objects/mandef';
 import {ManoeuvreResult} from '$lib/api_objects/scores';
 import type {Manoeuvre} from '$lib/api_objects/manoeuvre';
 import { type AlignedMan, type ReadMan, ScoredMan } from '$lib/api_objects/mandata';
-import {State, States} from '$lib/geometry';
+import type {State, States} from '$lib/geometry';
 
 //0.0.0.0:5000/
 async function server_func(func_name: string, kwargs: Record<string, any>={}, method='POST') {
