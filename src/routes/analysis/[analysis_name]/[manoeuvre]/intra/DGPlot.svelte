@@ -23,26 +23,11 @@
 </script>
 
 <Plot 
-  data={
-    downgrade_info(result, scale).concat(
-      [{
-        type: 'line', 
-        x0: plotIndex, 
-        y0: miny, 
-        x1: plotIndex, 
-        y1: maxy, 
-        line: {color: 'black', width: 3},
-        yaxis: 'y'
-      }]
-    )
-  }
+  data={downgrade_info(result, scale)}
   layout={{
     yaxis:{
       title:'measurement',
-      range: [
-        miny, 
-        maxy
-      ]
+      range: [miny, maxy]
     },
     yaxis2:{
       title:'visibility',
@@ -54,6 +39,15 @@
     legend:{orientation: 'h', x:0.2, y:0},
     autosize: true,
     margin: {l:30, r:30, t:0, b:0},
+    shapes: [{
+        type: 'line', 
+        x0: plotIndex, 
+        y0: 0, 
+        x1: plotIndex, 
+        y1: 1, 
+        yref: 'paper',
+        line: {color: 'black', width: 1},
+      }]
   }}
   fillParent={true}
   on:hover={(e) => {activeIndex=e.detail.points[0].x}}

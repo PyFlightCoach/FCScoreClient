@@ -10,6 +10,7 @@
   import CriteriaPlot from './CriteriaPlot.svelte';
   import DGPlot from './DGPlot.svelte';
 	import ColouedTable from '$lib/ColouedTable.svelte';
+	import { log } from 'plotly.js-dist';
 	
 
   export let data;
@@ -25,30 +26,34 @@
   let activeElName: null|string = null;
   let activeIndex: null|number = 0;
   let layout = layout3d;
+  let cameracache: null|Object = null;
+  let plot: null|Plot = null;
 
   $: element = $man.manoeuvre.getEl(activeElName);
   
-  
 
-  const dgtraces = (sts: Record<string, States>, tps: Record<string, States>, hel: string | null = null) => {
+
+  const dgtraces = (sts: Record<string, States>, tps: Record<string, States>, hel: string | null = null, hid: number=0) => {
     
     const trs: Record<string, any>[] = [];
     for (let i = 0; i < Object.values(sts).length-1; i++) {
       const k = Object.keys(sts)[i];
       const st = Object.values(sts)[i];
       const tp = Object.values(tps)[i];
-      const props = {color: d3Colors[i % d3Colors.length],name: k};
+      const props = {color: d3Colors[i % d3Colors.length]};
+      const fst = st.data[0];
+      const tst = tp.data[0];
 
       if (k == hel) {
-        trs.push(...modeltrace(st.downsample(3), $colddraft, {opacity: 1.0, ...props}));
-        trs.push(...modeltrace(tp.downsample(3), $colddraft, {opacity: 0.5, ...props}));
-        trs.push(ribbon(st, 2, {}, {opacity: 0.8, showlegend:false, ...props}));
-        trs.push(ribbon(tp, 2, {}, {opacity: 0.4, showlegend:false, ...props}));
+        trs.push($colddraft.to_mesh3d(fst.pos(), fst.att(), {opacity: 1.0, hoverinfo: 'skip', name: 'fl model', ...props}));
+        trs.push($colddraft.to_mesh3d(tst.pos(), tst.att(), {opacity: 0.5, hoverinfo: 'skip', name: 'tp model', ...props}))
+        trs.push(ribbon(st, 2, {}, {opacity: 0.8, showlegend:false, name: k, ...props}));
+        trs.push(ribbon(tp, 2, {}, {opacity: 0.4, showlegend:false, name: k, ...props}));
 
       } else if (hel == null) {
-        trs.push(ribbon(st, 3, {}, {opacity: 0.8, showlegend:false, ...props}));
+        trs.push(ribbon(st, 3, {}, {opacity: 0.8, showlegend:false, name: k, ...props}));
       } else {
-        trs.push(ribbon(st, 2, {}, {opacity: 0.4, ...props}));
+        trs.push(ribbon(st, 2, {}, {opacity: 0.4, name: k, ...props}));
       } 
     }
     
@@ -73,24 +78,56 @@
       const framewidth = Math.max(focuslength.x, focuslength.z);
       const y = framewidth / datalength.y;
       
-      const layout = {
-        ...layout3d,
-        scene:{...layout3d.scene,
-          camera: {...layout3d.scene.camera,
+      cameracache = {...layout3d.scene.camera,
             up: {x:0, y:0, z:1},
             center: centre,
             eye: {
               x: -0.6*(centre.x - 2*datacentre.x/datalength.x),//range.x,
               y: -0.6*75/datalength.y,//range.y-100,
               z: -(centre.z-1)*0.6//range.z,
-      }}}}
-      return layout;
+          }};
 
+      return {
+        ...layout3d,
+        scene:{...layout3d.scene,
+          camera: cameracache
+      }}
     }
   }
 
   $: layout = update_layout($man.aligned, states, activeElName);
   $: showintra = activeElName != null && activeCriteria != null  && activeCriteria != 'Total';
+
+  $: (() => {
+    if (plot != null && activeElName != null && activeIndex != null) {
+      
+      //Plotly.update(plot, dgtraces(states, templates, activeElName, activeIndex));
+      let activeId = 0;
+      Object.keys(states).forEach((k,i)=>{if (k == activeElName) {activeId = i}});
+      
+      const k = Object.keys(states)[activeId];
+      const st: States = Object.values(states)[activeId];
+      const tp: States = Object.values(templates)[activeId];
+      const props = {color: d3Colors[activeId % d3Colors.length]};
+      activeIndex > st.data.length ? activeIndex = 0 : activeIndex;
+      const fst = st.data[activeIndex];
+      const tst = tp.data[activeIndex];
+
+      traces.forEach((t, i) => {
+        if (t.name.includes('fl model')) {
+          traces[i] = $colddraft.to_mesh3d(fst.pos(), fst.att(), {opacity: 1.0, hoverinfo: 'skip', name: 'fl model', ...props});
+        }  
+        if (t.name.includes('tp model')) {
+          traces[i] = $colddraft.to_mesh3d(tst.pos(), tst.att(), {opacity: 0.5, hoverinfo: 'skip', name: 'tp model', ...props});
+        }  
+
+      });
+      
+    }
+    
+
+  }) ();
+
 
 </script>
 
@@ -101,8 +138,28 @@
 
   <div id='intra_summary'>
     <div class='plot' class:fullwidth={!showintra} class:fullheight={!showintra}> 
-      <Plot layout={layout} data={traces} fillParent={true}
-        on:click={(e) => {activeCriteria = null;activeElName = e.detail.points[0].data.name;}}
+      <Plot bind:this={plot} layout={layout} data={traces} fillParent={true}
+        on:click={(e) => {
+          activeCriteria = null;
+          activeElName = e.detail.points[0].data.name;
+        }}
+        on:hover={(e) => {
+          if (activeElName == e.detail.points[0].data.name) {
+             activeIndex = Math.floor(e.detail.points[0].pointNumber / 2);
+          }
+        }}
+        on:relayout={(e) => {
+          if ('scene.camera' in e.detail) {
+            console.log('relayout');
+            cameracache = {...cameracache, ...e.detail['scene.camera']};
+          }
+        }}
+        on:afterPlot={(e) => {
+          console.log('update');
+          if (cameracache != null) {
+            layout.scene.camera = cameracache;
+          }
+        }}
       />
     </div>
     
