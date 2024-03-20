@@ -8,20 +8,25 @@
   export let element: Record<string, any>;
 
   $: downgrade = element.scoring[result.name];
-
-  let scale:number=1;
-  $: {
-      if (downgrade.criteria.kind in ['ContAbs', 'Single']) {
-          scale=180/Math.PI;
-      } else {scale=1}
-  }
+  $: b0 = (downgrade.criteria.kind == 'InsideBound' || downgrade.criteria.kind == 'OutsideBound') ? downgrade.criteria.bound[0] : null;
+  $: b1 = (downgrade.criteria.kind == 'InsideBound' || downgrade.criteria.kind == 'OutsideBound') ? downgrade.criteria.bound[1] : null;
+  $: b = (downgrade.criteria.kind == 'MaxBound' || downgrade.criteria.kind == 'MinBound') ? downgrade.criteria.bound : null;
+  $: comment = {
+      Single: 'This is a single criteria, only the end point of the element is assessed. The downgrade is based on absolute difference to the template.',
+      ContRat: 'This is a continuous ratio criteria, all peaks and troughs in the sample are downgraded.',
+      ContAbs: 'This is a continuous absoulute criteria, all increases in the sample away from zero are downgraded',
+      MaxBound: 'This is a maximum bound criteria, all values above ' + b + ' are downgraded.',
+      MinBound: 'This is a minimum bound criteria, all values below ' + b + ' are downgraded.',
+      InsideBound: 'This is an inside bound criteria, all values below ' + b0 + ' or above ' + b1 + ' are downgraded.',
+      OutsideBound: 'This is an outside bound criteria, all values between ' + b0 + ' and ' + b1 + ' are downgraded.',
+    }[downgrade.criteria.kind];
 
 </script>
 
 <div id='parent'>
   <div>
     <Plot 
-      data={[criteriaInfo(downgrade.criteria, scale)]} 
+      data={[criteriaInfo(downgrade.criteria)]} 
       layout={{
           yaxis:{title:'downgrade',range:[0,10]}, 
           xaxis:{title: downgrade.criteria.kind + ' error'},
@@ -32,23 +37,7 @@
     />
   </div>
   <div>
-    {#if downgrade.criteria.kind == 'Single'}
-      This is a single criteria, only the end point of the element is assessed. The downgrade is based on absolute difference to the template. 
-    {:else if downgrade.criteria.kind == 'ContRat' }
-      This is a continuous ratio criteria, all peaks and troughs in the sample are downgraded.
-    {:else if downgrade.criteria.kind == 'ContAbs' }
-      This is a continuous absoulute criteria, all increases in the sample away from zero are downgraded
-    {:else if downgrade.criteria.kind == 'MaxBound' }
-      This is a maximum bound criteria, all values above {downgrade.criteria.bound} are downgraded.
-    {:else if downgrade.criteria.kind == 'MinBound' }
-      This is a minimum bound criteria, all values below {downgrade.criteria.bound} are downgraded.
-    {:else if downgrade.criteria.kind == 'InsideBound' }
-      This is an inside bound criteria, all values below {downgrade.criteria.bound[0]} or above {downgrade.criteria.bound[1]} are downgraded.
-    {:else if downgrade.criteria.kind == 'OutsideBound' }
-      This is an outside bound criteria, all values between {downgrade.criteria.bound[0]} and {downgrade.criteria.bound[1]} are downgraded.
-    {:else}
-      This is an unknown criteria type.
-    {/if}
+    {comment}
   </div>
 </div>
 

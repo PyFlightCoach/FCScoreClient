@@ -67,14 +67,6 @@
             <DropdownItem href='/analysis/example' data-sveltekit-preload-data="tap">example</DropdownItem>
           {/if} 
         </Dropdown> 
-        <!-- 
-          <NavLi id="schedulemenu" class="cursor-pointer"><Chevron aligned>Schedule</Chevron></NavLi>
-          <Dropdown triggeredBy="#schedulemenu" class="w-44 z-20">
-            <DropdownItem href='/schedule/browse'>browse</DropdownItem>
-            <DropdownItem href='/schedule/create'>create</DropdownItem>
-            <DropdownItem href='/schedule/create/manoeuvre'>create manoeuvre</DropdownItem>
-          </Dropdown>
-        -->
         <NavLi id='info' class="cursor-pointer" href="https://pfcdocumentation.readthedocs.io/fcscore/index.html" target="_blank">Info</NavLi>
       </NavUl>
 

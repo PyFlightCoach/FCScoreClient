@@ -44,7 +44,21 @@ export class BoxLocation{
     static parse(data: Record<string, any>) {return new ManParm(
       data.name, data.criteria, data.default, data.collectors
     )}
-  
+    
+    getCollectorEls(els: string[]) {
+      return Object.values(this.collectors).map((c: string) => {
+        const elList: string[]=[];
+        const words = c.split(/[^A-Za-z_0-9]/);
+        els.forEach((el: string) => {
+          if (words.includes(el)) {
+            elList.push(el);
+          }
+        });
+        return elList;
+      })
+    }
+
+
   }
   
   export class ManDef{

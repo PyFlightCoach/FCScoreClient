@@ -1,8 +1,7 @@
 
 <script lang="ts">
-	import { flightdata, colddraft } from '$lib/stores';
-  import {split_states, States, type State} from '$lib/geometry';
-  import type { Results, ManInfo } from "$lib/api_objects";
+	import { flightdata} from '$lib/stores';
+  import type { States} from '$lib/geometry';
   import Plot from 'svelte-plotly.js';
   import {coloured_ribbons, points, boxtrace} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';

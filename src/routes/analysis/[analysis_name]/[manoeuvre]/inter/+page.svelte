@@ -1,30 +1,16 @@
 <script lang='ts'>
   import { flightdata } from '$lib/stores';
+  import type { States} from '$lib/geometry';
   import {P} from 'flowbite-svelte';
   import { AccordionItem, Accordion } from 'flowbite-svelte';
-  import { Table, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-
+  import PlotInter from '$lib/plots/PlotInter.svelte';
+	import type { ManParm } from '$lib/api_objects/mandef.js';
+	import { d3Color, colscale, redsColors } from '$lib/plots/styling.js';
   export let data;
 
   $: man = flightdata.mans[data.mname];
+  $: states = $man.aligned.split();
   
-  function collid(mpname: string, collname: string) {
-    return $man.score.inter.data[mpname].keys.findIndex(v=>v==collname);
-  }
-
-  function colinfo(mp: Record<string, any>) {
-    return Object.values(mp.collectors).map(co=>{
-      let colid = collid(mp.name, co);
-      return [
-        co,
-        $man.score.inter.data[mp.name].sample[colid].toFixed(2),
-        $man.score.inter.data[mp.name].errors[colid].toFixed(2),
-        $man.score.inter.data[mp.name].measurement.visibility[colid].toFixed(2),
-        $man.score.inter.data[mp.name].dgs[colid].toFixed(2),
-      ]
-    })
-  }
-
 </script>
 
 <Accordion>
@@ -35,29 +21,49 @@
       <span slot="header">{mp.name} (dg={mp.name in $man.score.inter.data ? $man.score.inter.data[mp.name].total.toFixed(2) : 0})</span>
       {#if mp.name in $man.score.inter.data}
       
-        <Table hoverable={true}>
-          <TableHead>
-            <TableHeadCell>Collector</TableHeadCell>
-            <TableHeadCell>Value</TableHeadCell>
-            <TableHeadCell>Error</TableHeadCell>
-            <TableHeadCell>Visibility</TableHeadCell>
-            <TableHeadCell>Downgrade</TableHeadCell>
-          </TableHead>
-        
-          {#each colinfo(mp) as co}
-            <TableBodyRow>
-              {#each co as cocell}
-              <TableBodyCell>{cocell}</TableBodyCell>
-              {/each}
-            </TableBodyRow>
+        <div class='container'>
+          <div class='cell'>Collector</div>
+          <div class='cell'>Value</div>
+          <div class='cell'>Error</div>
+          <div class='cell'>Visibility</div>
+          <div class='cell'>Downgrade</div>
+
+          {#each Object.values(mp.collectors) as co, i}            
+            <div class='cell' style:background-color={d3Color(i)}>{co}</div>
+            <div class='cell'>{$man.score.inter.data[mp.name].sample[i].toFixed(2)}</div>
+            <div class='cell'>{$man.score.inter.data[mp.name].errors[i].toFixed(2)}</div>
+            <div class='cell'>{$man.score.inter.data[mp.name].measurement.visibility[i].toFixed(2)}</div>
+            <div class='cell' style:background-color={colscale($man.score.inter.data[mp.name].dgs[i], $man.score.inter.data[mp.name].total, redsColors)}>{$man.score.inter.data[mp.name].dgs[i].toFixed(2)}</div>
           {/each}
-        </Table>
+        </div>
+
+        <div style:height=600px>
+          <PlotInter 
+            sts={states} 
+            activeEls={mp.getCollectorEls(Object.keys($man.mdef.eds))}
+          />
+        </div>
+        
+        
       {:else}
         <P>This parameter is not downgradable. This is probably because it is just used to ensure the correct manoeuvre is flown by constraining the options on roll direction.
         </P>
       {/if}
+
+
     </AccordionItem>
 
     
   {/each}
 </Accordion>
+
+
+<style>
+  .cell {color: black; height:100%; width: 100%; display: flex;
+align-items: center; justify-content: center;}
+  .container {
+    display:grid; 
+    grid-template-columns: 2fr repeat(4, 1fr);
+    text-align: center;
+  }
+</style>

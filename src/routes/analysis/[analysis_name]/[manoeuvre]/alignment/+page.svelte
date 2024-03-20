@@ -1,14 +1,12 @@
 
 
 <script lang="ts">
-  import Plot from 'svelte-plotly.js';
   import {alignment_traces} from '$lib/plots/traces';
 	import { flightdata, colddraft } from '$lib/stores';
-  import {ReadMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
+  import {ReadMan, AlignedMan} from '$lib/api_objects/mandata';
   import {Tooltip, Input, BottomNavItem, BottomNav, Select, ScoreRating} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
-  import {layout3d} from '$lib/plots/layouts';  
-  import {split_states} from '$lib/geometry';
+  import PlotDTW from '$lib/plots/PlotDTW.svelte';
   export let data;
 
   let man = flightdata.mans[data.mname];
@@ -19,14 +17,11 @@
   }
 
   let step: number = 0.1;
-  let eid: number | null = null;
-  let show_models=false;
   
   $: elements = $man.aligned.elements();
   $: end_info = $man.aligned.end_info();
   
-  let element = 'Select Element'
-  $: if (eid != null) {element = elements[eid]} else {element = 'Select Element'};
+  let element: string|null = null
 
   const editsplit = (stp: number, elname: string) => {
 
@@ -57,36 +52,20 @@
     });
   };
 
-  const change_element = (ename: string) => {
-    if (ename == 'Select Element') {
-      eid=null; 
-      show_models=false;
-    } else {
-      eid=Object.keys(states).indexOf(ename); 
-      show_models=true;
-    }
-  }
 
   $: states = $man.aligned.split();
-  $: traces = alignment_traces(states, show_models, false, $colddraft, 1, eid)
-  //$: layout = get_ar(traces, 20);
-
 
 </script>
 
 
 <div>
   <div style:height=100%>
-    <Plot 
-      data={traces} layout={layout3d} fillParent={true}
-      on:click={(e) => {change_element(e.detail.points[0].data.name)}}
-    />
+    <PlotDTW sts={states} bind:activeEl={element} sp={3}/>
   </div>
   <BottomNav classInner="grid-cols-5" >
     <Select  id="selectelement"
       bind:value={element} 
       items={['Select Element'].concat(...Object.keys(states)).map((el) => {return {value: el, name: el};})}
-      on:change={()=>change_element(element)}
     />
     <BottomNavItem id="stepsize"><Input placeholder='step' bind:value={step}/></BottomNavItem>
     <BottomNavItem  id="adjustback" on:click={() => {editsplit(-Number(step), element)}}>&#60</BottomNavItem>

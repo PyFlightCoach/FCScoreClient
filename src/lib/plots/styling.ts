@@ -14,6 +14,8 @@ export const d3Colors = [
     '#17becf'
   ];
 
+export const d3Color = (i: number) => d3Colors[i % d3Colors.length];
+
 export const burgColors = [
     'rgb(255, 198, 196)',
     'rgb(244, 163, 168)',

@@ -6,9 +6,8 @@
     import {layout3d} from '$lib/plots/layouts';    
     import {Checkbox, BottomNav, BottomNavItem} from 'flowbite-svelte';
     import {flightdata, colddraft} from '$lib/stores';
-    import {States} from '$lib/geometry';
-  
-  
+    import type {States} from '$lib/geometry';
+    
     export let data;
     let man = flightdata.mans[data.mname];
   
