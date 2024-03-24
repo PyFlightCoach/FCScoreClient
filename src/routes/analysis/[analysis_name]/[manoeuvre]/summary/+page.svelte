@@ -1,7 +1,7 @@
 
 
 <script lang='ts'>
-  import {ReadMan, ScoredMan} from '$lib/api_objects/mandata';
+  import {BasicMan, ScoredMan} from '$lib/api_objects/mandata';
   import { flightdata } from '$lib/stores';
   import PlotSec from '$lib/plots/PlotSec.svelte';
   
@@ -12,7 +12,7 @@
 </script>
 
 <PlotSec
-  flst={$man instanceof ReadMan ? $man.flown : $man.aligned}
+  flst={$man instanceof BasicMan ? $man.flown : $man.flown}
   tpst={$man instanceof ScoredMan ? $man.corrected_template : null}
   i={0}
 />

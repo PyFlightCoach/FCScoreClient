@@ -1,9 +1,8 @@
 
 
 <script lang="ts">
-  import {alignment_traces} from '$lib/plots/traces';
-	import { flightdata, colddraft } from '$lib/stores';
-  import {ReadMan, AlignedMan} from '$lib/api_objects/mandata';
+  import { flightdata } from '$lib/stores';
+  import {BasicMan, AlignedMan, type ScoredMan} from '$lib/api_objects/mandata';
   import {Tooltip, Input, BottomNavItem, BottomNav, Select, ScoreRating} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
@@ -12,20 +11,20 @@
   let man = flightdata.mans[data.mname];
   let mannames = flightdata.mannames;
 
-  $: if ($man instanceof ReadMan) {
+  $: if ($man instanceof BasicMan) {
     goto('/analysis/'+data.analysis_name + '/' + data.mname + '/summary');
   }
 
   let step: number = 0.1;
   
-  $: elements = $man.aligned.elements();
-  $: end_info = $man.aligned.end_info();
+  $: elements = $man.flown.elements();
+  $: end_info = $man.flown.end_info();
   
   let element: string|null = null
 
   const editsplit = (stp: number, elname: string) => {
 
-    man.update((val) => {
+    man.update((val: AlignedMan | ScoredMan) => {
       $mannames[data.mname]=2;
 
       const elindex = elements.indexOf(elname);
@@ -35,8 +34,8 @@
           end_info[elname].lastt + stp, 
           end_info[elements[elindex+1]].lastt - 0.1
         );
-        while (val.aligned.data[end_info[elements[elindex]].lastid + i].t < endt) {
-          val.aligned.data[end_info[elements[elindex]].lastid + i].element = elname; i++;
+        while (val.flown.data[end_info[elements[elindex]].lastid + i].t < endt) {
+          val.flown.data[end_info[elements[elindex]].lastid + i].element = elname; i++;
         }
 
       } else {
@@ -44,16 +43,16 @@
           end_info[elname].lastt + stp, 
           end_info[elname].firstt + 0.1
         );
-        while (val.aligned.data[end_info[elements[elindex]].lastid - i].t > endt) {
-          val.aligned.data[end_info[elements[elindex]].lastid - i].element = elements[elindex+1]; i++;
+        while (val.flown.data[end_info[elements[elindex]].lastid - i].t > endt) {
+          val.flown.data[end_info[elements[elindex]].lastid - i].element = elements[elindex+1]; i++;
         }
       }
-      return new AlignedMan(val.mdef, false, val.manoeuvre, val.aligned);
+      return new AlignedMan(false, val.mdef, val.flown, val.direction, val.stage, val.manoeuvre, val.template);
     });
   };
 
 
-  $: states = $man.aligned.split();
+  $: states = $man.flown.split();
 
 </script>
 

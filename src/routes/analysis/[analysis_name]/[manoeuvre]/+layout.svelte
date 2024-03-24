@@ -2,13 +2,13 @@
 <script lang='ts'>
    
   import { NavContent, flightdata, navitems } from '$lib/stores';
-  import { AlignedMan, ScoredMan, ReadMan } from '$lib/api_objects/mandata';
+  import { AlignedMan, ScoredMan, BasicMan } from '$lib/api_objects/mandata';
   export let data;
   
   $: man = flightdata.mans[data.mname];
 
 
-  const update_navitems = (man_: AlignedMan | ScoredMan | ReadMan) => {
+  const update_navitems = (man_: AlignedMan | ScoredMan | BasicMan) => {
     navitems.update(v=>{
       let nitems=[];
       nitems.push(new NavContent('Summary', 'summary'))

@@ -14,9 +14,9 @@
   $: aligned = !('flown' in $man); 
   $: busy = $man.busy;
   
-  $: intra = $man instanceof ScoredMan ? $man.score.intra.factoredDG(difficulty) : 0;
-  $: inter = $man instanceof ScoredMan ? $man.score.inter.factoredDG(difficulty) : 0;
-  $: position = $man instanceof ScoredMan ? $man.score.positioning.factoredDG(difficulty) : 0;
+  $: intra = $man instanceof ScoredMan ? $man.scores.intra.factoredDG(difficulty) : 0;
+  $: inter = $man instanceof ScoredMan ? $man.scores.inter.factoredDG(difficulty) : 0;
+  $: position = $man instanceof ScoredMan ? $man.scores.positioning.factoredDG(difficulty) : 0;
 
 
   $: score = $man instanceof ScoredMan ? Math.max((10 - intra - inter - position), 0) : 0;

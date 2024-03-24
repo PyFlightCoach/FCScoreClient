@@ -1,17 +1,19 @@
 import {describe, expect, it} from 'vitest';
-import {BoxLocation, Height, Direction, Orientation} from '$lib/api_objects';
+import {BoxLocation, Heights, Directions, Orientations} from '$lib/api_objects/mandef';
+
+
 import {parse_dict} from '$lib/arrays';
 
 describe("boxloc", () => {
     it("fromdata", () => {
         const bl = BoxLocation.parse({h:'BTM', d:'UPWIND', o:'DRIVEN'})
-        expect(bl.h).toBe(Height.BTM);
-        expect(bl.d).toBe(Direction.UPWIND);
-        expect(bl.o).toBe(Orientation.DRIVEN);
+        expect(bl.h).toBe(Heights.BTM);
+        expect(bl.d).toBe(Directions.UPWIND);
+        expect(bl.o).toBe(Orientations.DRIVEN);
     })
 
     it("stringify", ()=> {
-        const bl = new BoxLocation(Height.BTM, Direction.UPWIND, Orientation.DRIVEN);
+        const bl = new BoxLocation(Heights.BTM, Directions.UPWIND, Orientations.DRIVEN);
         const blstr = JSON.stringify(bl);
         expect(blstr).toBe('{"h":"BTM","d":"UPWIND","o":"DRIVEN"}');
         const bl2 = BoxLocation.parse(JSON.parse(blstr));

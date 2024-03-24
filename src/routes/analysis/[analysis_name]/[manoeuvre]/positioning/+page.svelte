@@ -10,7 +10,7 @@
 
   $: man = flightdata.mans[data.mname];
   
-  $: states = $man.aligned.split();
+  $: states = $man.flown.split();
 
   const get_points = (states: Record<string, States>) => {
     return $man.mdef.info.centre_points.map(i=>{
@@ -38,7 +38,7 @@
     <div>Error</div>
     <div>Downgrade</div>
     
-    {#each Object.values($man.score.positioning.data) as pos}
+    {#each Object.values($man.scores.positioning.data) as pos}
                       
           <div>{pos.name}</div>
           {#if pos.name=="distance"}

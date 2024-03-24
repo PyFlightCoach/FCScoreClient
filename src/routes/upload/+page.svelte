@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Fileupload, Label, Button } from 'flowbite-svelte'
   import {convert_fcj} from '$lib/api_calls';
-  import {ReadMan} from '$lib/api_objects/mandata';
+  import {BasicMan} from '$lib/api_objects/mandata';
   let data: Record<string, any>;
   import { flightdata } from '$lib/stores.js';
   import { goto } from '$app/navigation';
@@ -64,7 +64,7 @@
     if (data) {
       convert_fcj(data, $sinfo).then((res: Record<string, any>) => {
         for (const [key, value] of Object.entries(res)) {
-          flightdata.addMan(key, ReadMan.parse(value));
+          flightdata.addMan(key, BasicMan.parse(value));
         }
       });
     }

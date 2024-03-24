@@ -4,71 +4,81 @@ import { ManDef } from '$lib/api_objects/mandef';
 import { ManoeuvreResult } from '$lib/api_objects/scores';
 
 
-
-export class ManData{
+export class Man{
   busy: boolean;
-  constructor (readonly mdef: ManDef, busy: boolean) {this.busy = busy;}
+  constructor (busy: boolean) {this.busy=busy;}
 }
 
-export class ReadMan extends ManData{
-  constructor (mdef: ManDef, busy: boolean, readonly flown: States) {
-    super(mdef, busy);
+export class BasicMan extends Man{
+  constructor (
+    busy: boolean, readonly mdef: ManDef, 
+    readonly flown: States, readonly direction: number, readonly stage: Number) {
+    super(busy);
   }
-
   static parse(data: Record<string, any>) {
-    return new ReadMan(
-      ManDef.parse(data.mdef),
+    return new BasicMan(
       false,
-      States.parse(data.flown)
+      ManDef.parse(data.mdef),
+      States.parse(data.flown),
+      data.direction,
+      data.stage
     );
   }
 }
 
-export class AlignedMan extends ManData{
+export class AlignedMan extends BasicMan{
   constructor(
-    mdef: ManDef, busy: boolean, 
+    busy: boolean, mdef: ManDef,
+    flown: States, direction: number, stage: Number,
     readonly manoeuvre: Manoeuvre, 
-    readonly aligned: States) {
-    super(mdef, busy);
+    readonly template: States) {
+    super(busy, mdef, flown, direction, stage);
   }
   static parse(data: Record<string, any>) {
-    return new AlignedMan(
-      ManDef.parse(data.mdef),
-      false,
-      Manoeuvre.parse(data.manoeuvre),
-      States.parse(data.aligned)
-    );
+    if (!('manoeuvre' in data)) {
+      return BasicMan.parse(data);
+    } else {
+      return new AlignedMan(
+        false,
+        ManDef.parse(data.mdef),
+        States.parse(data.flown),
+        data.direction,
+        data.stage,
+        Manoeuvre.parse(data.manoeuvre),
+        States.parse(data.aligned)
+      );
+    }
   }
-  
-
 }
 
 export class ScoredMan extends AlignedMan{
-  constructor(mdef: ManDef, busy: boolean, 
-    manoeuvre: Manoeuvre, aligned: States, 
+  constructor(
+    busy: boolean, mdef: ManDef,
+    flown: States, direction: number, stage: Number,
+    readonly manoeuvre: Manoeuvre, 
     readonly template: States,
     readonly corrected: Manoeuvre,
     readonly corrected_template: States,
-    readonly score: ManoeuvreResult,
+    readonly scores: ManoeuvreResult,
     ) {
-    super(mdef, busy, manoeuvre, aligned);
+    super(busy, mdef, flown, direction, stage, manoeuvre, template);
   }
-  static parse(data: Record<string, any>): ScoredMan | AlignedMan | ReadMan  {
-    if (!('aligned' in data)) {
-      return ReadMan.parse(data);
-    } else if (!('score' in data)) {
+  static parse(data: Record<string, any>): ScoredMan | AlignedMan | BasicMan  {
+    if (!('scores' in data)) {
       return AlignedMan.parse(data);
     } else {
       return new ScoredMan(
-        ManDef.parse(data.mdef),
         false,
+        ManDef.parse(data.mdef),
+        States.parse(data.flown),
+        data.direction,
+        data.stage,
         Manoeuvre.parse(data.manoeuvre),
-        States.parse(data.aligned),
         States.parse(data.template),
         Manoeuvre.parse(data.corrected),
         States.parse(data.corrected_template),
-        ManoeuvreResult.parse(data.score),
-      )
+        ManoeuvreResult.parse(data.scores)
+      );
     }
   }
 

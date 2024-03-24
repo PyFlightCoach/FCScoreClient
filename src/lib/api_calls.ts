@@ -1,7 +1,7 @@
 import type {ManDef} from '$lib/api_objects/mandef';
 import {ManoeuvreResult} from '$lib/api_objects/scores';
 import type {Manoeuvre} from '$lib/api_objects/manoeuvre';
-import { type AlignedMan, type ReadMan, ScoredMan } from '$lib/api_objects/mandata';
+import { type AlignedMan, type BasicMan, ScoredMan } from '$lib/api_objects/mandata';
 import type {State, States} from '$lib/geometry';
 
 //0.0.0.0:5000/
@@ -26,29 +26,13 @@ export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string
 }
 
 
-function parseAnalysis(res: Record<string, any>): AlignedMan | ScoredMan | ReadMan {
-    const output: Record<string, any> = {
-        mdef: res.mdef,
-        manoeuvre: res.manoeuvre,
-        aligned: res.aligned
-    };
-
-    if ('score' in res) {
-        output.template =  res.template;
-        output.corrected = res.corrected;
-        output.corrected_template= res.corrected_template;
-        output.score = res.score;
-    }
-    return ScoredMan.parse(output);
+function parseAnalysis(res: Record<string, any>): AlignedMan | ScoredMan | BasicMan {
+    return ScoredMan.parse(res);
 }
 
 
-export async function analyse_manoeuvre(mdef: ManDef, flown: States, direction: number){
-    return parseAnalysis(await server_func('analyse_manoeuvre', {mdef, flown:flown.data, direction}));
-}
-
-export async function score_manoeuvre(mdef: ManDef, manoeuvre: Manoeuvre, aligned: States, direction: number){
-    return parseAnalysis(await server_func('score_manoeuvre', {mdef, manoeuvre, aligned: aligned.data, direction}));
+export async function analyse_manoeuvre(man: BasicMan | AlignedMan | ScoredMan){
+    return parseAnalysis(await server_func('analyse_manoeuvre', {man}));
 }
 
 export async function create_fc_json(sts: State[], mdefs: ManDef[], name: string, category: string) {

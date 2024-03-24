@@ -9,11 +9,11 @@
   export let data;
 
   $: man = flightdata.mans[data.mname];
-  $: summaries = $man.score.intra.summaries();
+  $: summaries = $man.scores.intra.summaries();
 
   let states: Record<string, States>;
   let templates: Record<string, States>;
-  $: states = $man.aligned.split();
+  $: states = $man.flown.split();
   $: templates = $man.template.split();
   
   let activeCriteria: null|string = null;
@@ -59,18 +59,18 @@
             {#if Object.keys(element).indexOf('roll') >=0}<p>roll = {(element.roll * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
             {#if Object.keys(element).indexOf('angle') >=0}<p>angle = {(element.angle * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
           {/if}          
-          <p>downgrade = {$man.score.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
+          <p>downgrade = {$man.scores.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
           <p>{activeIndex}</p>  
         </div>
         
         <CriteriaPlot
-          result={$man.score.intra.data[activeElName].data[activeCriteria]}
+          result={$man.scores.intra.data[activeElName].data[activeCriteria]}
           element={$man.manoeuvre.getEl(activeElName)}
         />
         
       </div>  
       <div class='plot fullwidth'><DGPlot 
-        result={$man.score.intra.data[activeElName].data[activeCriteria]}
+        result={$man.scores.intra.data[activeElName].data[activeCriteria]}
         element={$man.manoeuvre.getEl(activeElName)}  
         bind:activeIndex={activeIndex}        
       /></div>

@@ -9,7 +9,7 @@
   export let data;
 
   $: man = flightdata.mans[data.mname];
-  $: states = $man.aligned.split();
+  $: states = $man.flown.split();
   
 </script>
 
@@ -18,8 +18,8 @@
   {#each Object.values($man.mdef.mps) as mp}
     
     <AccordionItem>
-      <span slot="header">{mp.name} (dg={mp.name in $man.score.inter.data ? $man.score.inter.data[mp.name].total.toFixed(2) : 0})</span>
-      {#if mp.name in $man.score.inter.data}
+      <span slot="header">{mp.name} (dg={mp.name in $man.scores.inter.data ? $man.scores.inter.data[mp.name].total.toFixed(2) : 0})</span>
+      {#if mp.name in $man.scores.inter.data}
       
         <div class='container'>
           <div class='cell'>Collector</div>
@@ -30,10 +30,10 @@
 
           {#each Object.values(mp.collectors) as co, i}            
             <div class='cell' style:background-color={d3Color(i)}>{co}</div>
-            <div class='cell'>{$man.score.inter.data[mp.name].sample[i].toFixed(2)}</div>
-            <div class='cell'>{$man.score.inter.data[mp.name].errors[i].toFixed(2)}</div>
-            <div class='cell'>{$man.score.inter.data[mp.name].measurement.visibility[i].toFixed(2)}</div>
-            <div class='cell' style:background-color={colscale($man.score.inter.data[mp.name].dgs[i], $man.score.inter.data[mp.name].total, redsColors)}>{$man.score.inter.data[mp.name].dgs[i].toFixed(2)}</div>
+            <div class='cell'>{$man.scores.inter.data[mp.name].sample[i].toFixed(2)}</div>
+            <div class='cell'>{$man.scores.inter.data[mp.name].errors[i].toFixed(2)}</div>
+            <div class='cell'>{$man.scores.inter.data[mp.name].measurement.visibility[i].toFixed(2)}</div>
+            <div class='cell' style:background-color={colscale($man.scores.inter.data[mp.name].dgs[i], $man.scores.inter.data[mp.name].total, redsColors)}>{$man.scores.inter.data[mp.name].dgs[i].toFixed(2)}</div>
           {/each}
         </div>
 

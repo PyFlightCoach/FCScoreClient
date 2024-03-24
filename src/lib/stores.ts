@@ -1,8 +1,8 @@
 import { writable, type Writable } from 'svelte/store';
-import { analyse_manoeuvre, score_manoeuvre, create_fc_json, server_version } from '$lib/api_calls';
+import { analyse_manoeuvre, create_fc_json, server_version } from '$lib/api_calls';
 import type {State} from '$lib/geometry';
 import type { ManDef } from '$lib/api_objects/mandef';
-import {ReadMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
+import {BasicMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
 import pkg from 'file-saver';
 import {PUBLIC_VERSION} from '$env/static/public';
 
@@ -15,10 +15,10 @@ class FlightData {
     category: null, name: null
   });
   direction: Writable<number> = writable(0);
-  mans: Record<string, Writable<ReadMan | AlignedMan | ScoredMan>> = {};
+  mans: Record<string, Writable<BasicMan | AlignedMan | ScoredMan>> = {};
   mannames: Writable<Record<string, number>> = writable({});
   
-  addMan(name: string, man: ReadMan | ScoredMan | AlignedMan): Writable<ReadMan|AlignedMan|ScoredMan> {
+  addMan(name: string, man: BasicMan | ScoredMan | AlignedMan): Writable<BasicMan|AlignedMan|ScoredMan> {
     this.mans[name] = writable(man);
     this.mannames.update((mnames) => {
       mnames[name] = 1;
@@ -28,8 +28,7 @@ class FlightData {
       return mnames;
     });
     if (Object.keys(this.mans).length == 1) {
-      const st = 'flown' in man ? man.flown : man.aligned;
-      this.direction.set(-st.data[0].direction());
+      this.direction.set(-man.flown.data[0].direction());
     }
     return this.mans[name];
   };
@@ -48,18 +47,16 @@ class FlightData {
     
     const direction = this.get_value('direction');
     
-    async function score(man: ReadMan | AlignedMan | ScoredMan) {
-      if ((man instanceof AlignedMan) || (man instanceof ScoredMan && force)) {
-        return await score_manoeuvre(man.mdef, man.manoeuvre, man.aligned, direction);
+    async function score(man: BasicMan | AlignedMan | ScoredMan) {
+      if (!(man instanceof ScoredMan) || force) {
+        return await analyse_manoeuvre(man);
       } else if (man instanceof ScoredMan) {
         man.busy = false;
         return man;
-      } else {
-        return await analyse_manoeuvre(man.mdef, man.flown, direction);
-      } 
+      }
     }
 
-    let man: ReadMan | AlignedMan | ScoredMan;
+    let man: BasicMan | AlignedMan | ScoredMan;
     rman.subscribe((val) => { man = val })();
     if (!man.busy) {
       rman.update(v=>{v.busy=true; return v})
@@ -158,7 +155,7 @@ class FlightData {
     let man: Record<string, any> = {};
     this.mans[mname].subscribe((val) => { man = val })();
     if ('score' in man) {
-      return man.mdef.info.k * man.score.score;
+      return man.mdef.info.k * man.scores.score;
     } else {
       return 0;
     }
