@@ -42,7 +42,7 @@ export class BoxLocation{
       readonly defaul: any, readonly collectors: Record<string, any>) {}
       
     static parse(data: Record<string, any>) {return new ManParm(
-      data.name, data.criteria, data.default, data.collectors
+      data.name, data.criteria, data.defaul, data.collectors
     )}
     
     getCollectorEls(els: string[]) {
@@ -62,13 +62,14 @@ export class BoxLocation{
   }
   
   export class ManDef{
-    constructor (readonly info: ManInfo, readonly mps: Record<string, ManParm>, readonly eds: Record<string, any>) {}
-    static parse(data: Record< string, any> ) {
-      return new ManDef(
-        ManInfo.parse(data.info), 
-        parse_dict(data.mps, ManParm.parse),
-        data.eds,
-    )}
+    constructor (readonly info: ManInfo, readonly mps: Record<string, ManParm>, readonly eds: Record<string, any>, readonly options: ManDef[] | null = null) {}
+    static parse(data: Record< string, any> | Record< string, any>[]  ) : ManDef {
+      if (Array.isArray(data)) {
+        return new ManDef(ManInfo.parse(data[0].info), parse_dict(data[0].mps, ManParm.parse), data[0].eds, data.slice(1).map(ManDef.parse));
+      } else {
+        return new ManDef(ManInfo.parse(data.info), parse_dict(data.mps, ManParm.parse), data.eds)
+      }
+    }
+
   }
-  
   

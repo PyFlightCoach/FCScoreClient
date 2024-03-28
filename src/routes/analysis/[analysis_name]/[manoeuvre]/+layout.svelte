@@ -21,10 +21,10 @@
             nitems.push(new NavContent('Positioning', 'positioning'));
             nitems.push(new NavContent('Templates', 'templates'));
           } else {
-            nitems.push(new NavContent('Score', '', ()=>flightdata.scoreman(data.mname)));
+            nitems.push(new NavContent('Score', '', ()=>flightdata.analyseManoeuvre(data.mname)));
           }
         } else {
-          nitems.push(new NavContent('Align', '', ()=>flightdata.alignman(data.mname)));
+          nitems.push(new NavContent('Align', '', ()=>flightdata.analyseManoeuvre(data.mname)));
         }
       } 
       nitems.push(new NavContent('Back', '/analysis/'+data.analysis_name))

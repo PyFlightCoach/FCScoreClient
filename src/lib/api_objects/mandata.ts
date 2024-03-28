@@ -1,6 +1,6 @@
 import {States} from '$lib/geometry';
 import { Manoeuvre } from '$lib/api_objects/manoeuvre';
-import { ManDef } from '$lib/api_objects/mandef';
+import { ManDef, ManOption } from '$lib/api_objects/mandef';
 import { ManoeuvreResult } from '$lib/api_objects/scores';
 
 
@@ -11,7 +11,7 @@ export class Man{
 
 export class BasicMan extends Man{
   constructor (
-    busy: boolean, readonly mdef: ManDef, 
+    busy: boolean, readonly mdef: ManDef | ManOption, 
     readonly flown: States, readonly direction: number, readonly stage: Number) {
     super(busy);
   }
@@ -28,7 +28,7 @@ export class BasicMan extends Man{
 
 export class AlignedMan extends BasicMan{
   constructor(
-    busy: boolean, mdef: ManDef,
+    busy: boolean, mdef: ManDef | ManOption,
     flown: States, direction: number, stage: Number,
     readonly manoeuvre: Manoeuvre, 
     readonly template: States) {
@@ -53,7 +53,7 @@ export class AlignedMan extends BasicMan{
 
 export class ScoredMan extends AlignedMan{
   constructor(
-    busy: boolean, mdef: ManDef,
+    busy: boolean, mdef: ManDef | ManOption,
     flown: States, direction: number, stage: Number,
     readonly manoeuvre: Manoeuvre, 
     readonly template: States,

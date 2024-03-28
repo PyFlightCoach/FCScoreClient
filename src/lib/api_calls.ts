@@ -1,10 +1,8 @@
 import type {ManDef} from '$lib/api_objects/mandef';
-import {ManoeuvreResult} from '$lib/api_objects/scores';
-import type {Manoeuvre} from '$lib/api_objects/manoeuvre';
 import { type AlignedMan, type BasicMan, ScoredMan } from '$lib/api_objects/mandata';
-import type {State, States} from '$lib/geometry';
+import type {State} from '$lib/geometry';
 
-//0.0.0.0:5000/
+
 async function server_func(func_name: string, kwargs: Record<string, any>={}, method='POST') {
     const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/${func_name}`, 
@@ -25,11 +23,9 @@ export async function convert_fcj(fcj: Record<string, any>, sinfo: Record<string
     return server_func('convert_fcj', {'fcj':fcj, 'sinfo':sinfo});
 }
 
-
 function parseAnalysis(res: Record<string, any>): AlignedMan | ScoredMan | BasicMan {
     return ScoredMan.parse(res);
 }
-
 
 export async function analyse_manoeuvre(man: BasicMan | AlignedMan | ScoredMan){
     return parseAnalysis(await server_func('analyse_manoeuvre', {man}));

@@ -10,11 +10,6 @@
 
   let man = flightdata.mans[data.mname];
   let mannames = flightdata.mannames;
-
-  $: if ($man instanceof BasicMan) {
-    goto('/analysis/'+data.analysis_name + '/' + data.mname + '/summary');
-  }
-
   let step: number = 0.1;
   
   $: elements = $man.flown.elements();
@@ -24,9 +19,10 @@
 
   const editsplit = (stp: number, elname: string) => {
 
-    man.update((val: AlignedMan | ScoredMan) => {
+    man.update((val: BasicMan | AlignedMan | ScoredMan) => {
       $mannames[data.mname]=2;
-
+      
+      console.log(data.mname);
       const elindex = elements.indexOf(elname);
       let i=0;
       if (stp>0) {
