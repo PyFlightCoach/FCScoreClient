@@ -5,6 +5,8 @@
   import Plot from 'svelte-plotly.js';
   import {coloured_ribbons, points, boxtrace} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';
+	import { Measurement } from '$lib/api_objects/scores';
+	import { isArray, len } from 'plotly.js-dist';
 
   export let data;
 
@@ -34,19 +36,23 @@
 <div id='parent'>
   <div id='table'>
     
-    <div>Name</div>
-    <div>Error</div>
-    <div>Downgrade</div>
+    <div class='cell head'>Name</div>
+    <div class='cell head'>Mean Error</div>
+    <div class='cell head'>Mean Visibility</div>
+    <div class='cell head'>Downgrade</div>
     
     {#each Object.values($man.scores.positioning.data) as pos}
                       
-          <div>{pos.name}</div>
+          <div class='cell'>{pos.name}</div>
           {#if pos.name=="distance"}
-            <div>{pos.errors[0].toFixed(0)} m;</div>
-          {:else}
-            <div>{(pos.errors[0] * 180 / Math.PI).toFixed(2)} &deg</div>
+            <div class='cell'>{pos.errors.map(e=>e.toFixed(2))} m</div>
+          {:else if ["side box", "top box"].includes(pos.name)}
+            <div class='cell'>{pos.errors.map(e=>(e * 180 / Math.PI).toFixed(2))} &deg</div>
+          {:else} 
+            <div class='cell'>{(pos.errors[0] * 180 / Math.PI).toFixed(2)} &deg</div>
           {/if}
-          <div>{pos.total.toFixed(2)}</div>
+          <div class='cell'>{'visibility' in pos.measurement ? pos.measurement.visibility[0].toFixed(2) : 1}</div>
+          <div class='cell'>{pos.total.toFixed(2)}</div>
         
     {/each}
   </div>
@@ -66,13 +72,14 @@
 
 
 <style>
-  #parent {display: grid; height:100%; width:100%; grid-template-columns: max-content 1fr;}
+  #parent {display: grid; height:100%; width:100%; grid-template-rows: max-content 1fr;}
   #table {
     display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
+    grid-template-columns: repeat(4, 1fr); 
     align-items: start; 
     align-self: start; 
   }
-
+  .cell{text-align: center;}
+  .cell.head{font-weight: bold;}
 
 </style>

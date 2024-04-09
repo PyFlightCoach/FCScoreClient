@@ -196,3 +196,4 @@ export const navitems: Writable<NavContent[]> = writable([]);
 
 import type {OBJ} from '$lib/plots/traces';
 export const colddraft: Writable<OBJ|null> = writable(null);
+

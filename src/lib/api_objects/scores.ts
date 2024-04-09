@@ -140,7 +140,7 @@ export class Measurement{
     }
   
     factoredDG(difficulty: (v: number)=>number) {
-      return sum(Object.values(this.data).map(v=>v.factoredDG(difficulty)));
+      return sum(Object.values(this.data).map(v=>Math.floor(v.factoredDG(difficulty) * 2) / 2));
     }
   
   }

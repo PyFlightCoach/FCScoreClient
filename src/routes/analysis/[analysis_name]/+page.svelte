@@ -2,7 +2,9 @@
   import {flightdata, navitems, NavContent} from '$lib/stores';
   import AnalysisSummary from './AnalysisSummary.svelte';
   import Difficulty from './Difficulty.svelte';
+  import cookie from 'cookie';
   export let data;
+
   let mannames = flightdata.mannames;
   let difficulty: (v:number)=>number;
 
@@ -14,19 +16,16 @@
 
   let total=0;
 
-
 </script>
 
 <div id='parent'>
-  <Difficulty bind:difficulty={difficulty}/>
+  <Difficulty bind:modifier={difficulty} />
   <div style='grid-column:2;'><AnalysisSummary 
     analysisName={data.analysis_name} 
     bind:total={total}
     difficulty={difficulty}
   /></div>
-  <h2>Total Score = {total.toFixed(1)}</h2>
-  
-  
+  <h2>Total Score = {total.toFixed(1)}</h2>  
 </div>
 
 <style>

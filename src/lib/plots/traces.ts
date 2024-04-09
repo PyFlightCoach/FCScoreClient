@@ -178,8 +178,10 @@ export const downgrade_info = (result: Record<string, any>, scale = 1.0) => {
 };
 
 export const criteriaInfo = (criteria: Record<string, any>) => {
-  const scale = ['ContAbs', 'Single'].includes(criteria.kind) ? 180/Math.PI : 1;
-  const x = criteria.kind == 'ContAbs' ? linspace(0.0, 90.0, 20.0) : linspace(0.0, 5.0, 20.0);
+  const makeRad = ['ContAbs', 'Single'].includes(criteria.kind);
+  console.log(makeRad);
+  const scale = makeRad ? 180/Math.PI : 1;
+  const x = makeRad ? linspace(0.0, 90.0, 20.0) : linspace(0.0, 5.0, 20.0);
   const y = x.map((v) => criteria.lookup.factor * Math.pow(v / scale, criteria.lookup.exponent));
 
   return { type: 'scatter', x, y, line: { color: 'black' } };
