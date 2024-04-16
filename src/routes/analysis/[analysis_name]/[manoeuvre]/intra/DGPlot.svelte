@@ -9,10 +9,11 @@
   $: plotIndex = activeIndex == null ? 0 : activeIndex;
 
   $: downgrade = element.scoring[result.name];
+  $: kind = downgrade.criteria.kind
 
   let scale:number=1;
   $: {
-    if ((downgrade.criteria.kind == 'Single') ||  (downgrade.criteria.kind == 'ContAbs')) {
+    if ((kind == 'Single') ||  (kind == 'ContAbs')) {
       scale=180/Math.PI;
     } else {scale=1}
   }
@@ -35,7 +36,10 @@
       side: 'right',
       range: [0, 1]
     },
-    xaxis:{visible: false},
+    xaxis:{
+      visible: false,
+      range: [0, result.sample.length]
+    },
     legend:{orientation: 'h', x:0.2, y:0},
     autosize: true,
     margin: {l:30, r:30, t:0, b:0},

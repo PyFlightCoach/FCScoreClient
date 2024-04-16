@@ -66,9 +66,11 @@ export class Measurement{
       )
     }
   
-    factoredDG(difficulty: (v: number)=>number) {
+    factoredDG(difficulty: (v: number)=>number, trunc=false) {
       if (Object.values(this.data).length == 0) {return 0;}
-      return sum(Object.values(this.data).map(v=>v.factoredDG(difficulty)));
+      let res = sum(Object.values(this.data).map(v=>v.factoredDG(difficulty)));
+      if (trunc) {res = Math.floor(res * 2) / 2;}
+      return res
     }
   }
   
@@ -139,8 +141,12 @@ export class Measurement{
       return summaries;
     }
   
-    factoredDG(difficulty: (v: number)=>number) {
-      return sum(Object.values(this.data).map(v=>v.factoredDG(difficulty)));//v=>Math.floor(v.factoredDG(difficulty) * 2) / 2));
+    factoredDG(difficulty: (v: number)=>number, trunc=false) {
+      if (trunc) {
+        return sum(Object.values(this.data).map(v=>Math.floor(v.factoredDG(difficulty) * 2) / 2));
+      } else {
+        return sum(Object.values(this.data).map(v=>v.factoredDG(difficulty)));
+      }
     }
   
   }

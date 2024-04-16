@@ -1,9 +1,9 @@
 <script lang="ts">
   import '../app.postcss';
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem, Chevron,
-    DropdownDivider, Helper, NavHamburger} from 'flowbite-svelte'
+    DropdownDivider, Helper, NavHamburger, Checkbox} from 'flowbite-svelte'
   import { mouse } from '$lib/stores';
-  import {flightdata, colddraft, navitems, server} from '$lib/stores';
+  import {flightdata, colddraft, navitems, truncate} from '$lib/stores';
   import {server_version } from '$lib/api_calls';
   import { OBJ } from '$lib/plots/traces.js';
   export let data;
@@ -23,8 +23,9 @@
     $colddraft = OBJ.parse_dict(data.colddraft);
   }
   
-  
- 
+  $truncate = localStorage.getItem('truncate') == 'true';
+  $: localStorage.setItem('truncate', $truncate.toString());
+
 </script>
 
 
@@ -46,6 +47,10 @@
       </NavUl>
       <NavUl {hidden}>
         {#if Object.keys($mannanes).length > 0}
+          <NavLi id="optionsmenu" class="cursor-pointer"><Chevron aligned>Options</Chevron></NavLi>
+          <Dropdown triggeredBy="#optionsmenu" class="w-44 z-20">
+            <DropdownItem><Checkbox bind:checked={$truncate}>Truncate Downgrades</Checkbox></DropdownItem>
+          </Dropdown>
           <NavLi id="manoeuvremenu" class="cursor-pointer"><Chevron aligned>Manoeuvres</Chevron></NavLi>
           <Dropdown triggeredBy="#manoeuvremenu" class="w-44 z-20">
             {#each Object.keys($mannanes) as mname}
