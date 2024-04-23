@@ -2,7 +2,7 @@
 
 <script lang="ts">
   import { flightdata } from '$lib/stores';
-  import {BasicMan, AlignedMan, type ScoredMan} from '$lib/api_objects/mandata';
+  import {BasicMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
   import {Tooltip, Input, BottomNavItem, BottomNav, Select, ScoreRating} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
@@ -57,7 +57,7 @@
   <div style:height=100%>
     <PlotDTW sts={states} bind:activeEl={element} sp={3}/>
   </div>
-  <BottomNav classInner="grid-cols-5" >
+  <BottomNav id=bnav classInner="grid-cols-7"  >
     <Select  id="selectelement"
       bind:value={element} 
       items={['Select Element'].concat(...Object.keys(states)).map((el) => {return {value: el, name: el};})}
@@ -65,11 +65,19 @@
     <BottomNavItem id="stepsize"><Input placeholder='step' bind:value={step}/></BottomNavItem>
     <BottomNavItem  id="adjustback" on:click={() => {editsplit(-Number(step), element)}}>&#60</BottomNavItem>
     <BottomNavItem  id="adjustfor" on:click={() => {editsplit(Number(step), element)}}>&#62</BottomNavItem>
+    <BottomNavItem  id="optimse" on:click={()=>flightdata.analyseManoeuvre(data.mname, true, true)}>Optimise</BottomNavItem>
+    <BottomNavItem  id="score" on:click={()=>flightdata.analyseManoeuvre(data.mname, true, false)}>Score</BottomNavItem>
     <BottomNavItem  id="back" on:click={() => {goto('/analysis/'+data.analysis_name)}}>back</BottomNavItem>
   </BottomNav>
   <Tooltip triggeredBy="[id='stepsize']">Enter step size in seconds</Tooltip>
   <Tooltip triggeredBy="[id='selectelement']">Select element to edit</Tooltip>
   <Tooltip triggeredBy="[id='adjustback']">Adjust split location backwards</Tooltip>
+  <Tooltip triggeredBy="[id='optimse']">Run aligment optimisation</Tooltip>
+  <Tooltip triggeredBy="[id='score']">Recalculate score without optimisation</Tooltip>
   <Tooltip triggeredBy="[id='adjustfor']">Adjust split location forwards</Tooltip>
   <Tooltip triggeredBy="[id='back']">Back to Main Page</Tooltip>
 </div>
+
+<style>
+  #bnav {width: 800px;}
+</style>

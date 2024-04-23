@@ -31,6 +31,10 @@ export async function analyse_manoeuvre(man: BasicMan | AlignedMan | ScoredMan){
     return parseAnalysis(await server_func('analyse_manoeuvre', {man}));
 }
 
+export async function score_manoeuvre(man: BasicMan | AlignedMan | ScoredMan) {
+    return parseAnalysis(await server_func('score_manoeuvre', {man}));
+}
+
 export async function create_fc_json(sts: State[], mdefs: ManDef[], name: string, category: string) {
     return await server_func('create_fc_json', {sts, mdefs, name, category});
 }

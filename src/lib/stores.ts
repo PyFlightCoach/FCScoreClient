@@ -1,5 +1,5 @@
 import { writable, type Writable } from 'svelte/store';
-import { analyse_manoeuvre, create_fc_json, server_version } from '$lib/api_calls';
+import { analyse_manoeuvre, create_fc_json, server_version, optimise_aligment, score_manoeuvre } from '$lib/api_calls';
 import type {State} from '$lib/geometry';
 import type { ManDef } from '$lib/api_objects/mandef';
 import {BasicMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
@@ -42,14 +42,19 @@ class FlightData {
   }
 
 
-  async analyseManoeuvre(name: string, force: boolean = false) {
+  async analyseManoeuvre(name: string, force: boolean = false, optimise_aligment=true) {
     let rman = this.mans[name];
     
     const direction = this.get_value('direction');
     
     async function score(man: BasicMan | AlignedMan | ScoredMan) {
       if (!(man instanceof ScoredMan) || force) {
-        return await analyse_manoeuvre(man);
+        if (optimise_aligment) {
+          return await analyse_manoeuvre(man);
+        } else {
+          return await score_manoeuvre(man);
+        }
+        
       } else if (man instanceof ScoredMan) {
         man.busy = false;
         return man;

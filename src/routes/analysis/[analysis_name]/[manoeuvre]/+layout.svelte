@@ -6,8 +6,7 @@
   export let data;
   
   $: man = flightdata.mans[data.mname];
-
-
+  
   const update_navitems = (man_: AlignedMan | ScoredMan | BasicMan) => {
     navitems.update(v=>{
       let nitems=[];
@@ -16,9 +15,9 @@
         if (man_ instanceof AlignedMan) {
           nitems.push(new NavContent('Alignment', 'alignment'));
           if (man_ instanceof ScoredMan) {
-            nitems.push(new NavContent('Intra', 'intra'));
-            nitems.push(new NavContent('Inter', 'inter'));
-            nitems.push(new NavContent('Positioning', 'positioning'));
+            nitems.push(new NavContent('Intra='+$man.scores.intra.total.toFixed(2), 'intra'));
+            nitems.push(new NavContent('Inter='+$man.scores.inter.total.toFixed(2), 'inter'));
+            nitems.push(new NavContent('Positioning='+$man.scores.positioning.total.toFixed(2), 'positioning'));
             nitems.push(new NavContent('Templates', 'templates'));
           } else {
             nitems.push(new NavContent('Score', '', ()=>flightdata.analyseManoeuvre(data.mname)));

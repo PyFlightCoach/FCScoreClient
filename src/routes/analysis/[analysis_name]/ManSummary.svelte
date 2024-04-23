@@ -24,13 +24,13 @@
 </script>
 
 
-<div>{manname}</div>
+<a href={analysisName}/{manname}/summary>{manname}</a>
 <div>{$man.mdef.info.k}</div>
 
 {#if $man instanceof ScoredMan}
-  <a style:background-color={colscale(intra, 6, redsColors)} href='{analysisName}/{manname}/intra'>{intra.toFixed(2)}</a>
-  <a style:background-color={colscale(inter, 6, redsColors)} href='{analysisName}/{manname}/inter'>{inter.toFixed(2)}</a>
-  <a style:background-color={colscale(position, 6, redsColors)} href='{analysisName}/{manname}/positioning'>{position.toFixed(2)}</a>
+  <a style:background-color={colscale(intra, 6, redsColors)} href={analysisName}/{manname}/intra>{intra.toFixed(2)}</a>
+  <a style:background-color={colscale(inter, 6, redsColors)} href={analysisName}/{manname}/inter>{inter.toFixed(2)}</a>
+  <a style:background-color={colscale(position, 6, redsColors)} href={analysisName}/{manname}/positioning>{position.toFixed(2)}</a>
 {:else}
   <div>-</div>
   <div>-</div>
