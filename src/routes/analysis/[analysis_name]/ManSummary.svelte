@@ -3,7 +3,7 @@
 
   import {flightdata, truncate} from '$lib/stores';
   import {colscale, redsColors} from '$lib/plots/styling';
-  import {ScoredMan} from '$lib/api_objects/mandata';
+  import {AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
 
   export let analysisName: string;
   export let manname: string;
@@ -43,6 +43,8 @@
     <div>Busy</div>
   {:else if $man instanceof ScoredMan}
     <a href='{analysisName}/{manname}/summary'>{score.toFixed(1)}</a>
+  {:else if $man instanceof AlignedMan}
+    <a href='{analysisName}/{manname}/alignment'>Alignment</a>
   {:else}
     <button color='light' style='width:200px' on:click={()=> {flightdata.analyseManoeuvre(manname);}}>Run Analysis</button>
   {/if} 

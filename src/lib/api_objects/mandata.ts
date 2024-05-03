@@ -30,6 +30,7 @@ export class AlignedMan extends BasicMan{
   constructor(
     busy: boolean, mdef: ManDef | ManOption,
     flown: States, direction: number, stage: Number,
+    readonly dist: number,
     readonly manoeuvre: Manoeuvre, 
     readonly template: States) {
     super(busy, mdef, flown, direction, stage);
@@ -44,8 +45,9 @@ export class AlignedMan extends BasicMan{
         States.parse(data.flown),
         data.direction,
         data.stage,
+        data.dist,
         Manoeuvre.parse(data.manoeuvre),
-        States.parse(data.aligned)
+        States.parse(data.template)
       );
     }
   }

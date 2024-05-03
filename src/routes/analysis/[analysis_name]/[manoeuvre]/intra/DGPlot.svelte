@@ -18,8 +18,8 @@
     } else {scale=1}
   }
 
-  $: miny = Math.min(...result.sample, 0) * 2 * scale;
-  $: maxy = Math.max(...result.sample, 0) * 2 * scale;
+  $: miny = Math.min(...result.measurement.value,...result.sample, 0) * 2 * scale;
+  $: maxy = Math.max(...result.measurement.value,...result.sample, 0) * 2 * scale;
 
 </script>
 

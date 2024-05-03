@@ -43,7 +43,7 @@
           val.flown.data[end_info[elements[elindex]].lastid - i].element = elements[elindex+1]; i++;
         }
       }
-      return new AlignedMan(false, val.mdef, val.flown, val.direction, val.stage, val.manoeuvre, val.template);
+      return new AlignedMan(false, val.mdef, val.flown, val.direction, val.stage, val.dist, val.manoeuvre, val.template);
     });
   };
 
