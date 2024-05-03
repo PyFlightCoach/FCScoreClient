@@ -72,7 +72,7 @@ class FlightData {
 
   async analyseList(names: string[]) {
     for (let i=0; i<names.length; i++) {
-      await this.analyseManoeuvre(names[i]);
+      await this.analyseManoeuvre(names[i], false, true);
     }
   }
 
