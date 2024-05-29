@@ -3,15 +3,21 @@ import { type AlignedMan, type BasicMan, ScoredMan } from '$lib/api_objects/mand
 import type {State} from '$lib/geometry';
 
 
-async function server_func(func_name: string, kwargs: Record<string, any>={}, method='POST') {
+async function server_func(func_name: string, kwargs: Record<string, any>={}, method: string='POST') {
+    
+    let msg = {
+        method, 
+        headers: {"Content-Type": "application/json"},
+        mode: "cors", 
+    }
+    if (method==='POST') {
+        msg.body = JSON.stringify(kwargs);
+    }
+    
     const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/${func_name}`, 
-        {
-            method, 
-            headers: {"Content-Type": "application/json"},
-            mode: "cors",
-            body: JSON.stringify(kwargs),
-        });
+        msg
+    );
     if (!response.ok) {
         throw response.status;
     }
@@ -43,6 +49,7 @@ export async function server_version(){
     return await server_func('version').then(v=>v.version);
 }
 
-export async function standard_f3a_mps(){
-    return await server_func('standard_f3a_mps')
+
+export async function get_telemetry() {
+    return await server_func('telemetry');
 }
