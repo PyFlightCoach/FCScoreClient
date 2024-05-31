@@ -1,16 +1,18 @@
 <script lang="ts">
   import '../app.postcss';
-  import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem, Chevron,
+  import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem,
     DropdownDivider, Helper, NavHamburger, Checkbox} from 'flowbite-svelte'
+  import { ChevronDownOutline } from 'flowbite-svelte-icons';
   import { mouse } from '$lib/stores';
   import {flightdata, colddraft, navitems, truncate} from '$lib/stores';
   import {server_version } from '$lib/api_calls';
   import { OBJ } from '$lib/plots/traces.js';
   export let data;
-  
+  export const prerender = true;
+
   let mannanes = flightdata.mannames;
   let name = flightdata.name;
-  const clearflight = (target: string = '/') => {
+  const clearflight = (target = '/') => {
     flightdata.clear();
     window.location.href = target;
   }
@@ -47,11 +49,11 @@
       </NavUl>
       <NavUl {hidden}>
         {#if Object.keys($mannanes).length > 0}
-          <NavLi id="optionsmenu" class="cursor-pointer"><Chevron aligned>Options</Chevron></NavLi>
+          <NavLi id="optionsmenu" class="cursor-pointer">Options</NavLi>
           <Dropdown triggeredBy="#optionsmenu" class="w-44 z-20">
             <DropdownItem><Checkbox bind:checked={$truncate}>Truncate Downgrades</Checkbox></DropdownItem>
           </Dropdown>
-          <NavLi id="manoeuvremenu" class="cursor-pointer"><Chevron aligned>Manoeuvres</Chevron></NavLi>
+          <NavLi id="manoeuvremenu" class="cursor-pointer">Manoeuvres</NavLi>
           <Dropdown triggeredBy="#manoeuvremenu" class="w-44 z-20">
             {#each Object.keys($mannanes) as mname}
               <DropdownItem href={'/analysis/' + $name + '/' + mname + '/summary'}>{mname}</DropdownItem>
@@ -59,7 +61,7 @@
           </Dropdown>
         {/if} 
 
-        <NavLi id="flightmenu" class="cursor-pointer"><Chevron aligned>Flight</Chevron></NavLi>
+        <NavLi id="flightmenu" class="cursor-pointer">Flight</NavLi>
         <Dropdown triggeredBy="#flightmenu" class="w-44 z-20">
           <DropdownItem on:click={()=>{clearflight('/upload')}}>load</DropdownItem>
           {#if Object.values(flightdata.mans).length > 0}

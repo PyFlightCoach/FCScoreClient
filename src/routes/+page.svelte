@@ -3,8 +3,8 @@
   import {server_version} from '$lib/api_calls';
   import {onMount} from 'svelte';
   import { A } from 'flowbite-svelte';
-
-  let version: string = 'not connected';
+  
+  let version = 'not connected';
 
   const getVersion = async () => {version = await server_version()};
 
