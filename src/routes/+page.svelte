@@ -11,7 +11,7 @@
   onMount(getVersion);
       
   
-  const PUBLIC_VERSION = 'static_v0.0.15'
+  const PUBLIC_VERSION = 'v0.0.15'
 
 </script>
 
