@@ -4,8 +4,8 @@ import type {State} from '$lib/geometry';
 import type { ManDef } from '$lib/api_objects/mandef';
 import {BasicMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
 import pkg from 'file-saver';
-import {PUBLIC_VERSION} from '$env/static/public';
 
+const PUBLIC_VERSION = 'static_v0.0.15'
 const { saveAs } = pkg;
 
 

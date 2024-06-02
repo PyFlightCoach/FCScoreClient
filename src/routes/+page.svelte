@@ -10,8 +10,8 @@
 
   onMount(getVersion);
       
-  import {PUBLIC_VERSION} from '$env/static/public';
-
+  
+  const PUBLIC_VERSION = 'static_v0.0.15'
 
 </script>
 

@@ -15,7 +15,7 @@ async function server_func(func_name: string, kwargs: Record<string, any>={}, me
     }
     
     const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/${func_name}`, 
+        `0.0.0.0/${func_name}`, 
         msg
     );
     if (!response.ok) {
