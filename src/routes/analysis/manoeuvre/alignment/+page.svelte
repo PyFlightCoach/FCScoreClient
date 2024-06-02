@@ -3,7 +3,7 @@
 <script lang="ts">
   import { flightdata } from '$lib/stores';
   import {BasicMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
-  import {Tooltip, Input, BottomNavItem, BottomNav, Select, ScoreRating} from 'flowbite-svelte';
+  import {Tooltip, Input, BottomNavItem, BottomNav, Select} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
   export let data;

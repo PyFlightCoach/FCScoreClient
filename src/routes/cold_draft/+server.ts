@@ -1,6 +1,6 @@
 import {json} from '@sveltejs/kit';
 import fs from 'fs';
-
+export const prerender = true
 
 export function GET() {
     

@@ -6,19 +6,19 @@
   export let data;
   
   $: man = flightdata.mans[data.mname];
-  
+  console.log(data.mname);
   const update_navitems = (man_: AlignedMan | ScoredMan | BasicMan) => {
     navitems.update(v=>{
       let nitems=[];
-      nitems.push(new NavContent('Summary', 'summary'))
+      nitems.push(new NavContent('Summary', '/analysis/manoeuvre?man='+data.mname));
       if (!man_.busy) {
         if (man_ instanceof AlignedMan) {
-          nitems.push(new NavContent('Alignment', 'alignment'));
+          nitems.push(new NavContent('Alignment', '/analysis/manoeuvre/alignment?man='+data.mname));
           if (man_ instanceof ScoredMan) {
-            nitems.push(new NavContent('Intra='+$man.scores.intra.total.toFixed(2), 'intra'));
-            nitems.push(new NavContent('Inter='+$man.scores.inter.total.toFixed(2), 'inter'));
-            nitems.push(new NavContent('Positioning='+$man.scores.positioning.total.toFixed(2), 'positioning'));
-            nitems.push(new NavContent('Templates', 'templates'));
+            nitems.push(new NavContent('Intra='+$man.scores.intra.total.toFixed(2), '/analysis/manoeuvre/intra?man='+data.mname));
+            nitems.push(new NavContent('Inter='+$man.scores.inter.total.toFixed(2), '/analysis/manoeuvre/inter?man='+data.mname));
+            nitems.push(new NavContent('Positioning='+$man.scores.positioning.total.toFixed(2), '/analysis/manoeuvre/positioning?man='+data.mname));
+            nitems.push(new NavContent('Templates', '/analysis/manoeuvre/templates?man='+data.mname));
           } else {
             nitems.push(new NavContent('Score', '', ()=>flightdata.analyseManoeuvre(data.mname)));
           }
@@ -26,7 +26,7 @@
           nitems.push(new NavContent('Align', '', ()=>flightdata.analyseManoeuvre(data.mname)));
         }
       } 
-      nitems.push(new NavContent('Back', '/analysis/'+data.analysis_name))
+      nitems.push(new NavContent('Back', '/analysis/'))
       return nitems;
     });
   }

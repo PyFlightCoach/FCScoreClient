@@ -8,7 +8,7 @@
   import {server_version } from '$lib/api_calls';
   import { OBJ } from '$lib/plots/traces.js';
   export let data;
-  export const prerender = true;
+
 
   let mannanes = flightdata.mannames;
   let name = flightdata.name;
@@ -67,11 +67,10 @@
           {#if Object.values(flightdata.mans).length > 0}
             <DropdownDivider/>
             <Helper>{$name}</Helper>
-            <DropdownItem href={'/analysis/' + $name}>analysis</DropdownItem>
             <DropdownItem on:click={()=>{flightdata.export()}}>export</DropdownItem>
             <DropdownItem on:click={()=>{clearflight('/')}}>clear</DropdownItem>
           {:else}
-            <DropdownItem href='/analysis/example' data-sveltekit-preload-data="tap">example</DropdownItem>
+            <DropdownItem href='/analysis' data-sveltekit-preload-data="tap">example</DropdownItem>
           {/if} 
         </Dropdown> 
         <NavLi id='info' class="cursor-pointer" href="https://pfcdocumentation.readthedocs.io/fcscore/index.html" target="_blank">Info</NavLi>

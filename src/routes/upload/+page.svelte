@@ -49,7 +49,7 @@
           } else if ('client_version' in data) {
 
             flightdata.import(data);
-            goto('/analysis/' + $name);
+            goto('/analysis');
 
           } else {
             warning=true;
@@ -92,7 +92,7 @@
   {#if $name}
     <p>category={$sinfo.category}</p> 
     <p>schedule={$sinfo.name}</p>
-    <Button on:click={convert_json} href={'/analysis/' + $name}>
+    <Button on:click={convert_json} href={'/analysis'}>
       Prepare Analysis
     </Button>
   {/if}

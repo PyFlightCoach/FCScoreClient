@@ -2,7 +2,6 @@
 	import {flightdata} from '$lib/stores';
   import ManSummary from './ManSummary.svelte';
 
-  export let analysisName: string;
   export let total: number = 0;
   export let difficulty: (v: number)=>number;
 
@@ -40,7 +39,6 @@
   <div>Position</div>
   {#each Object.keys($mannames) as mn}
     <ManSummary 
-      analysisName={analysisName} 
       manname={mn} 
       bind:total={totals[mn]} 
       difficulty={difficulty}

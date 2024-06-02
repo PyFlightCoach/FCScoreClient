@@ -3,7 +3,8 @@
 import {Point, Quaternion} from '$lib/geometry';
 
 import {OBJ} from '$lib/plots/traces';
-export const ssr = false
+export const prerender = true;
+export const ssr=false;
 
 export async function load({ fetch, params }) {
     const res = await fetch('/cold_draft');
