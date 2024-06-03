@@ -29,7 +29,7 @@
 <div id="parent" on:mousemove={handleMousemove} >
   <div>
     <Navbar let:hidden let:toggle>
-      <NavBrand href='/'>
+      <NavBrand href={base}>
         FCScore
       </NavBrand>
     <NavHamburger on:click={toggle} />
