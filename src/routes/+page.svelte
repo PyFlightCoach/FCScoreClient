@@ -3,15 +3,25 @@
   import {server_version} from '$lib/api_calls';
   import {onMount} from 'svelte';
   import { A } from 'flowbite-svelte';
-  
+  import {base} from '$app/paths';
+  import {goto} from '$app/navigation';
+
   let version = 'not connected';
 
   const getVersion = async () => {version = await server_version()};
 
   onMount(getVersion);
-      
   
-  const PUBLIC_VERSION = 'v0.0.15'
+  const PUBLIC_VERSION = 'static_trial'
+
+  $: name = flightdata.name;
+  import {flightdata} from '$lib/stores';
+
+  onMount(()=>{
+    if ($name != null) {
+      goto(base + '/analysis');
+    }
+  })
 
 </script>
 
