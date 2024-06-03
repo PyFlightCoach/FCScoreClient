@@ -2,13 +2,10 @@
   import '../app.postcss';
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem,
     DropdownDivider, Helper, NavHamburger, Checkbox} from 'flowbite-svelte'
-  import { ChevronDownOutline } from 'flowbite-svelte-icons';
   import { mouse } from '$lib/stores';
-  import {flightdata, colddraft, navitems, truncate} from '$lib/stores';
-  import {server_version } from '$lib/api_calls';
-  import { OBJ } from '$lib/plots/traces.js';
+  import {flightdata, navitems, truncate} from '$lib/stores';
   export let data;
-
+  import { base } from '$app/paths'
 
   let mannanes = flightdata.mannames;
   let name = flightdata.name;
@@ -21,9 +18,6 @@
     $mouse = {x: event.clientX, y: event.clientY}
   }
   
-  $: if ($colddraft==null) {
-    $colddraft = OBJ.parse_dict(data.colddraft);
-  }
   
   $truncate = localStorage.getItem('truncate') == 'true';
   $: localStorage.setItem('truncate', $truncate.toString());
@@ -56,21 +50,21 @@
           <NavLi id="manoeuvremenu" class="cursor-pointer">Manoeuvres</NavLi>
           <Dropdown triggeredBy="#manoeuvremenu" class="w-44 z-20">
             {#each Object.keys($mannanes) as mname}
-              <DropdownItem href={'/analysis/' + $name + '/' + mname + '/summary'}>{mname}</DropdownItem>
+              <DropdownItem href='{base}/analysis/manoeuvre?man={mname}'>{mname}</DropdownItem>
             {/each}    
           </Dropdown>
         {/if} 
 
         <NavLi id="flightmenu" class="cursor-pointer">Flight</NavLi>
         <Dropdown triggeredBy="#flightmenu" class="w-44 z-20">
-          <DropdownItem on:click={()=>{clearflight('/upload')}}>load</DropdownItem>
+          <DropdownItem on:click={()=>{clearflight(base + '/upload')}}>load</DropdownItem>
           {#if Object.values(flightdata.mans).length > 0}
             <DropdownDivider/>
             <Helper>{$name}</Helper>
             <DropdownItem on:click={()=>{flightdata.export()}}>export</DropdownItem>
-            <DropdownItem on:click={()=>{clearflight('/')}}>clear</DropdownItem>
+            <DropdownItem on:click={()=>{clearflight(base)}}>clear</DropdownItem>
           {:else}
-            <DropdownItem href='/analysis' data-sveltekit-preload-data="tap">example</DropdownItem>
+            <DropdownItem href={base + '/analysis'} data-sveltekit-preload-data="tap">example</DropdownItem>
           {/if} 
         </Dropdown> 
         <NavLi id='info' class="cursor-pointer" href="https://pfcdocumentation.readthedocs.io/fcscore/index.html" target="_blank">Info</NavLi>

@@ -1,5 +1,5 @@
 import { writable, type Writable } from 'svelte/store';
-import { analyse_manoeuvre, create_fc_json, server_version, optimise_aligment, score_manoeuvre } from '$lib/api_calls';
+import { analyse_manoeuvre, create_fc_json, server_version, score_manoeuvre } from '$lib/api_calls';
 import type {State} from '$lib/geometry';
 import type { ManDef } from '$lib/api_objects/mandef';
 import {BasicMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
@@ -174,9 +174,6 @@ class FlightData {
     })
     return total
   }
-
-
-
 }
 
 export const flightdata = new FlightData();
@@ -198,9 +195,4 @@ export class NavContent {
 
 }
 export const navitems: Writable<NavContent[]> = writable([]);
-
-import type {OBJ} from '$lib/plots/traces';
-export const colddraft: Writable<OBJ|null> = writable(null);
-
-
 export const truncate: Writable<boolean> = writable(false);

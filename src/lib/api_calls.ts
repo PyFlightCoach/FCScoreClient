@@ -15,7 +15,7 @@ async function server_func(func_name: string, kwargs: Record<string, any>={}, me
     }
     
     const response = await fetch(
-        `0.0.0.0/${func_name}`, 
+        `http://0.0.0.0:5000/${func_name}`, 
         msg
     );
     if (!response.ok) {

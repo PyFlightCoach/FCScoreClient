@@ -13,8 +13,6 @@
     totals[mn] = 0;
   });
 
-  
-
   const getTotal = (ttls: Record<string, number>) => {
     let total = 0;
     Object.keys($mannames).forEach((mn) => {
@@ -23,9 +21,7 @@
     return total;
   };
 
-
   $: total = getTotal(totals);
-
 
 </script>
 
@@ -45,12 +41,7 @@
     />
   {/each}
 
-
-
 </div>
-  
-
-
 
 <style>
   div { text-align: center;}

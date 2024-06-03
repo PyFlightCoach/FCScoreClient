@@ -5,9 +5,9 @@
     import {modeltrace, ribbon} from '$lib/plots/traces';
     import {layout3d} from '$lib/plots/layouts';    
     import {Checkbox, BottomNav, BottomNavItem} from 'flowbite-svelte';
-    import {flightdata, colddraft} from '$lib/stores';
+    import {flightdata} from '$lib/stores';
     import type {States} from '$lib/geometry';
-    
+    import colddraft from '$lib/plots/colddraft.js';
     export let data;
     let man = flightdata.mans[data.mname];
   
@@ -15,8 +15,8 @@
     const make_trace = (tp: States, models: boolean, name: string, color: string) => {
       const trs = [ribbon(tp, 3, {}, {name, color})]
   
-      if (models && ($colddraft != null)) {
-        trs.push(...modeltrace(tp.downsample(20), $colddraft, {name, color}));
+      if (models) {
+        trs.push(...modeltrace(tp.downsample(20), colddraft, {name, color}));
       }
       return trs;
     }

@@ -3,9 +3,8 @@
   import Plot from 'svelte-plotly.js';
   import {ribbon} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';
-  import {colddraft } from '$lib/stores';
   import { ButtonGroup, Button } from 'flowbite-svelte';
-
+  import colddraft from '$lib/plots/colddraft';
   export let flst: States;
   export let tpst: States|null=null
   export let i: number|null=null;
@@ -25,7 +24,7 @@
   const createModelTrace = (st: States|null, i: number|null) => {
     if ((st != null) && i && (i<st.data.length)) {
       const fst = st.data[i];
-      return $colddraft?.scale(scale).to_mesh3d(
+      return colddraft.scale(scale).to_mesh3d(
         fst.pos(), fst.att(), {opacity: 1.0, hoverinfo: 'skip', name: 'fl model'}
       );
     } else {
@@ -75,8 +74,6 @@
       on:click={(e)=>{
         i=Math.floor(e.detail.points[0].pointNumber / 2);}
       }
-      on:relayout={()=>console.log('relayout')}
-      
     />
     {/if}
   </div>

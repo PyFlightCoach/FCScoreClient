@@ -5,7 +5,7 @@
   let data: Record<string, any>;
   import { flightdata } from '$lib/stores.js';
   import { goto } from '$app/navigation';
-
+  import { base } from '$app/paths'
   import { Alert } from 'flowbite-svelte';
 
   let name = flightdata.name;
@@ -49,7 +49,7 @@
           } else if ('client_version' in data) {
 
             flightdata.import(data);
-            goto('/analysis');
+            goto(base + '/analysis');
 
           } else {
             warning=true;
@@ -92,7 +92,7 @@
   {#if $name}
     <p>category={$sinfo.category}</p> 
     <p>schedule={$sinfo.name}</p>
-    <Button on:click={convert_json} href={'/analysis'}>
+    <Button on:click={convert_json} href={base}/analysis>
       Prepare Analysis
     </Button>
   {/if}

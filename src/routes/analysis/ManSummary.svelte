@@ -4,7 +4,7 @@
   import {flightdata, truncate} from '$lib/stores';
   import {colscale, redsColors} from '$lib/plots/styling';
   import {AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
-
+  import { base } from '$app/paths'
 
   export let manname: string;
   export let difficulty = (v: number) => v;
@@ -24,13 +24,13 @@
 </script>
 
 
-<a href='/analysis/manoeuvre?man={manname}'>{manname}</a>
+<a href='{base}/analysis/manoeuvre?man={manname}'>{manname}</a>
 <div>{$man.mdef.info.k}</div>
 
 {#if $man instanceof ScoredMan}
-  <a style:background-color={colscale(intra, 6, redsColors)} href='/analysis/manoeuvre/intra?man={manname}'>{intra.toFixed(2)}</a>
-  <a style:background-color={colscale(inter, 6, redsColors)} href='/analysis/manoeuvre/inter?man={manname}'>{inter.toFixed(2)}</a>
-  <a style:background-color={colscale(position, 6, redsColors)} href='/analysis/manoeuvre/positioning?man={manname}'>{position.toFixed(2)}</a>
+  <a style:background-color={colscale(intra, 6, redsColors)} href='{base}/analysis/manoeuvre/intra?man={manname}'>{intra.toFixed(2)}</a>
+  <a style:background-color={colscale(inter, 6, redsColors)} href='{base}/analysis/manoeuvre/inter?man={manname}'>{inter.toFixed(2)}</a>
+  <a style:background-color={colscale(position, 6, redsColors)} href='{base}/analysis/manoeuvre/positioning?man={manname}'>{position.toFixed(2)}</a>
 {:else}
   <div>-</div>
   <div>-</div>
@@ -42,9 +42,9 @@
   {#if busy}
     <div>Busy</div>
   {:else if $man instanceof ScoredMan}
-    <a href='/analysis/manoeuvre?man={manname}'>{score.toFixed(1)}</a>
+    <a href='{base}/analysis/manoeuvre?man={manname}'>{score.toFixed(1)}</a>
   {:else if $man instanceof AlignedMan}
-    <a href='/analysis/manoeuvre?man={manname}'>Alignment</a>
+    <a href='{base}/analysis/manoeuvre?man={manname}'>Alignment</a>
   {:else}
     <button color='light' style='width:200px' on:click={()=> {flightdata.analyseManoeuvre(manname);}}>Run Analysis</button>
   {/if} 
