@@ -1,7 +1,7 @@
 import type {ManDef} from '$lib/api_objects/mandef';
 import { type AlignedMan, type BasicMan, ScoredMan } from '$lib/api_objects/mandata';
 import type {State} from '$lib/geometry';
-
+import {server} from '$lib/stores';
 
 async function server_func(func_name: string, kwargs: Record<string, any>={}, method: string='POST') {
     
@@ -13,9 +13,10 @@ async function server_func(func_name: string, kwargs: Record<string, any>={}, me
     if (method==='POST') {
         msg.body = JSON.stringify(kwargs);
     }
-    
+    let spath: string = '';
+    server.subscribe(v=>{spath=v});
     const response = await fetch(
-        `http://0.0.0.0:5000/${func_name}`, 
+        `${spath}/${func_name}` , 
         msg
     );
     if (!response.ok) {

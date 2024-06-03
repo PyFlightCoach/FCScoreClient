@@ -34,19 +34,17 @@
       </NavBrand>
     <NavHamburger on:click={toggle} />
       <NavUl {hidden}>
-        
         {#each $navitems as ni}
           <NavLi class="cursor-pointer" href={ni.href} on:click={ni.onclick}>{ni.name}</NavLi>
         {/each}
-        
-        
       </NavUl>
       <NavUl {hidden}>
+        <NavLi id="optionsmenu" class="cursor-pointer">Options</NavLi>
+        <Dropdown triggeredBy="#optionsmenu" class="w-44 z-20">
+          <DropdownItem href='{base}/server'>Analysis Server</DropdownItem>
+          <DropdownItem><Checkbox bind:checked={$truncate}>Truncate Downgrades</Checkbox></DropdownItem>
+        </Dropdown>
         {#if Object.keys($mannanes).length > 0}
-          <NavLi id="optionsmenu" class="cursor-pointer">Options</NavLi>
-          <Dropdown triggeredBy="#optionsmenu" class="w-44 z-20">
-            <DropdownItem><Checkbox bind:checked={$truncate}>Truncate Downgrades</Checkbox></DropdownItem>
-          </Dropdown>
           <NavLi id="manoeuvremenu" class="cursor-pointer">Manoeuvres</NavLi>
           <Dropdown triggeredBy="#manoeuvremenu" class="w-44 z-20">
             {#each Object.keys($mannanes) as mname}
