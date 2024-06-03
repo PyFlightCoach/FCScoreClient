@@ -17,11 +17,11 @@
   $: name = flightdata.name;
   import {flightdata} from '$lib/stores';
 
-  onMount(()=>{
-    if ($name != null) {
-      goto(base + '/analysis');
-    }
-  })
+  
+  $: if ($name != null) {
+    goto(base + '/analysis');
+  }
+
 
 </script>
 

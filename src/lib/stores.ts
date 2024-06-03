@@ -5,7 +5,7 @@ import type { ManDef } from '$lib/api_objects/mandef';
 import {BasicMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
 import pkg from 'file-saver';
 
-const PUBLIC_VERSION = 'v0.0.15'
+const PUBLIC_VERSION = 'static_trial'
 const { saveAs } = pkg;
 
 
