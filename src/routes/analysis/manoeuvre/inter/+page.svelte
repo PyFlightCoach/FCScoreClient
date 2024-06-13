@@ -9,17 +9,17 @@
   export let data;
 
   $: man = flightdata.mans[data.mname];
-  $: states = $man.flown.split();
+  $: states = $man.internals.flown.split();
   
 </script>
 
 <Accordion>
 
-  {#each Object.values($man.mdef.mps) as mp}
+  {#each Object.values($man.internals.mdef.mps) as mp}
     
     <AccordionItem>
-      <span slot="header">{mp.name} (dg={mp.name in $man.scores.inter.data ? $man.scores.inter.data[mp.name].total.toFixed(2) : 0})</span>
-      {#if mp.name in $man.scores.inter.data}
+      <span slot="header">{mp.name} (dg={mp.name in $man.internals.scores.inter.data ? $man.internals.scores.inter.data[mp.name].total.toFixed(2) : 0})</span>
+      {#if mp.name in $man.internals.scores.inter.data}
       
         <div class='container'>
           <div class='cell'>Collector</div>
@@ -30,24 +30,26 @@
 
           {#each Object.values(mp.collectors) as co, i}            
             <div class='cell' style:background-color={d3Color(i)}>{co}</div>
-            <div class='cell'>{$man.scores.inter.data[mp.name].sample[i].toFixed(2)}</div>
-            <div class='cell'>{$man.scores.inter.data[mp.name].errors[i].toFixed(2)}</div>
-            <div class='cell'>{$man.scores.inter.data[mp.name].measurement.visibility[i].toFixed(2)}</div>
-            <div class='cell' style:background-color={colscale($man.scores.inter.data[mp.name].dgs[i], $man.scores.inter.data[mp.name].total, redsColors)}>{$man.scores.inter.data[mp.name].dgs[i].toFixed(2)}</div>
+            <div class='cell'>{$man.internals.scores.inter.data[mp.name].sample[i].toFixed(2)}</div>
+            <div class='cell'>{$man.internals.scores.inter.data[mp.name].errors[i].toFixed(2)}</div>
+            <div class='cell'>{$man.internals.scores.inter.data[mp.name].measurement.visibility[i].toFixed(2)}</div>
+            <div class='cell' style:background-color={colscale(
+              $man.internals.scores.inter.data[mp.name].dgs[i], 
+              $man.internals.scores.inter.data[mp.name].total, redsColors
+            )}>{$man.internals.scores.inter.data[mp.name].dgs[i].toFixed(2)}</div>
           {/each}
         </div>
 
         <div style:height=600px>
           <PlotInter 
             sts={states} 
-            activeEls={mp.getCollectorEls(Object.keys($man.mdef.eds))}
+            activeEls={mp.getCollectorEls(Object.keys($man.internals.mdef.eds))}
           />
         </div>
         
         
       {:else}
-        <P>This parameter is not downgradable. This is probably because it is just used to ensure the correct manoeuvre is flown by constraining the options on roll direction.
-        </P>
+        <P>This parameter is not downgradable. This is probably because it is just used to ensure the correct manoeuvre is flown by constraining the options on roll direction.</P>
       {/if}
 
 

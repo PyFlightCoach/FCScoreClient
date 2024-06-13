@@ -13,7 +13,6 @@ export type Position = typeof Positions[number];
 
 export class BoxLocation{
     constructor(readonly h: Height, readonly d: Direction, readonly  o: Orientation) {}
-    static parse(data: BoxLocation) {return new BoxLocation(data.h, data.d, data.o);}
   } 
   
   export class ManInfo{
@@ -24,8 +23,10 @@ export class BoxLocation{
       readonly centre_points: number[], readonly centred_els: number[][]) {}
   
     static parse(data: ManInfo) {return new ManInfo(
-      data.name, data.short_name, data.k, data.position, BoxLocation.parse(data.start),
-      BoxLocation.parse(data.end), data.centre_points, data.centred_els
+      data.name, data.short_name, data.k, data.position, 
+      Object.setPrototypeOf(data.start, BoxLocation.prototype),
+      Object.setPrototypeOf(data.end, BoxLocation.prototype), 
+      data.centre_points, data.centred_els
     )}
   
     static default() {return new ManInfo(

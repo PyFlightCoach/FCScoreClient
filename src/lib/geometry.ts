@@ -53,6 +53,14 @@ export class Point {
         return new Point(b.x - a.x, b.y - a.y, b.z - a.z);
     }
 
+    cos(): Point {
+        return new Point(Math.cos(this.x), Math.cos(this.y), Math.cos(this.z));
+    }
+
+    sin(): Point {
+        return new Point(Math.sin(this.x), Math.sin(this.y), Math.sin(this.z));
+    }   
+
 }
 
 export class Points {
@@ -114,21 +122,43 @@ export class Quaternion {
                 this.inverse()
             )
         ).axis();   
-    }       
+    } 
+    
+    static parse_euler(eul: Point): Quaternion {
+        const half = eul.mul(0.5);
+        const c = half.cos();
+        const s = half.sin();
+
+        return new Quaternion(
+                c.y * c.z * c.x + s.y * s.z * s.x,
+                c.y * c.z * s.x - s.y * s.z * c.x,
+                s.y * c.z * c.x + c.y * s.z * s.x,
+                c.y * s.z * c.x - s.y * c.z * s.x            
+        );
+    }
 }
 
 
+const LOCFAC = 6378100 * Math.PI / 180
+export class GPS {
+    constructor(readonly lat: number, readonly lon: number, readonly alt: number) {}
+    static parse(data: Record<string, any>) {
+        return new GPS(data.lat, data.lon, data.alt);
+    }
+    static parse_arr(data: Record<string, any>[]) {
+        return data.map(gps => GPS.parse(gps));
+    }
+    offset(pin: Point) {
+        const latb = this.lat + pin.x / LOCFAC
+        
+        return new GPS(
+            latb,
+            this.lon + pin.y / (LOCFAC * Math.max(Math.cos(latb * Math.PI / 180), 0.01)),
+            this.alt - pin.z
+        )
+    }
+}
 
-/*
-constructs = Table.constructs + Constructs([
-    SVar("pos", Point,       ["x", "y", "z"]           , lambda self: P0(len(self))       ), 
-    SVar("att", Quaternion,  ["rw", "rx", "ry", "rz"]  , lambda self : Q0(len(self))       ),
-    SVar("vel", Point,       ["u", "v", "w"]           , lambda st: P0() if len(st)==1 else st.att.inverse().transform_point(st.pos.diff(st.dt))  ),
-    SVar("rvel", Point,       ["p", "q", "r"]           , lambda st: P0() if len(st)==1 else st.att.body_diff(st.dt).remove_outliers(3)  ),
-    SVar("acc", Point,       ["du", "dv", "dw"]        , lambda st : P0() if len(st)==1 else st.att.inverse().transform_point(st.att.transform_point(st.vel).diff(st.dt) + PZ(9.81, len(st)))),
-    SVar("racc", Point,       ["dp", "dq", "dr"]        , lambda st: P0() if len(st)==1 else st.rvel.diff(st.dt)),
-])
-*/
 
 export class State {
     manoeuvre: string; element: string;
@@ -141,7 +171,7 @@ export class State {
         readonly du: number, readonly dv: number, readonly dw: number, 
         manoeuvre: string='unknown', element: string='unknown'
     ) {this.manoeuvre=manoeuvre; this.element=element;}
-    
+
     static parse(data: Record<string, any>) {
         let st= new State(
             data.t, data.dt,
@@ -154,6 +184,46 @@ export class State {
         if ('manoeuvre' in data) {st.manoeuvre = data.manoeuvre}
         if ('element' in data) {st.element = data.element}
         return st;
+    }
+
+    static parse_fcj(data: Record<string, any>, parameters: Record<string, number>) {
+        
+        const pilotPos = new GPS(
+            parameters.pilotLat, 
+            parameters.pilotLon, 
+            parameters.pilotAlt
+        );
+        const pilotRot = Quaternion.parse_euler(
+            new Point(
+                Math.PI, 
+                0, 
+                parameters.rotation
+        ));
+        
+        const q = Quaternion.parse_euler((new Point(data.r, data.p, data.yw)).mul(Math.PI / 180));
+        return State.build(
+            new Point(data.x, data.y, data.z),
+            Quaternion.mul(pilotRot, q),
+            q.inverse().transform_point(pilotRot.transform_point(new Point(data.u, data.v, data.w))),
+        )
+    }
+
+    static build(
+        pos: Point, att: Quaternion, 
+        vel: Point=new Point(0,0,0), rvel: Point=new Point(0,0,0), 
+        acc: Point=new Point(0,0,0), 
+        t: number=0, dt: number=1/30, 
+        manoeuvre: string='unknown', element: string='unknown'
+    ) {
+        return new State(
+            t, dt,
+            pos.x, pos.y, pos.z,
+            att.w, att.x, att.y, att.z,
+            vel.x, vel.y, vel.z,
+            rvel.x, rvel.y, rvel.z,
+            acc.x, acc.y, acc.z,
+            manoeuvre, element
+        )
     }
 
     static parse_arr(data: Record<string, any>[]) {

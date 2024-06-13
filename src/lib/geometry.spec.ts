@@ -52,5 +52,9 @@ describe("Quaternion", () => {
 
 
     })
-
+    it('from euler', () => {
+        expect(Quaternion.parse_euler(new Point(0,0,0)).w).toBe(1);
+        expect(Quaternion.parse_euler(new Point(0,0,0)).x).toBe(0);
+        expect(Quaternion.parse_euler(new Point(Math.PI,0,0)).w).toBeCloseTo(0);
+    })
 })

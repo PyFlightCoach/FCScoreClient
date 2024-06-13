@@ -9,13 +9,13 @@
   
   let totals: Record<string, number> = {};
 
-  Object.keys($mannames).forEach((mn) => {
+  $mannames.forEach((mn) => {
     totals[mn] = 0;
   });
 
   const getTotal = (ttls: Record<string, number>) => {
     let total = 0;
-    Object.keys($mannames).forEach((mn) => {
+    $mannames.forEach((mn) => {
       total += ttls[mn];
     });
     return total;
@@ -26,14 +26,15 @@
 </script>
 
 <div id='parent'>
+  <div style:grid-row='1 / 3'>#</div>
   <div style:grid-row='1 / 3'>Manoeuvre</div>
   <div style:grid-row='1 / 3'>K Factor</div>
-  <div style:grid-column='3 / 6'>Downgrades</div>
-  <div style:grid-column='6' style:grid-row='1 / 3'>Score</div>
+  <div style:grid-column='4 / 7'>Downgrades</div>
+  <div style:grid-column='7' style:grid-row='1 / 3'>Score</div>
   <div>Intra</div>
   <div>Inter</div>
   <div>Position</div>
-  {#each Object.keys($mannames) as mn}
+  {#each $mannames as mn}
     <ManSummary 
       manname={mn} 
       bind:total={totals[mn]} 
@@ -48,7 +49,7 @@
 
   #parent {
     display: grid;
-    grid-template-columns: repeat(6, 1fr) ;
+    grid-template-columns: repeat(7, 1fr) ;
     align-items: center;
     height: 100%;
     width: 100%;

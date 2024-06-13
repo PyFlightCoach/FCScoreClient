@@ -1,7 +1,7 @@
 
 
 <script lang='ts'>
-  import {BasicMan, ScoredMan} from '$lib/api_objects/mandata';
+  import {Man} from '$lib/api_objects/mandata';
   import { flightdata } from '$lib/stores';
   import PlotSec from '$lib/plots/PlotSec.svelte';
   
@@ -11,8 +11,11 @@
 
 </script>
 
+{#if $man.internals===null}
+  <p>No Internal Data</p>
+  {:else}
 <PlotSec
-  flst={$man instanceof BasicMan ? $man.flown : $man.flown}
-  tpst={$man instanceof ScoredMan ? $man.corrected_template : null}
-  i={0}
-/>
+    flst={$man.internals.flown}
+    i={0}
+  />
+{/if}

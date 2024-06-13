@@ -23,9 +23,9 @@
   
     const make_traces = (_man: Record<string, any>, bf: boolean, bi: boolean, bc: boolean) => {
       const trs = [];
-      if (bf) {trs.push(...make_trace($man.flown, true, 'flown', 'red'))}
-      if (bi) {trs.push(...make_trace($man.template, true, 'intended', 'blue'))}
-      if (bc) {trs.push(...make_trace($man.corrected_template, true, 'corrected', 'green'))}
+      if (bf) {trs.push(...make_trace($man.internals.flown, true, 'flown', 'red'))}
+      if (bi) {trs.push(...make_trace($man.internals.template, true, 'intended', 'blue'))}
+      if (bc) {trs.push(...make_trace($man.internals.corrected_template, true, 'corrected', 'green'))}
       return trs
     }
   

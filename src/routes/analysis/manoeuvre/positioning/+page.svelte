@@ -12,16 +12,16 @@
 
   $: man = flightdata.mans[data.mname];
   
-  $: states = $man.flown.split();
+  $: states = $man.internals.flown.split();
 
   const get_points = (states: Record<string, States>) => {
-    return $man.mdef.info.centre_points.map(i=>{
+    return $man.internals.mdef.info.centre_points.map(i=>{
       return Object.values(states)[i].data.at(-1).pos();
     })
   }
 
   const get_el_points = (states: Record<string, States>) => {
-    return $man.mdef.info.centred_els.map(i=>{
+    return $man.internals.mdef.info.centred_els.map(i=>{
       let el = Object.values(states)[i[0]+1].data;
       return el[Math.round(i[1] * el.length)].pos();
     })
@@ -41,7 +41,7 @@
     <div class='cell head'>Mean Visibility</div>
     <div class='cell head'>Downgrade</div>
     
-    {#each Object.values($man.scores.positioning.data) as pos}
+    {#each Object.values($man.internals.scores.positioning.data) as pos}
                       
           <div class='cell'>{pos.name}</div>
           {#if pos.name=="distance"}

@@ -7,7 +7,7 @@
   let difficulty: (v:number)=>number;
 
   $navitems=[
-    new NavContent('Analyse All', '', ()=>{flightdata.analyseList(Object.keys($mannames))}),
+    new NavContent('Analyse All', '', ()=>{flightdata.analyseList($mannames)}),
     //new NavContent('Intended FC Json', '', () => {flightdata.downloadTemplate('intended')}),
     //new NavContent('Corrected FC Json', '', () => {flightdata.downloadTemplate('corrected')}),
   ];
@@ -17,7 +17,6 @@
 </script>
 
 <div id='parent'>
-  <Difficulty bind:modifier={difficulty} />
   <div style='grid-column:2;'><AnalysisSummary 
     bind:total={total}
     difficulty={difficulty}

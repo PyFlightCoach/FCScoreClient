@@ -1,24 +1,15 @@
 <script lang="ts">
-  import { Fileupload, Label, Button } from 'flowbite-svelte'
-  import {convert_fcj} from '$lib/api_calls';
-  import {BasicMan} from '$lib/api_objects/mandata';
-  let data: Record<string, any>;
+  import { Fileupload, Label, Button, P } from 'flowbite-svelte'
+  import {Man} from '$lib/api_objects/mandata';
   import { flightdata } from '$lib/stores.js';
   import { goto } from '$app/navigation';
   import { base } from '$app/paths'
   import { Alert } from 'flowbite-svelte';
+  import { FCJson} from '$lib/fcjson';
 
-  let name = flightdata.name;
-	let sinfo = flightdata.sinfo;
+  let fcj = flightdata.fcj;
   let warning=false;
-
-  const fcj_schedule_names = {
-      'f3a': ['F3A', 'F3A FAI'],
-      'nsrca': ['F3A US'],
-      'f3auk': ['F3A UK'],
-      'imac': ['IMAC']
-  }
-
+  let warning_msg = '';
 
   function readjson(event) {
     flightdata.clear();
@@ -28,48 +19,26 @@
       if (file.name.split('.').pop() == "json") {
         let fr = new FileReader();
         fr.onload = (event) => {
-          data=JSON.parse(event.target.result);
+          try {
+            $fcj = FCJson.parse(JSON.parse(event.target.result))
 
-          if ('comments' in data) {
-
-            let schname: string = data.parameters.schedule[0];
-            for (const [key, value] of Object.entries(fcj_schedule_names)) {
-              if (value.includes(data.parameters.schedule[0])) {
-                schname = key;
-                break;
+            $fcj.unique_names.slice(1,-1).forEach(
+              (name: string,i: number) => {
+              flightdata.addMan(name,new Man(false,i,name))
               }
-            }
+            );
+            
+            goto(base+'/analysis');
 
-            $sinfo = {
-              category: schname, 
-              name: data.parameters.schedule[1]
-            };
-            $name=data.name.replace(/\.[^/.]+$/, "");
-
-          } else if ('client_version' in data) {
-
-            flightdata.import(data);
-            goto(base + '/analysis');
-
-          } else {
+          } catch (err) {
             warning=true;
+            warning_msg=err.message;
           }
-          
+            
         };
         console.log(file);
         fr.readAsText(file);
   }else{warning=true;}}}
-
-  const convert_json = () => {
-    if (data) {
-      convert_fcj(data, $sinfo).then((res: Record<string, any>) => {
-        for (const [key, value] of Object.entries(res)) {
-          flightdata.addMan(key, BasicMan.parse(value));
-        }
-      });
-    }
-  }
-
 
 </script>
 
@@ -77,8 +46,8 @@
 <div class ='centered'>
   <div >
     <Label>
-      {#if $name}
-        <p>{$name}</p>
+      {#if $fcj}
+        <p>{$fcj.name}</p>
       {:else}
         <p>select a Flight Coach json file or a FCScore Analysis json file</p>
       {/if}
@@ -86,16 +55,10 @@
     <Fileupload on:change={readjson}/>
     {#if warning}
       <Alert>This file doesn't look like a FC json or a FCScore json</Alert>
+      <P>{warning_msg}</P>
     {/if}
   </div>
 
-  {#if $name}
-    <p>category={$sinfo.category}</p> 
-    <p>schedule={$sinfo.name}</p>
-    <Button on:click={convert_json} href={base}/analysis>
-      Prepare Analysis
-    </Button>
-  {/if}
 </div>
 
 <style>

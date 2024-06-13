@@ -1,112 +1,21 @@
 import { writable, type Writable } from 'svelte/store';
-import { analyse_manoeuvre, create_fc_json, server_version, score_manoeuvre } from '$lib/api_calls';
-import type {State} from '$lib/geometry';
-import type { ManDef } from '$lib/api_objects/mandef';
-import {BasicMan, AlignedMan, ScoredMan} from '$lib/api_objects/mandata';
+import {server_version, run_manoeuvre } from '$lib/api_calls';
+import {FCJParams, FCJson} from '$lib/fcjson';
+import type{ Man, Internals } from '$lib/api_objects/mandata';
 import pkg from 'file-saver';
+
 
 const PUBLIC_VERSION = 'static_trial'
 const { saveAs } = pkg;
 
 
 class FlightData {
-  name: Writable<string|null> = writable(null);
-  sinfo: Writable<Record<string, string|null>> = writable({
-    category: null, name: null
-  });
-  direction: Writable<number> = writable(0);
-  mans: Record<string, Writable<BasicMan | AlignedMan | ScoredMan>> = {};
-  mannames: Writable<Record<string, number>> = writable({});
+  fcj: Writable<FCJson|null> = writable(null);
+  direction: Writable<number|null> = writable(null);
+  mannames: Writable<string[]> = writable([]);
+  mans: Record<string, Writable<Man>> = {};
   
-  addMan(name: string, man: BasicMan | ScoredMan | AlignedMan): Writable<BasicMan|AlignedMan|ScoredMan> {
-    this.mans[name] = writable(man);
-    this.mannames.update((mnames) => {
-      mnames[name] = 1;
-      if (man instanceof AlignedMan) {mnames[name] = 2;} 
-      if (man instanceof ScoredMan) {mnames[name] = 3;}
-      
-      return mnames;
-    });
-    if (Object.keys(this.mans).length == 1) {
-      this.direction.set(-man.flown.data[0].direction());
-    }
-    return this.mans[name];
-  };
 
-  clear() {
-    this.mans = {};
-    this.mannames.set({});
-    this.name.set(null);
-    this.sinfo.set({category: null, name: null});
-    this.direction.set(0);
-  }
-
-
-  async analyseManoeuvre(name: string, force: boolean = false, optimise_aligment=true) {
-    let rman = this.mans[name];
-    
-    const direction = this.get_value('direction');
-    
-    async function score(man: BasicMan | AlignedMan | ScoredMan) {
-      if (!(man instanceof ScoredMan) || force) {
-        if (optimise_aligment) {
-          return await analyse_manoeuvre(man);
-        } else {
-          return await score_manoeuvre(man);
-        }
-        
-      } else if (man instanceof ScoredMan) {
-        man.busy = false;
-        return man;
-      }
-    }
-
-    let man: BasicMan | AlignedMan | ScoredMan;
-    rman.subscribe((val) => { man = val })();
-    if (!man.busy) {
-      rman.update(v=>{v.busy=true; return v})
-      score(man).then(res=>{rman.set(res)})
-    }
-        
-  }
-
-  async analyseList(names: string[]) {
-    for (let i=0; i<names.length; i++) {
-      await this.analyseManoeuvre(names[i], false, true);
-    }
-  }
-
-
-  async downloadTemplate (kind: string) {
-    let sts: State[] = [];
-    let mdefs: ManDef[] =[];
-    let mannames: Record<string, any>;
-
-    this.mannames.subscribe(mn => {mannames = mn})();
-
-    Object.keys(mannames).forEach(mn => {
-    flightdata.mans[mn].subscribe(man=>{
-      if (man instanceof ScoredMan) {
-        if (kind=='intended') {
-          sts = sts.concat(man.template);
-        } else {
-          sts = sts.concat(man.corrected_template);
-        }  
-      }
-      
-      mdefs.push(man.mdef);
-    })();
-
-    });
-    let fcj = await create_fc_json(sts, mdefs, 'kind', 'F3A');
-    var fileToSave = new Blob(
-      [JSON.stringify(fcj)], 
-      {type: 'application/json'}
-    );
-
-    saveAs(fileToSave, kind + '_template.json');
-  }
-  
   get_value (name: string) {
     let outv: any;
     this[name].subscribe(v => {outv=v})();
@@ -117,25 +26,73 @@ class FlightData {
     this[name].set(value);
   }
 
+  addMan(name: string, man: Man): Writable<Man> {
+    this.mans[name] = writable(man);
+    this.mannames.update(v=>[...v, name]);
+    if (Object.keys(this.mans).length == 1) {this.direction.set(man.direction);}
+    return this.mans[name];
+  };
+
+  clear() {
+    this.mans = {};
+    this.mannames.set([]);
+    this.direction.set(null);
+    this.fcj.set(null);
+  };
+
+  async analyseManoeuvre(name: string, force: boolean = false, optim: boolean | null=null, internals=false) {
+    if (optim === null) {
+      optimise.subscribe(v=>{optim=v})();
+    }
+    let rman = this.mans[name];
+    const fcj = this.get_value('fcj');
+
+    async function score(man: Man) {
+      if (man.scores === null || force) {
+        return await run_manoeuvre(man, fcj, optim, internals);
+      } else {
+        man.busy = false;
+        return man;
+      }
+    }
+
+    let man: Man;
+    rman.subscribe((val) => { man = val })();
+    if (!man.busy) {
+      rman.update(v=>{v.busy=true; return v})
+      score(man).then(res=>{rman.set(res)})
+    }
+        
+  }
+
+  async analyseList(names: string[], force=false, optim=null, internals=false) {
+    names.forEach(async name => {
+      await this.analyseManoeuvre(name, force, optim, internals);
+    })
+  }
+
   async export() {
     let name: string = this.get_value('name');
-    let mnames: Record<string, any> = this.get_value('mannames');
-        
+            
     let expd: Record<string, any> = {
       name,
       client_version: PUBLIC_VERSION,
       server_version: await server_version(),
       sinfo: this.get_value('sinfo'),
-      score: this.totalScore(mnames),
-      manscores: Object.fromEntries(Object.keys(this.mans).map((mn)=>{
-        return [mn, this.manScore(mn)]
-      })),
+      parameters: this.parameters,
       data: {}
     };
 
-    Object.values(this.mans).forEach((man: Writable<Record<string, any>>) => {
+    Object.values(this.mans).forEach((man: Writable<Man>, i: Number) => {
       man.subscribe((val) => {
-        expd.data[val.mdef.info.short_name] = val;
+        expd.data[val.name] = {
+          name: val.name,
+          id: val.id,
+          direction: val.direction,
+          scores: val.scores,
+          els: val.els,
+          data: val.data
+        };
       });
     });
 
@@ -147,20 +104,11 @@ class FlightData {
     saveAs(fileToSave, name + '_analysis.json');
   }
 
-  import (data: Record<string, any>) {
-    this.name.set(data.name);
-    this.sinfo.set(data.sinfo);
-    Object.entries(data.data).forEach((man)=>{
-      this.addMan(man[0], ScoredMan.parse(man[1]));
-    });
-
-  }
-
-  manScore(mname :string) {
+  manScore(name: string) {
     let man: Record<string, any> = {};
-    this.mans[mname].subscribe((val) => { man = val })();
+    this.mans[name].subscribe((val) => { man = val })();
     if ('score' in man) {
-      return man.mdef.info.k * man.scores.score;
+      return man.scores.k * man.scores.total;
     } else {
       return 0;
     }
@@ -169,8 +117,8 @@ class FlightData {
   totalScore(mannames: Record<string, any>) {
     
     let total = 0;
-    Object.keys(mannames).forEach(mn => {
-      total+=this.manScore(mn);
+    Object.values(this.mans).forEach(man => {
+      man.subscribe((val) => { total += val.scores===null ? 0 : val.scores.total })();
     })
     return total
   }
@@ -180,7 +128,7 @@ export const flightdata = new FlightData();
 export const schedule = new FlightData();
 export const mouse = writable({ x: 0, y: 0 });
 
-export const server = writable('http://localhost:5000');
+export const server = writable('http://localhost:8000');
 
 
 export class NavContent {
@@ -195,4 +143,4 @@ export class NavContent {
 
 }
 export const navitems: Writable<NavContent[]> = writable([]);
-export const truncate: Writable<boolean> = writable(false);
+export const optimise: Writable<boolean> = writable(false);
