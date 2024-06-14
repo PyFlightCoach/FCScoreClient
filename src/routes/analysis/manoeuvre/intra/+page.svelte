@@ -1,26 +1,27 @@
 <script lang="ts">
   import PlotSec from '$lib/plots/PlotSec.svelte';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
-  import { flightdata} from '$lib/stores';
+  import { flightdata, mname} from '$lib/stores';
   import type {States } from '$lib/geometry';
   import CriteriaPlot from './CriteriaPlot.svelte';
   import DGPlot from './DGPlot.svelte';
 	import ColouedTable from '$lib/ColouedTable.svelte';
-  export let data;
+  
 
-  $: man = flightdata.mans[data.mname];
-  $: summaries = $man.internals.scores.intra.summaries();
+  $: man = flightdata.mans[$mname];
+    
+  $: summaries = $man.internals!.scores!.intra.summaries();
 
   let states: Record<string, States>;
   let templates: Record<string, States>;
-  $: states = $man.internals.flown.split();
-  $: templates = $man.internals.template.split();
+  $: states = $man.internals!.flown.split();
+  $: templates = $man.internals!.template!.split();
   
   let activeCriteria: null|string = null;
   let activeElName: null|string = null;
   let activeIndex: null|number = 0;
 
-  $: element = $man.internals.manoeuvre.getEl(activeElName);
+  $: element = $man.internals!.manoeuvre!.getEl(activeElName);
 
   $: showintra = activeElName != null && activeCriteria != null  && activeCriteria != 'Total';
   

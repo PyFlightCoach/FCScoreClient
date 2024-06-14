@@ -1,14 +1,13 @@
 
 
 <script lang="ts">
-  import { flightdata } from '$lib/stores';
+  import { flightdata, mname } from '$lib/stores';
   import {Man} from '$lib/api_objects/mandata';
   import {Tooltip, Input, BottomNavItem, BottomNav, Select} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
-  export let data;
-
-  let man = flightdata.mans[data.mname];
+  
+  let man = flightdata.mans[$mname];
   let step: number = 0.1;
   
   $: elements = $man.internals.flown.elements();
@@ -27,7 +26,6 @@
           end_info[elname].lastt + stp, 
           end_info[elements[elindex+1]].lastt - 0.1
         );
-        console.log(endt);
         while (flown.data[end_info[elements[elindex]].lastid + i].t < endt) {
           flown.data[end_info[elements[elindex]].lastid + i].element = elname; 
           i++;
@@ -65,8 +63,8 @@
     <BottomNavItem id="stepsize"><Input placeholder='step' bind:value={step}/></BottomNavItem>
     <BottomNavItem  id="adjustback" on:click={() => {editsplit(-Number(step), element)}}>&#60</BottomNavItem>
     <BottomNavItem  id="adjustfor" on:click={() => {editsplit(Number(step), element)}}>&#62</BottomNavItem>
-    <BottomNavItem  id="optimse" on:click={()=>flightdata.analyseManoeuvre(data.mname, true, true, true)}>Optimise</BottomNavItem>
-    <BottomNavItem  id="score" on:click={()=>flightdata.analyseManoeuvre(data.mname, true, false, true)}>Score</BottomNavItem>
+    <BottomNavItem  id="optimse" on:click={()=>flightdata.analyseManoeuvre($mname, true, true, true)}>Optimise</BottomNavItem>
+    <BottomNavItem  id="score" on:click={()=>flightdata.analyseManoeuvre($mname, true, false, true)}>Score</BottomNavItem>
     <BottomNavItem  id="back" on:click={() => {goto('/analysis/')}}>back</BottomNavItem>
   </BottomNav>
   <Tooltip triggeredBy="[id='stepsize']">Enter step size in seconds</Tooltip>

@@ -1,5 +1,5 @@
 <script lang='ts'>
-  import { flightdata } from '$lib/stores';
+  import { flightdata, mname } from '$lib/stores';
   import type { States} from '$lib/geometry';
   import {P} from 'flowbite-svelte';
   import { AccordionItem, Accordion } from 'flowbite-svelte';
@@ -8,7 +8,7 @@
 	import { d3Color, colscale, redsColors } from '$lib/plots/styling.js';
   export let data;
 
-  $: man = flightdata.mans[data.mname];
+  $: man = flightdata.mans[$mname];
   $: states = $man.internals.flown.split();
   
 </script>

@@ -44,6 +44,17 @@ export async function run_manoeuvre(man: Man, fcj: FCJson, optimise: boolean, lo
         long_output: long_output
       }
     ));
+  } else {
+    return man.update(await server_func(
+      'run_long_manoeuvre', 
+      {
+        mdef: man.internals.mdef,
+        direction: fcj.direction,
+        id: man.id,
+        flown: man.internals.flown.data,
+        optimise_alignment: optimise
+      }
+    ));
   }
 }
 

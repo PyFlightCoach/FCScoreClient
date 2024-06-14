@@ -1,6 +1,6 @@
 
 <script lang="ts">
-	import { flightdata} from '$lib/stores';
+	import { flightdata, mname} from '$lib/stores';
   import type { States} from '$lib/geometry';
   import Plot from 'svelte-plotly.js';
   import {coloured_ribbons, points, boxtrace} from '$lib/plots/traces';
@@ -10,7 +10,7 @@
 
   export let data;
 
-  $: man = flightdata.mans[data.mname];
+  $: man = flightdata.mans[$mname];
   
   $: states = $man.internals.flown.split();
 
@@ -60,8 +60,8 @@
     <Plot 
       data={
         coloured_ribbons(states,2)
-        .concat(points(centre_points, $man.mdef.info.centre_points.map(i=>'centre point '.concat(i.toString())) )) 
-        .concat(points(el_points, $man.mdef.info.centred_els.map(i=>'centred el '.concat(i[0].toString()))))
+        .concat(points(centre_points, $man.internals.mdef.info.centre_points.map(i=>'centre point '.concat(i.toString())) )) 
+        .concat(points(el_points, $man.internals.mdef.info.centred_els.map(i=>'centred el '.concat(i[0].toString()))))
         .concat([boxtrace()])
       } 
       layout={layout3d}

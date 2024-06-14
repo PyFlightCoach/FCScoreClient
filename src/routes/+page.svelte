@@ -5,6 +5,7 @@
   import { A } from 'flowbite-svelte';
   import {base} from '$app/paths';
   import {goto} from '$app/navigation';
+  import Plot from 'svelte-plotly.js';
 
   let version = 'not connected';
 
@@ -34,7 +35,6 @@
     <div>Server:<button on:click={()=>getVersion()}>{version}</button></div>
 
     <A href="https://github.com/PyFlightCoach/FCScore/blob/main/changelog.md">Version Info</A>
-
 
   </div>
 

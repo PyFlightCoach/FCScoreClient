@@ -6,19 +6,13 @@
   let mannames = flightdata.mannames;
   let difficulty: (v:number)=>number;
 
-  $navitems=[
-    new NavContent('Analyse All', '', ()=>{flightdata.analyseList($mannames)}),
-    //new NavContent('Intended FC Json', '', () => {flightdata.downloadTemplate('intended')}),
-    //new NavContent('Corrected FC Json', '', () => {flightdata.downloadTemplate('corrected')}),
-  ];
-
-  let total=0;
+  $: total = Object.values($mannames).reduce((a, b) => a + b, 0);
+ 
 
 </script>
 
 <div id='parent'>
   <div style='grid-column:2;'><AnalysisSummary 
-    bind:total={total}
     difficulty={difficulty}
   /></div>
   <h2>Total Score = {total.toFixed(1)}</h2>  

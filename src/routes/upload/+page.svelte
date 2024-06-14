@@ -24,7 +24,7 @@
 
             $fcj.unique_names.slice(1,-1).forEach(
               (name: string,i: number) => {
-              flightdata.addMan(name,new Man(false,i,name))
+                flightdata.addMan(name,new Man(false,i,name));
               }
             );
             
