@@ -66,6 +66,13 @@ export async function server_version(){
   return await server_func('version', {}, 'GET');
 }
 
-export async function get_telemetry() {
-  return await server_func('telemetry');
+export async function get_telemetry(): Promise<Blob> {
+  
+  let spath: string = '';
+  server.subscribe(v=>{spath=v});
+  return fetch(
+    `${spath}/telemetry` , 
+    { method: 'get', mode: 'cors' }
+  ).then(res => res.blob())
+  
 }
