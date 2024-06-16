@@ -88,7 +88,7 @@ export class NavContent {
 export const navitems: Writable<NavContent[]> = writable([]);
 
 
-export const server = writable(browser && localStorage.getItem('server') || 'http://localhost:8000');
+export const server = writable(browser && localStorage.getItem('server') || 'http://localhost:5000');
 server.subscribe((value) => {if (browser) {localStorage.setItem('server', value)}});
 
 export const optimise = writable<boolean>(browser ? localStorage.getItem('optimise') === 'true' : true);
