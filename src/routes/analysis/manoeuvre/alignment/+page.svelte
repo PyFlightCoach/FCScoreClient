@@ -10,15 +10,15 @@
   let man = flightdata.mans[$mname];
   let step: number = 0.1;
   
-  $: elements = $man.internals.flown.elements();
-  $: end_info = $man.internals.flown.end_info();
+  $: elements = $man.internals!.flown.elements();
+  $: end_info = $man.internals!.flown.end_info();
   
   let element: string|null = null
 
   const editsplit = (stp: number, elname: string) => {
 
     man.update((val: Man) => {
-      let flown = val.internals.flown;
+      let flown = val.internals!.flown;
       const elindex = elements.indexOf(elname);
       let i=0;
       if (stp>0) {
@@ -46,7 +46,7 @@
   };
 
 
-  $: states = $man.internals.flown.split();
+  $: states = $man.internals!.flown.split();
 
 </script>
 
@@ -75,7 +75,3 @@
   <Tooltip triggeredBy="[id='adjustfor']">Adjust split location forwards</Tooltip>
   <Tooltip triggeredBy="[id='back']">Back to Main Page</Tooltip>
 </div>
-
-<style>
-  #bnav {width: 800px;}
-</style>

@@ -2,3 +2,6 @@ __pycache__
 Dockerfile
 !.npmrc
 .vscode
+node_modules
+package-lock.json
+.env

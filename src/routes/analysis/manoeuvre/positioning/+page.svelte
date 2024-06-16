@@ -5,23 +5,20 @@
   import Plot from 'svelte-plotly.js';
   import {coloured_ribbons, points, boxtrace} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';
-	import { Measurement } from '$lib/api_objects/scores';
-	import { isArray, len } from 'plotly.js-dist';
-
-  export let data;
+	
 
   $: man = flightdata.mans[$mname];
   
-  $: states = $man.internals.flown.split();
+  $: states = $man.internals!.flown.split();
 
   const get_points = (states: Record<string, States>) => {
-    return $man.internals.mdef.info.centre_points.map(i=>{
+    return $man.internals!.mdef.info.centre_points.map(i=>{
       return Object.values(states)[i].data.at(-1).pos();
     })
   }
 
   const get_el_points = (states: Record<string, States>) => {
-    return $man.internals.mdef.info.centred_els.map(i=>{
+    return $man.internals!.mdef.info.centred_els.map(i=>{
       let el = Object.values(states)[i[0]+1].data;
       return el[Math.round(i[1] * el.length)].pos();
     })

@@ -5,11 +5,11 @@
     import {modeltrace, ribbon} from '$lib/plots/traces';
     import {layout3d} from '$lib/plots/layouts';    
     import {Checkbox, BottomNav, BottomNavItem} from 'flowbite-svelte';
-    import {flightdata} from '$lib/stores';
+    import {flightdata, mname} from '$lib/stores';
     import type {States} from '$lib/geometry';
     import colddraft from '$lib/plots/colddraft.js';
-    export let data;
-    let man = flightdata.mans[data.mname];
+    
+    $: man = flightdata.mans[$mname];
   
   
     const make_trace = (tp: States, models: boolean, name: string, color: string) => {
@@ -23,9 +23,9 @@
   
     const make_traces = (_man: Record<string, any>, bf: boolean, bi: boolean, bc: boolean) => {
       const trs = [];
-      if (bf) {trs.push(...make_trace($man.internals.flown, true, 'flown', 'red'))}
-      if (bi) {trs.push(...make_trace($man.internals.template, true, 'intended', 'blue'))}
-      if (bc) {trs.push(...make_trace($man.internals.corrected_template, true, 'corrected', 'green'))}
+      if (bf) {trs.push(...make_trace($man.internals!.flown, true, 'flown', 'red'))}
+      if (bi) {trs.push(...make_trace($man.internals!.template!, true, 'intended', 'blue'))}
+      if (bc) {trs.push(...make_trace($man.internals!.corrected_template!, true, 'corrected', 'green'))}
       return trs
     }
   
@@ -36,8 +36,8 @@
     
   </script>
 
-<div id='parent'>
-  <div style:height=100%%>  
+<div>
+  <div style:height=100%>  
     <Plot 
       data={all_traces} 
       layout={layout3d} 

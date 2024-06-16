@@ -6,6 +6,7 @@
   import {base} from '$app/paths';
   import {goto} from '$app/navigation';
   import Plot from 'svelte-plotly.js';
+  import {PUBLIC_VERSION} from '$env/static/public';
 
   let version = 'not connected';
 
@@ -13,8 +14,7 @@
 
   onMount(getVersion);
   
-  const PUBLIC_VERSION = 'static_trial'
-
+  
   $: name = flightdata.name;
   import {flightdata} from '$lib/stores';
 
@@ -31,7 +31,7 @@
     <div>WIP example of automatic judging for precision aerobatics based on Flight Coach JSON files</div>    
 
     <br/>
-    <div>Client:{PUBLIC_VERSION}</div>
+    <div>Client:{PUBLIC_VERSION || 'next'}</div>
     <div>Server:<button on:click={()=>getVersion()}>{version}</button></div>
 
     <A href="https://github.com/PyFlightCoach/FCScore/blob/main/changelog.md">Version Info</A>

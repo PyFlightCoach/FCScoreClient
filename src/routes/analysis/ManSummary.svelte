@@ -8,7 +8,7 @@
   import {goto} from '$app/navigation';
 
   export let manname: string;
-  export let difficulty = (v: number) => v;
+  
   
   $: man = flightdata.mans[manname];
   $: busy = $man.busy;

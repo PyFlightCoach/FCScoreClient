@@ -6,10 +6,9 @@
   import PlotInter from '$lib/plots/PlotInter.svelte';
 	import type { ManParm } from '$lib/api_objects/mandef.js';
 	import { d3Color, colscale, redsColors } from '$lib/plots/styling.js';
-  export let data;
 
   $: man = flightdata.mans[$mname];
-  $: states = $man.internals.flown.split();
+  $: states = $man.internals!.flown.split();
   
 </script>
 

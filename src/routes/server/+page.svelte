@@ -3,7 +3,7 @@
 
 <script lang="ts">
   import {server} from '$lib/stores';
-  import { Label, Input, Button, ButtonGroup} from 'flowbite-svelte';
+  import { Label, Input, Button} from 'flowbite-svelte';
 
   let new_server = $server;
 

@@ -2,12 +2,11 @@
   import '../app.postcss';
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem,
     DropdownDivider, Helper, NavHamburger, Checkbox} from 'flowbite-svelte'
-  import { mouse } from '$lib/stores';
-  import {flightdata, navitems, optimise, mname} from '$lib/stores';
+  import {flightdata, navitems, optimise, mname, mouse, server} from '$lib/stores';
   import { base } from '$app/paths'
   import {goto} from '$app/navigation';
   import { page } from '$app/stores';  
-	import { endsWith } from 'plotly.js-dist';
+	import { onMount } from 'svelte';
   
   let mannames = flightdata.mannames;
   let fcj = flightdata.fcj;
@@ -20,9 +19,13 @@
     $mouse = {x: event.clientX, y: event.clientY}
   }
   
-  
-  //$optimise = localStorage.getItem('optimise') == 'true';
-  //$: localStorage.setItem('optimise', $optimise.toString());
+
+
+  onMount(()=>{
+    $server = localStorage.getItem('server') || 'http://localhost:5000';
+    $optimise = localStorage.getItem('optimise') === 'true';
+  })
+
 
 </script>
 
@@ -32,7 +35,7 @@
   <div>
     <!-- svelte-ignore missing-declaration -->
     <Navbar let:hidden let:toggle>
-      <NavBrand href={base}>
+      <NavBrand href={base + '/'}>
         FCScore
       </NavBrand>
       
@@ -72,6 +75,7 @@
           {#if Object.values(flightdata.mans).length > 0}
             <DropdownDivider/>
             <Helper>{$fcj?.short_name}</Helper>
+            <DropdownItem href={base + '/analysis'}>Analysis</DropdownItem>
             <DropdownItem><Checkbox bind:checked={$optimise}>Optimise Alignment</Checkbox></DropdownItem>
             
             <DropdownItem on:click={

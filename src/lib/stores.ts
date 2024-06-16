@@ -1,11 +1,10 @@
-import { writable, type Writable, type Readable } from 'svelte/store';
-import {server_version, run_manoeuvre } from '$lib/api_calls';
-import {FCJParams, FCJson} from '$lib/fcjson';
-import type{ Man, Internals } from '$lib/api_objects/mandata';
+import { writable, type Writable} from 'svelte/store';
+import {run_manoeuvre } from '$lib/api_calls';
+import { FCJson} from '$lib/fcjson';
+import type{ Man } from '$lib/api_objects/mandata';
 import pkg from 'file-saver';
-import type { Type } from 'typescript';
+import { browser } from "$app/environment"
 
-const PUBLIC_VERSION = 'static_trial'
 const { saveAs } = pkg;
 
 export function get_value (store: Writable<any>): any {
@@ -74,8 +73,6 @@ export const flightdata = new FlightData();
 export const schedule = new FlightData();
 export const mouse = writable({ x: 0, y: 0 });
 
-export const server = writable('http://localhost:8000');
-
 
 export class NavContent {
   name: string;
@@ -89,6 +86,13 @@ export class NavContent {
 
 }
 export const navitems: Writable<NavContent[]> = writable([]);
-export const optimise: Writable<boolean> = writable(false);
+
+
+export const server = writable(browser && localStorage.getItem('server') || 'http://localhost:8000');
+server.subscribe((value) => {if (browser) {localStorage.setItem('server', value)}});
+
+export const optimise = writable<boolean>(browser ? localStorage.getItem('optimise') === 'true' : true);
+optimise.subscribe((value) => {if (browser) {localStorage.optimise = String(value)}})
+
 
 export const mname: Writable<string> = writable('');

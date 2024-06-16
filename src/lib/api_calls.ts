@@ -1,7 +1,7 @@
 import type {ManDef} from '$lib/api_objects/mandef';
 import { Man, Internals } from '$lib/api_objects/mandata';
 import type {State} from '$lib/geometry';
-import {server} from '$lib/stores';
+import {server, get_value} from '$lib/stores';
 import type { FCJson} from './fcjson';
 import { data } from 'autoprefixer';
 
@@ -15,8 +15,7 @@ async function server_func(func_name: string, kwargs: Record<string, any>={}, me
   if (method==='POST') {
     msg.body = JSON.stringify(kwargs);
   }
-  let spath: string = '';
-  server.subscribe(v=>{spath=v});
+  let spath: string = get_value(server);
   const response = await fetch(`${spath}/${func_name}` , msg);
   const data = await response.json();
   if (response.ok) {
