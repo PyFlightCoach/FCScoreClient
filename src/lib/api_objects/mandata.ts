@@ -10,7 +10,7 @@ export class Man{
     busy: boolean,
     readonly id: number,
     readonly name: string,
-    readonly els: ElSplits | null = null,
+    readonly els: ElSplit[] | null = null,
     readonly scores: Scores | null = null,
     readonly internals: Internals | null = null
   ) {this.busy=busy;}
@@ -54,16 +54,13 @@ export class Man{
 
 export class ElSplit{
   constructor (readonly name: string, readonly start: number, readonly stop: number) {}
-}
 
-export class ElSplits{
-  constructor (readonly splits: ElSplit[]) {}
 
   static parse (data: ElSplit[]) {
-    return new ElSplits(data.map((v: ElSplit)=>new ElSplit(v.name, v.start, v.stop)));
+    return data.map((v: ElSplit)=>new ElSplit(v.name, v.start, v.stop));
   }
-
 }
+
 
 export class Scores{
   constructor (

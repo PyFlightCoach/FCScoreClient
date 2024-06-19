@@ -1,9 +1,6 @@
-import type {ManDef} from '$lib/api_objects/mandef';
-import { Man, Internals } from '$lib/api_objects/mandata';
-import type {State} from '$lib/geometry';
+import { Man } from '$lib/api_objects/mandata';
 import {server, get_value} from '$lib/stores';
-import type { FCJson} from './fcjson';
-import { data } from 'autoprefixer';
+import type { FCJData, FCJson, Origin} from './fcjson';
 
 async function server_func(func_name: string, kwargs: Record<string, any>={}, method: string='POST') {
   
@@ -16,6 +13,7 @@ async function server_func(func_name: string, kwargs: Record<string, any>={}, me
     msg.body = JSON.stringify(kwargs);
   }
   let spath: string = get_value(server);
+
   const response = await fetch(`${spath}/${func_name}` , msg);
   const data = await response.json();
   if (response.ok) {
@@ -28,41 +26,51 @@ async function server_func(func_name: string, kwargs: Record<string, any>={}, me
 }
 
 
-export async function run_manoeuvre(man: Man, fcj: FCJson, optimise: boolean, long_output: boolean) {
+export async function run_manoeuvre(man: Man, fcj: FCJson, direction: number, optimise: boolean, long_output: boolean) {
+  try {
+    let props: Record<string, any> = {
+      id: man.id,
+      direction,
+      optimise_alignment: optimise,
+      long_output: long_output,
+    };
+    
+    if (man.internals === null) {
+      props.sinfo = fcj.sinfo,
+      props.site = fcj.origin,
+      props.data = fcj.get_mandata(man.id+1),
+      props.long_output = long_output
+      if (man.els !== null) {
+        props.els = man.els;
+      }
+    } else {
+      props.mdef = man.internals.mdef,
+      props.flown = man.internals.flown.data      
+    }
 
-  if (man.internals === null) {
     return man.update(await server_func(
-      'run_short_manoeuvre', 
-      {
-        id: man.id,
-        direction: fcj.direction,
-        sinfo: fcj.sinfo,
-        origin: fcj.origin,
-        data: fcj.get_mandata(man.id+1),
-        optimise_alignment: optimise,
-        long_output: long_output
-      }
+      man.internals === null ? 'run_short_manoeuvre': 'run_long_manoeuvre', 
+      props
     ));
-  } else {
-    return man.update(await server_func(
-      'run_long_manoeuvre', 
-      {
-        mdef: man.internals.mdef,
-        direction: fcj.direction,
-        id: man.id,
-        flown: man.internals.flown.data,
-        optimise_alignment: optimise
-      }
-    ));
+  } catch(err) {
+    console.log('Error running manoeuvre ' + man.name + ': ' + err.message);
+    return man.update({})
   }
+  
 }
 
-export async function create_fc_json(sts: State[], mdefs: ManDef[], name: string, category: string) {
-  return await server_func('create_fc_json', {sts, mdefs, name, category});
+export async function calculate_direction(origin: Origin, data: FCJData){
+    return await server_func('calculate_direction', {origin, data}, 'POST');
 }
+
 
 export async function server_version(){
-  return await server_func('version', {}, 'GET');
+  try {
+    return await server_func('version', {}, 'GET');
+  } catch(err) {
+    return err.message;
+  }
+  
 }
 
 export async function get_telemetry(): Promise<Blob> {

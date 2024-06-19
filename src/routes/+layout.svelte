@@ -86,7 +86,7 @@
               ()=>{flightdata.analyseList(Object.keys($mannames), true, $optimise)}
             }>Run All</DropdownItem>
 
-            <DropdownItem >export</DropdownItem>
+            <DropdownItem on:click={() => flightdata.export()} >export</DropdownItem>
             <DropdownItem on:click={()=>{clearflight(base)}}>clear</DropdownItem>
           {:else}
             <DropdownItem href={base + '/analysis'} data-sveltekit-preload-data="tap">example</DropdownItem>

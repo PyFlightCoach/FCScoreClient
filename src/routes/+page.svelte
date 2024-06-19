@@ -9,7 +9,7 @@
   import {PUBLIC_VERSION} from '$env/static/public';
 
   let version = 'not connected';
-
+  
   const getVersion = async () => {version = await server_version()};
 
   onMount(getVersion);

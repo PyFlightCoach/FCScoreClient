@@ -1,5 +1,17 @@
-import { Man } from "./api_objects/mandata";
-import { State, Point, GPS, Quaternion } from "$lib/geometry";
+import { ElSplit } from "$lib/api_objects/mandata";
+import {Scores} from "$lib/api_objects/mandata";
+
+export class Origin {
+  constructor (
+    readonly lat: number,
+    readonly lng: number,
+    readonly alt: number,
+    readonly heading: number,
+    readonly move_east: number,
+    readonly move_north: number,  
+  ) {}
+}
+
 
 
 export class ScheduleInfo {
@@ -46,22 +58,6 @@ export class FCJData {
     readonly yaw: number,
   ) {}
 
-  pos() {return new Point(this.N, this.E, this.D);}
-
-  rott() {
-    return Quaternion.parse_euler(new Point(this.r, this.p, this.yw).mul(Math.PI / 180))
-  }
-
-  create_state(parameters: FCJParams): State {
-    const pilotRot = parameters.pilotRot();
-    
-    const q = this.rott();
-    return State.build(
-        this.pos(),
-        Quaternion.mul(pilotRot, q),
-        q.inverse().transform_point(pilotRot.transform_point(new Point(this.VN, this.VE, this.VD))),
-    )
-  }
 
 }
 
@@ -87,30 +83,55 @@ export class FCJParams {
     readonly schedule: string[],
   ) {}
 
-  pilotPos() {return new GPS(
-    Number(this.pilotLat), 
-    Number(this.pilotLng), 
-    Number(this.pilotAlt)
-  );}
-
-  pilotRot() {return Quaternion.parse_euler(
-    new Point(Math.PI, 0, this.rotation)
-  );}
 
 }
 
-class Origin {
+
+export class FCJHumanResult {
   constructor (
-    readonly lat: number,
-    readonly lng: number,
-    readonly alt: number,
-    readonly heading: number,
+    readonly name: string,
+    readonly date: string,
+    readonly scores: number[]
   ) {}
 }
 
+export class FCJManResult {
+  constructor (
+    readonly score: Scores,
+    readonly els: ElSplit[]
+  ){}
+  static parse(data: FCJManResult) {
+    return new FCJManResult(
+      Scores.parse(data.score),
+      ElSplit.parse(data.els)
+    );
+  }
+}
+
+export class FCSResult {
+  constructor (
+    readonly fcs_version: string,
+    readonly date: string,
+    readonly difficulty: number,
+    readonly truncated: boolean,
+    readonly manresults: FCJManResult[],
+    readonly total: number,
+  ) {}
+
+  static parse(data: FCSResult) {
+    return new FCSResult(
+      data.fcs_version,
+      data.date,
+      data.difficulty,
+      data.truncated,
+      data.manresults.map((v: FCJManResult) => {return FCJManResult.parse(v)}),
+      data.total
+    )}
+}
+
+
 export class FCJson {
   unique_names: string[]=[];
-  direction: number;
   short_name: string;
   sinfo: ScheduleInfo;
   origin: Origin;
@@ -122,6 +143,8 @@ export class FCJson {
     readonly parameters: FCJParams,
     readonly scored: boolean,
     readonly scores: number[],
+    readonly human_scores: FCJHumanResult[] = [],
+    readonly fcs_scores: FCSResult[] = [],
     readonly mans: FCJMan[],
     readonly data: FCJData[],
     readonly jhash: number
@@ -133,14 +156,15 @@ export class FCJson {
       this.unique_names.push(mname);
     });
 
-    this.direction = this.data[this.mans[1].start].create_state(this.parameters).direction();
     this.short_name = this.name.replace(/\.[^/.]+$/, "");
     this.sinfo = ScheduleInfo.from_fcj_sch(this.parameters.schedule);
     this.origin = new Origin(
       this.parameters.originLat,
       this.parameters.originLng,
       this.parameters.originAlt,
-      this.parameters.rotation
+      this.parameters.rotation,
+      this.parameters.moveEast,
+      this.parameters.moveNorth
     )
   }
 
@@ -153,6 +177,8 @@ export class FCJson {
       Object.setPrototypeOf(data.parameters, FCJParams.prototype),
       data.scored,
       data.scores,
+      data.human_scores!,
+      data.fcs_scores ? data.fcs_scores.map((v: FCSResult) => {return FCSResult.parse(v)}): [],
       data.mans.map((v: FCJMan) => {return Object.setPrototypeOf(v, FCJMan.prototype)}),
       data.data.map((v: FCJData) => {return Object.setPrototypeOf(v, FCJData.prototype)}),
       data.jhash
@@ -163,6 +189,22 @@ export class FCJson {
     return this.data.slice(this.mans[i].start, this.mans[i].stop);
   }
 
-  
+  add_result(result: FCSResult): FCJson {
+
+    return new FCJson(
+      this.version,
+      this.comments,
+      this.name,
+      this.view,
+      this.parameters,
+      this.scored,
+      this.scores,
+      this.human_scores,
+      this.fcs_scores.concat(result),
+      this.mans,
+      this.data,
+      this.jhash,
+    );
+  }
 
 }

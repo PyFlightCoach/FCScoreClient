@@ -3,6 +3,8 @@
   import AnalysisSummary from './AnalysisSummary.svelte';
   import Difficulty from './Difficulty.svelte';
 
+
+  let fcj = flightdata.fcj;
   let mannames = flightdata.mannames;
   let difficulty: (v:number)=>number;
 

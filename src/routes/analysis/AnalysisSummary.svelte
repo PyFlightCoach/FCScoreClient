@@ -18,10 +18,7 @@
   <div>Inter</div>
   <div>Position</div>
   {#each Object.keys($mannames) as mn}
-    <ManSummary 
-      manname={mn}  
-      difficulty={difficulty}
-    />
+    <ManSummary manname={mn}/>
   {/each}
 
 </div>
