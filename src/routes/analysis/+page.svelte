@@ -1,22 +1,15 @@
 <script lang="ts">
-  import {flightdata, navitems, NavContent} from '$lib/stores';
+  import {flightdata} from '$lib/stores';
   import AnalysisSummary from './AnalysisSummary.svelte';
-  import Difficulty from './Difficulty.svelte';
 
-
-  let fcj = flightdata.fcj;
   let mannames = flightdata.mannames;
-  let difficulty: (v:number)=>number;
 
   $: total = Object.values($mannames).reduce((a, b) => a + b, 0);
  
-
 </script>
 
 <div id='parent'>
-  <div style='grid-column:2;'><AnalysisSummary 
-    difficulty={difficulty}
-  /></div>
+  <div style='grid-column:2;'><AnalysisSummary/></div>
   <h2>Total Score = {total.toFixed(1)}</h2>  
 </div>
 

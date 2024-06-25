@@ -25,7 +25,7 @@
           //try {
             $fcj = FCJson.parse(JSON.parse(event.target.result))
             
-            calculate_direction($fcj.origin, $fcj.data[$fcj.mans[1].start]).then(res=>$direction=res);
+            calculate_direction($fcj.origin.heading, $fcj.data[$fcj.mans[1].start]).then(res=>$direction=res);
             
             $fcj.unique_names.slice(1,-1).forEach(
               (name: string,i: number) => {

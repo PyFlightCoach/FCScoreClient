@@ -2,7 +2,7 @@ import {States} from '$lib/geometry';
 import { Manoeuvre } from '$lib/api_objects/manoeuvre';
 import { ManDef } from '$lib/api_objects/mandef';
 import { ManoeuvreResult } from '$lib/api_objects/scores';
-import { FCJData } from '$lib/fcjson';
+import _ from 'underscore';
 
 export class Man{
   busy: boolean;
@@ -11,27 +11,18 @@ export class Man{
     readonly id: number,
     readonly name: string,
     readonly els: ElSplit[] | null = null,
-    readonly scores: Scores | null = null,
+    readonly scores: Scores[] = [],
     readonly internals: Internals | null = null
   ) {this.busy=busy;}
 
   update (data: Record<string, any>) {
-    let simplescores = 'score' in data ? data.score : this.scores;
-    if ((simplescores !== null) && ('summary' in simplescores)) {
-      simplescores = {
-        intra: simplescores.intra.total,
-        inter: simplescores.inter.total,
-        positioning: simplescores.positioning.total,
-        total: simplescores.score,
-        k: data.mdef.info.k
-      };
-    }
+    
     return new Man(
       false,
       'id' in data ? data.id : this.id,
       'name' in data ? data.name : this.name,
       'els' in data ? data.els : this.els,
-      'score' in data? data.score : this.scores,
+      'scores' in data? data.scores.map((v: Scores)=>Object.setPrototypeOf(v, Scores)) : this.scores,
       'mdef' in data ? Internals.parse(data) : null,
     )
   }
@@ -42,7 +33,7 @@ export class Man{
     } else {
       return new Man(
         false, this.id, this.name, 
-        null, null, new Internals(
+        null, [], new Internals(
           this.internals.mdef, flown, this.internals.manoeuvre, 
           this.internals.template
         )
@@ -50,6 +41,14 @@ export class Man{
     }
   }
   
+  get_first_matching_score(props: Record<string, any>): Scores|null {
+    let outscores: Scores[] = [];
+    this.scores.forEach((v:Scores)=>{
+      if (_.isEqual(_.pick(v.properties, Object.keys(props)), props)) {outscores.push(v)}
+    });
+    return outscores.length>0?outscores[0]:null;
+  }
+
 }
 
 export class ElSplit{
@@ -65,11 +64,13 @@ export class ElSplit{
 export class Scores{
   constructor (
     readonly intra: number, readonly inter: number, readonly positioning: number, 
-    readonly total: number, readonly k: number
+    readonly total: number, readonly k: number, readonly properties: Record<string, any>
   ) {}
 
   static parse (data: Scores) {
-    return new Scores(data.intra, data.inter, data.positioning, data.total, data.k);
+    return new Scores(data.intra, data.inter, data.positioning, data.total, data.k, 
+      data.properties
+    );
   }
 }
 

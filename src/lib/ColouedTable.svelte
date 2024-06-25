@@ -6,7 +6,7 @@
   export let activeRow: null|string = null;
   export let activeCol: null|string = null;
   export let colorCols: null|string[] = null;
-
+  export let colours = redsColors;
 
   $: rowNames = Object.keys(data);
   $: colNames = Object.keys(data[rowNames[0]]);
@@ -29,7 +29,7 @@
 
   const getColor = (row: string, col: string) => {
     if (colCols.indexOf(col) >= 0) {
-      return colscale(data[row][col], maxVal, redsColors)
+      return colscale(data[row][col], maxVal, colours)
     } else {
       return 'white'
     } 

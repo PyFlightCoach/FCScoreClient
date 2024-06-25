@@ -26,15 +26,29 @@ export const burgColors = [
     'rgb(103, 32, 68)'
 ];
 
-export const redsColors = ['rgb(255,245,240)',
-'rgb(254,224,210)',
-'rgb(252,187,161)',
-'rgb(252,146,114)',
-'rgb(251,106,74)',
-'rgb(239,59,44)',
-'rgb(203,24,29)',
-'rgb(165,15,21)',
-'rgb(103,0,13)'];
+export const redsColors = [
+    'rgb(255,186,186)',
+	'rgb(255,123,123)',
+	'rgb(255,82,82)',
+	'rgb(255,0,0)',
+	'rgb(167,0,0)',
+];
+
+export const tealsColrs = [
+    'rgb(178,216,216)',
+	'rgb(102,178,178)',
+	'rgb(0,128,128)',
+	'rgb(0,102,102)',
+	'rgb(0,76,76)',
+]
+
+export const yellColors = [
+    'rgb(255,249,174)',
+	'rgb(248,237,98)',
+	'rgb(233,215,0)',
+	'rgb(218,182,0)',
+	'rgb(169,134,0)',
+]
 
 export const rainbowColors = ['rgb(150,0,90)',
 'rgb(0,0,200)',

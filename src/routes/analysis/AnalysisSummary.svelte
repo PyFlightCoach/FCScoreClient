@@ -2,8 +2,6 @@
 	import {flightdata} from '$lib/stores';
   import ManSummary from './ManSummary.svelte';
 
-  export let difficulty: (v: number)=>number;
-
   let mannames = flightdata.mannames;
   
 </script>

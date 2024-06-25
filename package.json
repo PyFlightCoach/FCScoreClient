@@ -48,6 +48,7 @@
 		"pyodide": "^0.26.0",
 		"svelte-plotly.js": "^0.3.2",
 		"tailwind-merge": "^2.3.0",
+		"underscore": "^1.13.6",
 		"workbox-precaching": "^7.1.0",
 		"xhr-shim": "^0.1.3"
 	}

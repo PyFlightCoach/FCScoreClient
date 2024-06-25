@@ -1,5 +1,5 @@
 import { Man } from '$lib/api_objects/mandata';
-import {server, get_value} from '$lib/stores';
+import {server, get_value, difficulty, truncate} from '$lib/stores';
 import type { FCJData, FCJson, Origin} from './fcjson';
 
 async function server_func(func_name: string, kwargs: Record<string, any>={}, method: string='POST') {
@@ -33,6 +33,8 @@ export async function run_manoeuvre(man: Man, fcj: FCJson, direction: number, op
       direction,
       optimise_alignment: optimise,
       long_output: long_output,
+      difficulty: 'all',
+      truncate: 'both'
     };
     
     if (man.internals === null) {
@@ -59,8 +61,8 @@ export async function run_manoeuvre(man: Man, fcj: FCJson, direction: number, op
   
 }
 
-export async function calculate_direction(origin: Origin, data: FCJData){
-    return await server_func('calculate_direction', {origin, data}, 'POST');
+export async function calculate_direction(heading: number, data: FCJData){
+    return await server_func('calculate_direction', {heading, data}, 'POST');
 }
 
 
@@ -69,8 +71,15 @@ export async function server_version(){
     return await server_func('version', {}, 'GET');
   } catch(err) {
     return err.message;
-  }
-  
+  } 
+}
+
+export async function library_versions() {
+  try {
+    return await server_func('library_versions', {}, 'GET');
+  } catch(err) {
+    return {};
+  } 
 }
 
 export async function get_telemetry(): Promise<Blob> {

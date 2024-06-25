@@ -52,8 +52,12 @@ class FlightData {
     if (!get_value(this.mans[name]).busy) {
       this.mans[name].update(v=>{v.busy=true; return v});
       score(get_value(this.mans[name])).then(res=>{
-        this.mannames.update((v)=>{v[name] = res.scores? res.scores.total * res.scores.k: 0; return v})
         this.mans[name].set(res)
+        this.mannames.update((v)=>{
+          let score = get_value(this.mans[name]).get_first_matching_score({difficulty:3, truncate:false})
+          v[name] = score? score.total * score.k: 0; 
+          return v;
+        })
       });
     }
     return get_value(this.mans[name]);
@@ -131,5 +135,11 @@ server.subscribe((value) => {if (browser) {localStorage.setItem('server', value)
 export const optimise = writable<boolean>(browser ? localStorage.getItem('optimise') === 'true' : true);
 optimise.subscribe((value) => {if (browser) {localStorage.optimise = String(value)}})
 
+export const difficulty = writable<number>(browser ? parseInt(localStorage.getItem('difficulty')!) : 3);
+difficulty.subscribe((value) => {if (browser) {localStorage.difficulty = String(value)}})
+  
+export const truncate = writable<boolean>(browser ? localStorage.getItem('truncate') === 'true' : false);
+truncate.subscribe((value) => {if (browser) {localStorage.truncate = String(value)}})
+  
 
 export const mname: Writable<string> = writable('');

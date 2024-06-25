@@ -1,12 +1,13 @@
 <script lang="ts">
   import '../app.postcss';
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem,
-    DropdownDivider, Helper, NavHamburger, Checkbox} from 'flowbite-svelte'
-  import {flightdata, navitems, optimise, mname, mouse, server} from '$lib/stores';
+    DropdownDivider, Helper, NavHamburger, Checkbox, NumberInput} from 'flowbite-svelte'
+  import {flightdata, navitems, optimise, mname, mouse, server, difficulty, truncate} from '$lib/stores';
   import { base } from '$app/paths'
   import {goto} from '$app/navigation';
   import { page } from '$app/stores';  
 	import { onMount } from 'svelte';
+	import Difficulty from './analysis/Difficulty.svelte';
   
   let mannames = flightdata.mannames;
   let fcj = flightdata.fcj;
@@ -18,12 +19,17 @@
   function handleMousemove(event) {
     $mouse = {x: event.clientX, y: event.clientY}
   }
-  
+  $: {
+    $difficulty = Math.round($difficulty);
+    if ($difficulty > 3) {$difficulty = 3};
+    if ($difficulty < 1) {$difficulty = 1};
 
-
+  }
   onMount(()=>{
     $server = localStorage.getItem('server') || 'http://localhost:5000';
     $optimise = localStorage.getItem('optimise') === 'true';
+    $difficulty = localStorage.getItem('difficulty') ? parseInt(localStorage.getItem('difficulty')!) : 3;
+    $truncate = localStorage.getItem('truncate') ? localStorage.getItem('truncate') === 'true' : false;
   })
 
 
@@ -57,6 +63,8 @@
         <NavLi id="optionsmenu" class="cursor-pointer">Options</NavLi>
         <Dropdown triggeredBy="#optionsmenu" class="w-44 z-20">
           <DropdownItem href='{base}/server'>Analysis Server</DropdownItem>
+          <DropdownItem>Difficulty<NumberInput bind:value={$difficulty} min=1 max=3 /></DropdownItem>
+          <DropdownItem>Truncate<Checkbox bind:checked={$truncate}/></DropdownItem>
         </Dropdown>
         {#if $mannames.length > 0}
           <NavLi id="manoeuvremenu" class="cursor-pointer">Manoeuvres</NavLi>
