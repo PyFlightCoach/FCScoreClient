@@ -1,5 +1,4 @@
-import { ElSplit } from "$lib/api_objects/mandata";
-import {Scores} from "$lib/api_objects/mandata";
+import _ from 'underscore';
 
 export class Origin {
   constructor (
@@ -11,8 +10,6 @@ export class Origin {
     readonly move_north: number,  
   ) {}
 }
-
-
 
 export class ScheduleInfo {
   constructor (
@@ -57,8 +54,6 @@ export class FCJData {
     readonly pitch: number,
     readonly yaw: number,
   ) {}
-
-
 }
 
 export class FCJParams {
@@ -82,10 +77,7 @@ export class FCJParams {
     readonly centerAlt: string,
     readonly schedule: string[],
   ) {}
-
-
 }
-
 
 export class FCJHumanResult {
   constructor (
@@ -95,38 +87,77 @@ export class FCJHumanResult {
   ) {}
 }
 
+export class FCJScoreProps{
+  constructor (readonly difficulty: number, readonly truncate: boolean) {}
+
+  summary() {
+    return `${['easy', 'medium', 'hard'][this.difficulty-1]} ${this.truncate?'Truncated':''}`;
+  }
+}
+
+export class FCJScore{
+  constructor (
+    readonly intra: number, readonly inter: number, 
+    readonly positioning: number, readonly total: number
+  ) {}
+}
+
+export class FCJResult {
+  constructor ( readonly score: FCJScore, readonly properties: FCJScoreProps ) {}
+  static parse (data: FCJResult) {
+    return new FCJResult(
+      Object.setPrototypeOf(data.score, FCJScore.prototype),
+      Object.setPrototypeOf(data.properties, FCJScoreProps.prototype)
+    );    
+  }
+}
+
+export class ElSplit{
+  constructor (readonly name: string, readonly start: number, readonly stop: number) {}
+}
+
 export class FCJManResult {
   constructor (
-    readonly score: Scores,
-    readonly els: ElSplit[]
+    readonly els: ElSplit[],
+    readonly results: FCJResult[],
   ){}
+  
   static parse(data: FCJManResult) {
     return new FCJManResult(
-      Scores.parse(data.score),
-      ElSplit.parse(data.els)
+      data.els.map(v=>Object.setPrototypeOf(v, ElSplit.prototype)),
+      data.results.map(v => FCJResult.parse(v))
     );
   }
+
+  get_score(difficulty: number, truncate: boolean) {
+    return this.results.find((v: FCJResult) => _.isEqual(
+      Object.setPrototypeOf(v.properties, {}), 
+      {difficulty, truncate}
+    ));
+  }
+
 }
 
 export class FCSResult {
   constructor (
-    readonly fcs_version: string,
-    readonly date: string,
-    readonly difficulty: number,
-    readonly truncated: boolean,
+    readonly fa_version: string,
     readonly manresults: FCJManResult[],
-    readonly total: number,
   ) {}
 
   static parse(data: FCSResult) {
-    return new FCSResult(
-      data.fcs_version,
-      data.date,
-      data.difficulty,
-      data.truncated,
-      data.manresults.map((v: FCJManResult) => {return FCJManResult.parse(v)}),
-      data.total
-    )}
+    const mres: FCJManResult[] = Array(data.manresults.length);
+    data.manresults.forEach((v, i)=>{
+      if (v) {mres[i] = FCJManResult.parse(v)}
+    });
+    return new FCSResult(data.fa_version, mres);
+  }
+
+  get_scores(difficulty: number, truncate: boolean) {
+    return this.manresults.map((v: FCJManResult) => {
+      return v?.get_score(difficulty, truncate);
+    });
+  }
+  
 }
 
 
@@ -170,17 +201,12 @@ export class FCJson {
 
   static parse(data: FCJson) {
     return new FCJson(
-      data.version, 
-      data.comments, 
-      data.name,
-      data.view,
+      data.version, data.comments, data.name, data.view,
       Object.setPrototypeOf(data.parameters, FCJParams.prototype),
-      data.scored,
-      data.scores,
-      data.human_scores!,
-      data.fcs_scores ? data.fcs_scores.map((v: FCSResult) => {return FCSResult.parse(v)}): [],
-      data.mans.map((v: FCJMan) => {return Object.setPrototypeOf(v, FCJMan.prototype)}),
-      data.data.map((v: FCJData) => {return Object.setPrototypeOf(v, FCJData.prototype)}),
+      data.scored, data.scores, data.human_scores!,
+      data.fcs_scores ? data.fcs_scores.map(v => FCSResult.parse(v)): [],
+      data.mans.map(v => Object.setPrototypeOf(v, FCJMan.prototype)),
+      data.data.map(v => Object.setPrototypeOf(v, FCJData.prototype)),
       data.jhash
     )
   }
@@ -189,22 +215,35 @@ export class FCJson {
     return this.data.slice(this.mans[i].start, this.mans[i].stop);
   }
 
-  add_result(result: FCSResult): FCJson {
-
-    return new FCJson(
-      this.version,
-      this.comments,
-      this.name,
-      this.view,
-      this.parameters,
-      this.scored,
-      this.scores,
-      this.human_scores,
-      this.fcs_scores.concat(result),
-      this.mans,
-      this.data,
-      this.jhash,
-    );
+  get_result(version: string) {
+    return this.fcs_scores.find((v: FCSResult) => v.fa_version === version);
   }
+
+  add_result(version: string, name: string, manresult: FCJManResult) {
+    let res = this.get_result(version) 
+    if (!res) {
+      res = new FCSResult(version, Array(this.mans.length));
+      this.fcs_scores.push(res);
+    } 
+    res.manresults[this.unique_names.indexOf(name)] = manresult;
+  }
+
+  export_data() {
+    return {
+      version: this.version,
+      comments: this.comments,
+      name: this.name,
+      view: this.view,
+      parameters: this.parameters,
+      scored: this.scored,
+      scores: this.scores,
+      human_scores: this.human_scores,
+      fcs_scores: this.fcs_scores,
+      mans: this.mans,
+      data: this.data,
+      jhash: this.jhash,
+    }
+  }
+
 
 }

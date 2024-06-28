@@ -4,15 +4,9 @@
   import {onMount} from 'svelte';
   import {base} from '$app/paths';
 
-  $: fcj = flightdata.fcj;
-  import {flightdata} from '$lib/stores';
+  import {fcj} from '$lib/stores';
 
-  onMount(()=>{
-    if ($fcj === null) {
-      goto(base + '/upload');
-    }
-  })
-
+  onMount(()=>{if (!$fcj) {goto(base + '/upload');}})
 
 </script>
 

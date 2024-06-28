@@ -1,145 +1,147 @@
-import { writable, type Writable} from 'svelte/store';
-import {run_manoeuvre, server_version } from '$lib/api_calls';
-import { FCJManResult, FCJson, FCSResult} from '$lib/fcjson';
-import{ ElSplit, Scores, type Man } from '$lib/api_objects/mandata';
+import { writable, type Writable, get} from 'svelte/store';
+import {serverFunc } from '$lib/api_calls';
+import { FCJManResult, FCJson, FCSResult} from '$lib/api_objects/fcjson';
+import { Internals } from '$lib/api_objects/mandata';
 import pkg from 'file-saver';
 import { browser } from "$app/environment"
+import _ from 'underscore';
+
 
 const { saveAs } = pkg;
 
-export function get_value (store: Writable<any>): any {
-  let outv: any;
-  store.subscribe(v => {outv=v})();
-  return outv;
-}
 
-class FlightData {
-  fcj: Writable<FCJson|null> = writable(null);
-  direction: Writable<number> = writable(0);
-  mannames: Writable<Record<string, number>> = writable({});
-  mans: Record<string, Writable<Man>> = {};
-  
-  addMan(name: string, man: Man): Writable<Man> {
-    this.mans[name] = writable(man);
-    this.mannames.update((v)=>{v[name]=0; return v;});
-    return this.mans[name];
-  };
+export const fcj: Writable<FCJson|undefined> = writable();
+export const direction: Writable<number|undefined> = writable();
+export const internals: Writable<Internals[]|undefined> = writable();
+export const running: Writable<string[]> = writable([]);
 
-  clear() {
-    this.mans = {};
-    this.mannames.set({});
-    this.direction.set(0);
-    this.fcj.set(null);
-  };
+export const server_version: Writable<string> = writable('not connected to server');
+export const fa_version: Writable<string> = writable('not connected to server');
 
-  async analyseManoeuvre(name: string, force: boolean = false, optim: boolean | null=null, internals=false) {
-    const fcj = get_value(this.fcj);
-    const _direction = get_value(this.direction);
-    
-    async function score(man: Man) {
-      if (man.scores === null || force) {
-        return await run_manoeuvre(
-          man, fcj, _direction,
-          optim===null? get_value(optimise): optim, 
-          internals
-        );
-      } else {
-        man.busy = false;
-        return man;
-      }
-    }
+export const activeResult: Writable<FCSResult | undefined> = writable();
+export const activeManoeuvre: Writable<string|undefined> = writable();
 
-    if (!get_value(this.mans[name]).busy) {
-      this.mans[name].update(v=>{v.busy=true; return v});
-      score(get_value(this.mans[name])).then(res=>{
-        this.mans[name].set(res)
-        this.mannames.update((v)=>{
-          let score = get_value(this.mans[name]).get_first_matching_score({difficulty:3, truncate:false})
-          v[name] = score? score.total * score.k: 0; 
-          return v;
-        })
-      });
-    }
-    return get_value(this.mans[name]);
-  }
+export const difficulty: Writable<number> = writable(3);
+export const truncate: Writable<boolean> = writable(false);
 
-  async analyseList(names: string[], force=false, optim: boolean|null=null, internals: boolean=false) {
-    
-    this.mannames.update((v)=>{
-      names.forEach(n=>v[n]=0);
-      return v;
-    });
-    names.forEach(async name => {
-      await this.analyseManoeuvre(name, force, optim, internals);
-    })
-  }
-
-  async export() {
-    let fcs_results = [new FCJManResult(
-      new Scores(0, 0, 0, 10, 0),
-      []
-    )]
-    Object.values(this.mans).forEach((_man: Writable<Man>)=>{
-      const man: Man = get_value(_man);
-      if (man.scores===null || man.els===null) {
-        throw new Error(`Manoeuvre ${man.name} not scored`);
-      } else {
-        fcs_results.push(new FCJManResult(
-          man.scores,
-          man.els
-        ))
-      }
-    });
-    const mannames: Record<string, number>  = get_value(this.mannames);
-    const results = new FCSResult(  
-      await server_version(),
-      new Date().toLocaleString(), 3, false, fcs_results, 
-      Object.values(mannames).reduce((a, b) => a + b, 0)
-    )
-
-    
-    const fcj = get_value(this.fcj);
-    saveAs(
-      new Blob([JSON.stringify(fcj.add_result(results))], 
-      {type: 'application/json'}), 
-      fcj.name
-    );
-    
-
-  }
-
-}
-
-export const flightdata = new FlightData();
-export const schedule = new FlightData();
-export const mouse = writable({ x: 0, y: 0 });
-
-
-export class NavContent {
-  name: string;
-  href: string='';
-  onclick: () => void = () => { };
-  constructor(name: string, href: string, onclick = () => {}) {
-    this.name = name;
-    this.href = href;
-    this.onclick = onclick;
-  }
-
-}
 export const navitems: Writable<NavContent[]> = writable([]);
-
 
 export const server = writable(browser && localStorage.getItem('server') || 'http://localhost:5000');
 server.subscribe((value) => {if (browser) {localStorage.setItem('server', value)}});
-
 export const optimise = writable<boolean>(browser ? localStorage.getItem('optimise') === 'true' : true);
-optimise.subscribe((value) => {if (browser) {localStorage.optimise = String(value)}})
+optimise.subscribe((value) => {if (browser) {localStorage.optimise = String(value)}});
+export const long_output = writable<boolean>(browser ? localStorage.getItem('long_output') === 'true' : false);
+long_output.subscribe((value) => {if (browser) {localStorage.long_output = String(value)}});
 
-export const difficulty = writable<number>(browser ? parseInt(localStorage.getItem('difficulty')!) : 3);
-difficulty.subscribe((value) => {if (browser) {localStorage.difficulty = String(value)}})
-  
-export const truncate = writable<boolean>(browser ? localStorage.getItem('truncate') === 'true' : false);
-truncate.subscribe((value) => {if (browser) {localStorage.truncate = String(value)}})
-  
+export const mouse = writable({ x: 0, y: 0 });
 
-export const mname: Writable<string> = writable('');
+export const getVersion = async () => {
+  try {
+    fa_version.set(await serverFunc('fa_version', {}, 'GET'));
+  } catch(err) {
+    fa_version.set(err.message);
+  }
+  try {
+    server_version.set(await serverFunc('version', {}, 'GET'));
+  } catch(err) {
+    server_version.set(err.message);
+  }
+
+};
+
+
+export function clearFlight(target: string|null=null) {
+  internals.set(undefined);
+  direction.set(undefined);
+  fcj.set(undefined);
+  activeResult.set(undefined);
+  activeManoeuvre.set(undefined);
+  if (browser && target !== null) {
+    window.location.href = target;
+  }
+};
+
+export async function analyseManoeuvre(name: string, force: boolean = false, optim: boolean | null=null, long=false) {
+    
+  const _fcj = get(fcj)!;
+  const manid = _fcj!.unique_names.indexOf(name);
+  const old_results = _fcj.get_result(get(fa_version))?.manresults[manid];
+
+  if (!get(running).includes(name) && (!old_results || force)) {
+
+    running.update(v=>{v.push(name);return v;})
+
+    const internal_data = get(internals)![manid];
+
+    const props: Record<string, any> = {
+      id:manid-1,
+      direction:get(direction)!,
+      optimise_alignment: optim===null? get(optimise): optim,
+      long_output: long || get(long_output),
+      difficulty: 'all',
+      truncate: 'both'
+    };
+
+    if (internal_data) {
+      props.mdef = internal_data.mdef;
+      props.flown = internal_data.flown.data;
+    } else {
+      props.sinfo = _fcj!.sinfo;
+      props.site = _fcj!.origin;
+      props.data = _fcj!.get_mandata(manid);
+      if (old_results) {
+        props.els = old_results.els;
+      }
+    }
+
+    try {
+      const res = await serverFunc(
+        internal_data ? 'run_long_manoeuvre': 'run_short_manoeuvre',
+        props
+      );
+      
+      fcj.update(v=>{
+        v?.add_result(get(fa_version), name, FCJManResult.parse(res));
+        return v;
+      });
+
+      if (Object.keys(res).includes('mdef')) {
+        internals.update(v=>{v![manid]=Internals.parse(res);return v;});
+      }
+
+      activeResult.set(get(fcj)?.get_result(get(fa_version)));
+      
+    } catch(err) {
+      console.log('Error running manoeuvre ' + name + ': ' + err.message);
+    }
+      
+    running.update(v=>v.filter(item => item !== name));
+    
+  }
+}
+
+export async function analyseList(names: string[], force=false, optim: boolean|null=null, internals: boolean=false) {
+  
+  names.forEach(async name => {
+    await analyseManoeuvre(name, force, optim, internals);
+  })
+}
+
+export async function exportFCJ() {
+  saveAs(
+    new Blob([JSON.stringify(get(fcj)!.export_data())], 
+    {type: 'application/json'}), 
+    get(fcj)!.name
+  );
+  
+}
+
+
+export class NavContent {
+  constructor(
+    readonly name: string,
+    readonly  href: string, 
+    readonly onclick = () => {}
+  ) {}
+}
+

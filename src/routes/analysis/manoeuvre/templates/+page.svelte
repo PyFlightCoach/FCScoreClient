@@ -5,12 +5,13 @@
     import {modeltrace, ribbon} from '$lib/plots/traces';
     import {layout3d} from '$lib/plots/layouts';    
     import {Checkbox, BottomNav, BottomNavItem} from 'flowbite-svelte';
-    import {flightdata, mname} from '$lib/stores';
+    import { internals, activeManoeuvre, fcj} from '$lib/stores';
     import type {States} from '$lib/geometry';
     import colddraft from '$lib/plots/colddraft.js';
     
-    $: man = flightdata.mans[$mname];
-  
+    $: manid = $fcj?.unique_names.indexOf($activeManoeuvre!);
+    $: man = $internals![manid!];
+ 
   
     const make_trace = (tp: States, models: boolean, name: string, color: string) => {
       const trs = [ribbon(tp, 3, {}, {name, color})]
@@ -21,17 +22,17 @@
       return trs;
     }
   
-    const make_traces = (_man: Record<string, any>, bf: boolean, bi: boolean, bc: boolean) => {
+    const make_traces = (bf: boolean, bi: boolean, bc: boolean) => {
       const trs = [];
-      if (bf) {trs.push(...make_trace($man.internals!.flown, true, 'flown', 'red'))}
-      if (bi) {trs.push(...make_trace($man.internals!.template!, true, 'intended', 'blue'))}
-      if (bc) {trs.push(...make_trace($man.internals!.corrected_template!, true, 'corrected', 'green'))}
+      if (bf) {trs.push(...make_trace(man.flown, true, 'flown', 'red'))}
+      if (bi) {trs.push(...make_trace(man.template!, true, 'intended', 'blue'))}
+      if (bc) {trs.push(...make_trace(man.corrected_template!, true, 'corrected', 'green'))}
       return trs
     }
   
     let flown=true; let intended=true; let corrected=true;
   
-    $: all_traces=make_traces($man, flown, intended, corrected);
+    $: all_traces=make_traces(flown, intended, corrected);
     
     
   </script>

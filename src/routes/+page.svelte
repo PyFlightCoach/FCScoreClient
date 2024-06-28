@@ -1,28 +1,16 @@
 <script lang="ts">
   import {  Heading, P } from 'flowbite-svelte'
-  import {server_version} from '$lib/api_calls';
-  import {onMount} from 'svelte';
   import { A } from 'flowbite-svelte';
   import {base} from '$app/paths';
   import {goto} from '$app/navigation';
   import {PUBLIC_VERSION} from '$env/static/public';
-  import {library_versions} from '$lib/api_calls';
-
-  let version = 'not connected';
-  let versions = {};
-  const getVersion = async () => {
-    version = await server_version();
-    versions = await library_versions();
-  };
-
-  onMount(getVersion);
+  import {fa_version, server_version, getVersion} from '$lib/stores';
+ 
   
-  
-  $: name = flightdata.name;
-  import {flightdata} from '$lib/stores';
+  import {fcj} from '$lib/stores';
 
   
-  $: if ($name != null) {
+  $: if ($fcj != null) {
     goto(base + '/analysis');
   }
 
@@ -36,11 +24,8 @@
 
     <br/>
     <div>Client:{PUBLIC_VERSION || 'next'}</div>
-    <div>Server:<button on:click={()=>getVersion()}>{version}</button></div>
-
-    {#each Object.entries(versions) as [k, v]}
-      <div>{k}:{v}</div>
-    {/each}
+    <div>Server:<button on:click={()=>getVersion()}>{$server_version}</button></div>
+    <div>Library:<button on:click={()=>getVersion()}>{$fa_version}</button></div>
 
     <A href="https://github.com/PyFlightCoach/FCScore/blob/main/changelog.md">Version Info</A>
 

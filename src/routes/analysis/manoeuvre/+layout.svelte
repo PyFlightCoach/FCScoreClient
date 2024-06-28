@@ -1,47 +1,49 @@
 
 <script lang='ts'>
    
-  import { NavContent, flightdata, navitems, mname } from '$lib/stores';
-  import { Man } from '$lib/api_objects/mandata';
+  import { NavContent, navitems, fcj, internals, running, activeManoeuvre, activeResult } from '$lib/stores';
+  import type {Internals} from '$lib/api_objects/mandata';
   import {base} from '$app/paths';
-  import type { PageData } from "./$types";
   import {goto} from '$app/navigation';
+	import type { FCJScore } from '$lib/api_objects/fcjson';
+
+  $: {if($activeManoeuvre=='') {goto(base + '/analysis')}}
+  $: manid = $fcj?.unique_names.indexOf($activeManoeuvre!)!;
 
   
-  $: {if($mname=='') {goto(base + '/analysis')}}
-
-  $: man = flightdata.mans[$mname];
-
-  const update_navitems = (man_: Man) => {
+  const update_navitems = (scores:FCJScore|undefined, inter: Internals|undefined) => {
+    
     navitems.update(v=>{
       let nitems=[];
       nitems.push(new NavContent('Summary', base + '/analysis/manoeuvre'));
-      if (!man_.busy) {
-        if (man_.internals != null) {
-          nitems.push(new NavContent('Alignment', base + '/analysis/manoeuvre/alignment'));
-          if (man_.scores != null) {
-            nitems.push(new NavContent('Intra='+man_.scores.intra.toFixed(2), base + '/analysis/manoeuvre/intra'));
-            nitems.push(new NavContent('Inter='+man_.scores.inter.toFixed(2), base + '/analysis/manoeuvre/inter'));
-            nitems.push(new NavContent('Positioning='+man_.scores.positioning.toFixed(2), base + '/analysis/manoeuvre/positioning'));
-            nitems.push(new NavContent('Templates', base + '/analysis/manoeuvre/templates'));
-          } 
-        }
+      
+      nitems.push(new NavContent('Alignment', base + '/analysis/manoeuvre/alignment'));
+      if (inter?.scores && !$running[manid]) {
+        nitems.push(new NavContent('Intra='+scores.intra.toFixed(2), base + '/analysis/manoeuvre/intra'));
+        nitems.push(new NavContent('Inter='+scores.inter.toFixed(2), base + '/analysis/manoeuvre/inter'));
+        nitems.push(new NavContent('Positioning='+scores.positioning.toFixed(2), base + '/analysis/manoeuvre/positioning'));
+        nitems.push(new NavContent('Templates', base + '/analysis/manoeuvre/templates'));
       } 
+      
+    
       nitems.push(new NavContent('Back', base + '/analysis/'))
       return nitems;
     });
   }
-  
-  $: update_navitems($man);
+  $: if ($internals) {update_navitems(
+      $activeResult?.manresults[manid]?.get_score(3, false)?.score,
+      $internals![manid]
+    )};
 
 </script>
-{#if $man===null || $man.internals===null}
-  {#if $man.busy}
-    <p>Loading Internal Data</p>
+
+{#if ($internals && $internals[manid]) && !$running.includes($activeManoeuvre || '')}
+  <slot />
+{:else}
+  {#if $running.includes($activeManoeuvre || '')}
+    <p>Running ...</p>
   {:else}
     <p>No Internal Data</p>
   {/if}
-{:else}
-  <slot />
 {/if}
 

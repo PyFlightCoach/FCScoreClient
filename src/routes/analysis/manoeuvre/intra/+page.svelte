@@ -1,27 +1,30 @@
 <script lang="ts">
   import PlotSec from '$lib/plots/PlotSec.svelte';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
-  import { flightdata, mname} from '$lib/stores';
+  import { internals, activeManoeuvre, fcj} from '$lib/stores';
   import type {States } from '$lib/geometry';
   import CriteriaPlot from './CriteriaPlot.svelte';
   import DGPlot from './DGPlot.svelte';
 	import ColouedTable from '$lib/ColouedTable.svelte';
-  
+  import { goto } from '$app/navigation';
 
-  $: man = flightdata.mans[$mname];
-    
-  $: summaries = $man.internals!.scores!.intra.summaries();
+  $: manid = $fcj?.unique_names.indexOf($activeManoeuvre!);
+  $: man = $internals![manid!];
+  
+  $: if (!man.scores) {goto('/analysis/');}
+
+  $: summaries = man!.scores!.intra.summaries();
 
   let states: Record<string, States>;
   let templates: Record<string, States>;
-  $: states = $man.internals!.flown.split();
-  $: templates = $man.internals!.template!.split();
+  $: states = man!.flown.split();
+  $: templates = man!.template!.split();
   
   let activeCriteria: null|string = null;
   let activeElName: null|string = null;
   let activeIndex: null|number = 0;
 
-  $: element = $man.internals!.manoeuvre!.getEl(activeElName);
+  $: element = man!.manoeuvre!.getEl(activeElName);
 
   $: showintra = activeElName != null && activeCriteria != null  && activeCriteria != 'Total';
   
@@ -60,19 +63,19 @@
             {#if Object.keys(element).indexOf('roll') >=0}<p>roll = {(element.roll * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
             {#if Object.keys(element).indexOf('angle') >=0}<p>angle = {(element.angle * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
           {/if}          
-          <p>downgrade = {$man.internals.scores.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
+          <p>downgrade = {man.scores.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
           <p>{activeIndex}</p>  
         </div>
         
         <CriteriaPlot
-          result={$man.internals.scores.intra.data[activeElName].data[activeCriteria]}
-          element={$man.internals.manoeuvre.getEl(activeElName)}
+          result={man.scores.intra.data[activeElName].data[activeCriteria]}
+          element={man.manoeuvre.getEl(activeElName)}
         />
         
       </div>  
       <div class='plot fullwidth'><DGPlot 
-        result={$man.internals.scores.intra.data[activeElName].data[activeCriteria]}
-        element={$man.internals.manoeuvre.getEl(activeElName)}  
+        result={man.scores.intra.data[activeElName].data[activeCriteria]}
+        element={man.manoeuvre.getEl(activeElName)}  
         bind:activeIndex={activeIndex}        
       /></div>
 

@@ -1,24 +1,24 @@
 
 <script lang="ts">
-	import { flightdata, mname} from '$lib/stores';
+	import { fcj, activeManoeuvre, internals, activeResult} from '$lib/stores';
   import type { States} from '$lib/geometry';
   import Plot from 'svelte-plotly.js';
   import {coloured_ribbons, points, boxtrace} from '$lib/plots/traces';
   import {layout3d} from '$lib/plots/layouts';
 	
-
-  $: man = flightdata.mans[$mname];
-  
-  $: states = $man.internals!.flown.split();
+  $: manid = $fcj?.unique_names.indexOf($activeManoeuvre!);
+  $: man = $internals![manid!];
+ 
+  $: states = man!.flown.split();
 
   const get_points = (states: Record<string, States>) => {
-    return $man.internals!.mdef.info.centre_points.map(i=>{
+    return man!.mdef.info.centre_points.map(i=>{
       return Object.values(states)[i].data.at(-1).pos();
     })
   }
 
   const get_el_points = (states: Record<string, States>) => {
-    return $man.internals!.mdef.info.centred_els.map(i=>{
+    return man!.mdef.info.centred_els.map(i=>{
       let el = Object.values(states)[i[0]+1].data;
       return el[Math.round(i[1] * el.length)].pos();
     })
@@ -38,7 +38,7 @@
     <div class='cell head'>Mean Visibility</div>
     <div class='cell head'>Downgrade</div>
     
-    {#each Object.values($man.internals.scores.positioning.data) as pos}
+    {#each Object.values(man.scores.positioning.data) as pos}
                       
           <div class='cell'>{pos.name}</div>
           {#if pos.name=="distance"}
@@ -57,8 +57,8 @@
     <Plot 
       data={
         coloured_ribbons(states,2)
-        .concat(points(centre_points, $man.internals.mdef.info.centre_points.map(i=>'centre point '.concat(i.toString())) )) 
-        .concat(points(el_points, $man.internals.mdef.info.centred_els.map(i=>'centred el '.concat(i[0].toString()))))
+        .concat(points(centre_points, man.mdef.info.centre_points.map(i=>'centre point '.concat(i.toString())) )) 
+        .concat(points(el_points, man.mdef.info.centred_els.map(i=>'centred el '.concat(i[0].toString()))))
         .concat([boxtrace()])
       } 
       layout={layout3d}

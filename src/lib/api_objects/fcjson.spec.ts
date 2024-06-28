@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {FCJson, FCJData, FCJParams} from '$lib/fcjson';
+import {FCJson, FCJData, FCJParams} from '$lib/api_objects/fcjson';
 import {  Man } from "./api_objects/mandata";
 import fcjson from '$lib/test_data/manual_F3A FAI_F25_24_06_02_00000094.json';
 import {State, Point} from '$lib/geometry';

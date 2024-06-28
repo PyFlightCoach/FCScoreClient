@@ -1,8 +1,7 @@
 <script lang="ts">
-	import {flightdata} from '$lib/stores';
+	import {fcj} from '$lib/stores';
   import ManSummary from './ManSummary.svelte';
 
-  let mannames = flightdata.mannames;
   
 </script>
 
@@ -15,10 +14,11 @@
   <div>Intra</div>
   <div>Inter</div>
   <div>Position</div>
-  {#each Object.keys($mannames) as mn}
-    <ManSummary manname={mn}/>
-  {/each}
-
+  {#if $fcj}
+    {#each $fcj.unique_names.slice(1,-1) as mn}
+      <ManSummary manname={mn}/>
+    {/each}
+  {/if}
 </div>
 
 <style>

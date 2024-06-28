@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {flightdata} from '$lib/stores';
+  import {fcj, activeResult, fa_version, difficulty, truncate} from '$lib/stores';
   import AnalysisSummary from './AnalysisSummary.svelte';
 
-  let mannames = flightdata.mannames;
+  $: scores = $activeResult?.get_scores($difficulty, $truncate);
 
-  $: total = Object.values($mannames).reduce((a, b) => a + b, 0);
+  $: total = scores?.map((v, i)=>v!.score.total * $fcj!.mans[i].k).reduce((a, b) => a + b, 0);
  
 </script>
 
 <div id='parent'>
   <div style='grid-column:2;'><AnalysisSummary/></div>
-  <h2>Total Score = {total.toFixed(1)}</h2>  
+  <h2>Total Score = {total ? total.toFixed(1) : '---'}</h2>  
 </div>
 
 <style>
