@@ -15,8 +15,7 @@ export default {
 		}),
 		paths: {
 				base: process.env.NODE_ENV === 'production' ? '/PyFlightCoach/FCScoreClient' : '',
-		}
-
-
+		},
+		version: {name: process.env.npm_package_version}
 	}
 };

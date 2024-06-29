@@ -241,7 +241,6 @@ export class FCJson {
       fcs_scores: this.fcs_scores,
       mans: this.mans,
       data: this.data,
-      jhash: this.jhash,
     }
   }
 

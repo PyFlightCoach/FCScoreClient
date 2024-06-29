@@ -3,7 +3,7 @@
   import { A } from 'flowbite-svelte';
   import {base} from '$app/paths';
   import {goto} from '$app/navigation';
-  import {PUBLIC_VERSION} from '$env/static/public';
+  import { version, dev } from '$app/environment';
   import {fa_version, server_version, getVersion} from '$lib/stores';
  
   
@@ -23,7 +23,7 @@
     <div>WIP example of automatic judging for precision aerobatics based on Flight Coach JSON files</div>    
 
     <br/>
-    <div>Client:{PUBLIC_VERSION || 'next'}</div>
+    <div>Client:{version || 'next'}</div>
     <div>Server:<button on:click={()=>getVersion()}>{$server_version}</button></div>
     <div>Library:<button on:click={()=>getVersion()}>{$fa_version}</button></div>
 
