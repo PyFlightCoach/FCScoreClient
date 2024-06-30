@@ -5,7 +5,8 @@ import { Internals } from '$lib/api_objects/mandata';
 import pkg from 'file-saver';
 import { browser } from "$app/environment"
 import _ from 'underscore';
-
+import {goto} from '$app/navigation';
+import {base} from '$app/paths';
 
 const { saveAs } = pkg;
 
@@ -57,7 +58,7 @@ export function clearFlight(target: string|null=null) {
   activeResult.set(undefined);
   activeManoeuvre.set(undefined);
   if (browser && target !== null) {
-    window.location.href = target;
+    goto(target || base);
   }
 };
 

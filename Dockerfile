@@ -1,7 +1,11 @@
-FROM node:22-alpine
-WORKDIR /app
-EXPOSE 5173
+FROM node:alpine as build-deps
+WORKDIR /usr/src/app
 COPY . .
 ARG TAG
 RUN npm install
-ENTRYPOINT ["npm", "run", "dev" , "--", "--host"]
+RUN npm run build
+
+FROM nginx:1.27-alpine
+COPY --from=build-deps /usr/src/app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
