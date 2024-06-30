@@ -6,7 +6,7 @@ https://pyflightcoach.github.io/FCScoreClient/
 
 you can run the new server directly on your machine from docker hub:
 ```bash
-    docker run --rm -p 5000:5000 --name=fcs_server thomasdavid/fcs-server:v0.1.0
+    docker run --rm -p 5000:5000 --name=fcs_server thomasdavid/fcs-server:latest
 ```
 
 You can now see API documentation once the server is running by visiting:
