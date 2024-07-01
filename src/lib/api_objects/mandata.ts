@@ -27,6 +27,9 @@ export class Internals{
     );
   }
 
+  static async parse_example(name: string) {
+    return Internals.parse(await (await fetch('/example/' + name + '.json')).json());
+  }
 
   update (
     mdef: ManDef | null = null, flown: States | null = null,

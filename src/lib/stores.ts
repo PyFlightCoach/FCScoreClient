@@ -128,13 +128,27 @@ export async function analyseList(names: string[], force=false, optim: boolean|n
   })
 }
 
+export async function loadExample() {
+  
+  fcj.set(FCJson.parse(await (await fetch('/example/example_p25.json')).json()));
+  direction.set(1);
+  const _fcj = get(fcj)!;
+  activeResult.set(_fcj.fcs_scores[_fcj.fcs_scores.length-1]);
+  internals.set(Array(_fcj.mans.length));
+  _fcj.unique_names.forEach((name, i) => {
+    Internals.parse_example(name).then((data) => {
+      internals.update(v=>{v![i]=data;return v;});
+    });
+  });
+
+}
+
 export async function exportFCJ() {
   saveAs(
     new Blob([JSON.stringify(get(fcj)!.export_data())], 
     {type: 'application/json'}), 
     get(fcj)!.name
   );
-  
 }
 
 

@@ -3,7 +3,7 @@
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem,
     DropdownDivider, Helper, NavHamburger, Checkbox, Radio,
   } from 'flowbite-svelte'
-  import {fcj, clearFlight, navitems, optimise, activeManoeuvre, activeResult,
+  import {fcj, clearFlight, navitems, optimise, activeManoeuvre, activeResult, loadExample,
     analyseList, mouse, server, long_output, exportFCJ, getVersion, difficulty, truncate} from '$lib/stores';
   import { base } from '$app/paths'
   import {goto} from '$app/navigation';
@@ -20,6 +20,9 @@
     $long_output = localStorage.getItem('long_output') ? localStorage.getItem('long_output') === 'true' : false;
   })
 
+  let oddopen=false;
+  let fddopen=false;
+  
 </script>
 
 
@@ -48,7 +51,7 @@
 
       <NavUl {hidden}>
         <NavLi class="cursor-pointer">Options</NavLi>
-        <Dropdown class="w-30 z-20">
+        <Dropdown bind:open={oddopen} class="w-30 z-20">
           <DropdownItem href='{base}/server'>Analysis Server</DropdownItem>
           <DropdownItem><Checkbox bind:checked={$long_output}>Long Output</Checkbox></DropdownItem>
           <DropdownItem><Checkbox bind:checked={$optimise}>Optimise Alignment</Checkbox></DropdownItem>
@@ -70,7 +73,7 @@
           </Dropdown>
         {/if} 
 
-        <NavLi class="cursor-pointer">Flight</NavLi>
+        <NavLi bind:open={fddopen} class="cursor-pointer">Flight</NavLi>
         <Dropdown class="w-44 z-20">
           <DropdownItem on:click={()=>{clearFlight(base + '/upload')}}>{$fcj ? 'clear' : 'load'}</DropdownItem>
           {#if $fcj}
@@ -94,7 +97,7 @@
             {/each}
 
           {:else}
-            <DropdownItem href={base + '/analysis'} data-sveltekit-preload-data="tap">example</DropdownItem>
+            <DropdownItem on:click={()=>{fddopen=false;loadExample();}} data-sveltekit-preload-data="tap">example</DropdownItem>
           {/if} 
         </Dropdown> 
         <NavLi id='info' class="cursor-pointer" href="https://pfcdocumentation.readthedocs.io/fcscore/index.html" target="_blank">Info</NavLi>
