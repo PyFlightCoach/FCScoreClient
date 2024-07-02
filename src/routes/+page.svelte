@@ -30,27 +30,25 @@
     <br/>
     <br/>
     <div class='text'>
-      FCScore consists of this web interface and an analysis server. 
-      At the moment you need to run the analysis server on your computer, 
-      but you can load an <A on:click={loadExample}>example</A> flight without it.
-    </div>
-    <br/>
-    <div class='text'>
-      To run the analysis server first install <A target="_blank" href='https://www.docker.com/products/docker-desktop/'>Docker</A> and start it running,
-      then run the following command in a terminal:
-    </div>
-    <br/>
-    <div class='terminal'>docker run -p 5000:5000 thomasdavid/fcs-server:latest</div>
-    <br/>
-    <div class='text'>
-      This will download the latest version of the analysis server and start it running on your computer.
-      Refresh this page and the Server and Library version numbers above should be populated. 
-    </div>
-    <br/>
-    <div class='text'>
       FCScore is still in development, but it already covers most of the judging criteria in the F3A sporting code and 
       it should work for any of the sequences available as templates in the Flight Coach Plotter. 
     </div>
+    <br/>
+    <div class='text'>
+      The program consists of this web interface and an analysis server.
+      We have a public analysis server running in the UK, but it could get very slow especially at busy times.
+      For a better experience and to reduce the load on our server you can run the analysis server on your computer.
+      To do this first install <A target="_blank" href='https://www.docker.com/products/docker-desktop/'>Docker</A> and start it running,
+      then run the following command in a terminal:
+    </div>
+    <br/>
+    <div class='terminal'>docker run --rm -p 5000:5000 thomasdavid/fcs-server:latest</div>
+    <br/>
+    <div class='text'>
+      This will download the latest version of the server and start it running.
+      You can then select the local analysis server under the Options menu.
+    </div>
+    <br/>
 
 
     

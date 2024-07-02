@@ -1,9 +1,9 @@
 <script lang="ts">
   import '../app.postcss';
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem,
-    DropdownDivider, Helper, NavHamburger, Checkbox, Radio,
+    DropdownDivider, Helper, NavHamburger, Checkbox, Radio, Input
   } from 'flowbite-svelte'
-  import {fcj, clearFlight, navitems, optimise, activeManoeuvre, activeResult, loadExample,
+  import {fcj, clearFlight, navitems, optimise, activeManoeuvre, activeResult, loadExample, custom_server,
     analyseList, mouse, server, long_output, exportFCJ, getVersion, difficulty, truncate} from '$lib/stores';
   import { base } from '$app/paths'
   import {goto} from '$app/navigation';
@@ -13,12 +13,29 @@
   let selectedResult: string;
 	$: selectedResult = $activeResult?.fa_version || 'no result selected';
   $: $difficulty = Math.round($difficulty)
+  let active_server = 'UK';
+  
   onMount(()=>{
-    getVersion();
+    
     $server = localStorage.getItem('server') || 'http://localhost:5000';
+    
+    active_server = {
+      'http://localhost:5000': 'local',
+      'https://madeupmodels.com:5010': 'UK'
+    }[$server] || 'custom';
+
     $optimise = localStorage.getItem('optimise') === 'true';
+
     $long_output = localStorage.getItem('long_output') ? localStorage.getItem('long_output') === 'true' : false;
   })
+
+  $: $server = {
+    local: 'http://localhost:5000',
+    UK: 'https://madeupmodels.com:5010',
+    custom: $custom_server
+  }[active_server]!;
+
+  $: if ($server) {getVersion()}
 
   let oddopen=false;
   let fddopen=false;
@@ -31,9 +48,7 @@
   <div>
     <!-- svelte-ignore missing-declaration -->
     <Navbar let:hidden let:toggle>
-      <NavBrand href={base + '/'}>
-        FCScore
-      </NavBrand>
+      <NavBrand href={base + '/'}>FCScore</NavBrand>
       
       <NavHamburger on:click={toggle} />
 
@@ -51,11 +66,19 @@
 
       <NavUl {hidden}>
         <NavLi class="cursor-pointer">Options</NavLi>
-        <Dropdown bind:open={oddopen} class="w-30 z-20">
-          <DropdownItem href='{base}/server'>Analysis Server</DropdownItem>
+        <Dropdown bind:open={oddopen} class="w-80 z-20">
+          <Helper class="ps-6">Analysis Server</Helper>
+          <DropdownItem><Radio bind:group={active_server} value='local'>Local</Radio></DropdownItem>
+          <DropdownItem><Radio bind:group={active_server} value='UK'>UK</Radio></DropdownItem>
+          <DropdownItem><Radio bind:group={active_server} value='custom'>
+            <Input type="url" disabled={active_server!='custom'} bind:value={$custom_server}/>
+          </Radio></DropdownItem>
+          <DropdownDivider/>
+          <Helper class="ps-6">Analysis Options</Helper>
           <DropdownItem><Checkbox bind:checked={$long_output}>Long Output</Checkbox></DropdownItem>
           <DropdownItem><Checkbox bind:checked={$optimise}>Optimise Alignment</Checkbox></DropdownItem>
           <DropdownDivider/>
+          <Helper class="ps-6">Results to Display</Helper>
           {#each [1,2,3] as diff }
             <DropdownItem><Radio bind:group={$difficulty} value={diff}>{['Easy', 'Medium', 'Hard'][diff - 1]}</Radio></DropdownItem>
           {/each}

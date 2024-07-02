@@ -20,6 +20,7 @@
         fr.onload = (event) => {
           $fcj = FCJson.parse(JSON.parse(event.target.result));
           $internals = Array($fcj.mans.length);
+          $direction = 0;
           serverFunc(
             'calculate_direction', 
             {
@@ -54,8 +55,10 @@
       <P>{warning_msg}</P>
     {/if}
     {#if $fcj}
-      {#if !$direction}
+      {#if $direction === undefined}
         <P>Unable to calculate direction</P>
+      {:else if $direction === 0}
+        <P>Calculating direction ...</P>
       {:else}
         <P>{$direction > 0 ? 'left to right' : 'right to left'}</P>
         <Button on:click={()=>goto(base + '/analysis')}>Continue</Button>

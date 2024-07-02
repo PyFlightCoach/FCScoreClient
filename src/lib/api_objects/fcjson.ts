@@ -24,9 +24,10 @@ export class ScheduleInfo {
 
 
 export class FCJMan {
+  k: number
   constructor (
     readonly name: string,
-    readonly k: number,
+    k: number,
     readonly id: string,
     readonly sp: number,
     readonly wd: number,
@@ -34,7 +35,7 @@ export class FCJMan {
     readonly stop: number,
     readonly sel: boolean,
     readonly background: string,
-  ) {}
+  ) {this.k = k;}
 }
 
 export class FCJData {
@@ -159,6 +160,14 @@ export class FCSResult {
   }
   
 }
+export const k_factors: Record<string, number[]> = {
+  A25:[0,3,2,4,3,4,3,4,2,3,2,5,3,3,3,4,3,3,0],
+  A23:[0,3,2,3,3,4,3,3,2,4,3,3,2,5,3,3,3,4,0],
+  P25:[0,3,2,5,3,4,3,4,3,5,2,5,4,3,3,4,3,5,0],
+  P23:[0,4,2,4,3,5,3,4,2,4,3,4,2,5,4,3,3,5,0],
+  F25:[0,4,3,4,4,5,3,5,4,5,3,5,3,4,3,6,4,5,0],
+  F23:[0,5,4,4,3,5,4,6,3,6,3,6,2,5,4,5,2,5,0],
+};
 
 
 export class FCJson {
@@ -190,13 +199,16 @@ export class FCJson {
     this.short_name = this.name.replace(/\.[^/.]+$/, "");
     this.sinfo = ScheduleInfo.from_fcj_sch(this.parameters.schedule);
     this.origin = new Origin(
-      this.parameters.originLat,
-      this.parameters.originLng,
-      this.parameters.originAlt,
-      this.parameters.rotation,
-      this.parameters.moveEast,
-      this.parameters.moveNorth
-    )
+      this.parameters.originLat, this.parameters.originLng, this.parameters.originAlt,
+      this.parameters.rotation, this.parameters.moveEast, this.parameters.moveNorth
+    );
+
+    if (Object.keys(k_factors).includes(this.sinfo.name)) {
+      this.mans.forEach((man: FCJMan, i: number)=>{
+        man.k = k_factors[this.sinfo.name][i];
+      });
+    }
+
   }
 
   static parse(data: FCJson) {
