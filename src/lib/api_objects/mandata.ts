@@ -3,7 +3,7 @@ import { Manoeuvre } from '$lib/api_objects/manoeuvre';
 import { ManDef } from '$lib/api_objects/mandef';
 import { ManoeuvreResult } from '$lib/api_objects/scores';
 import _ from 'underscore';
-
+import {base} from '$app/paths';
 
 
 export class Internals{
@@ -28,7 +28,7 @@ export class Internals{
   }
 
   static async parse_example(name: string) {
-    return Internals.parse(await (await fetch('/example/' + name + '.json')).json());
+    return Internals.parse(await (await fetch(`${base}/example/${name}.json`)).json());
   }
 
   update (

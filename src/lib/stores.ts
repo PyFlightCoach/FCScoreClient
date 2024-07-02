@@ -132,7 +132,7 @@ export async function analyseList(names: string[], force=false, optim: boolean|n
 
 export async function loadExample() {
   
-  fcj.set(FCJson.parse(await (await fetch('/example/example_p25.json')).json()));
+  fcj.set(FCJson.parse(await (await fetch(`${base}/example/example_p25.json`)).json()));
   direction.set(1);
   const _fcj = get(fcj)!;
   activeResult.set(_fcj.fcs_scores[_fcj.fcs_scores.length-1]);
