@@ -3,8 +3,9 @@
   import { Navbar, NavBrand, NavLi, NavUl, Dropdown, DropdownItem,
     DropdownDivider, Helper, NavHamburger, Checkbox, Radio, Input
   } from 'flowbite-svelte'
-  import {fcj, clearFlight, navitems, optimise, activeManoeuvre, activeResult, loadExample, custom_server,
-    analyseList, mouse, server, long_output, exportFCJ, getVersion, difficulty, truncate} from '$lib/stores';
+  import {fcj, clearFlight, navitems, optimise, activeManoeuvre, 
+    activeResult, loadExample, custom_server, analyseList, mouse, 
+    server, long_output, exportFCJ, getVersion, difficulty, truncate} from '$lib/stores';
   import { base } from '$app/paths'
   import {goto} from '$app/navigation';
   import { page } from '$app/stores';  
@@ -42,7 +43,9 @@
   
 </script>
 
-
+<svelte:head>
+    <title>{$fcj ? `${$fcj.sinfo.name} ${$fcj.short_name.slice(-4)}` : 'FCScore' }</title>
+</svelte:head>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div id="parent" on:mousemove={(event)=>{$mouse = {x: event.clientX, y: event.clientY}}} >
   <div>
