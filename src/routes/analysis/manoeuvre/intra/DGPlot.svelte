@@ -5,12 +5,10 @@
   export let result: Result;
   export let element: Record<string, any>;
   export let activeIndex: null|number = null;
-
+  export let downgrade: Record<string, any>;
   $: plotIndex = activeIndex == null ? 0 : activeIndex;
 
-  $: downgrade = element.scoring[result.name];
-  $: kind = downgrade.criteria.kind
-
+  $: kind = downgrade?.criteria.kind || 'single';
   let scale:number=1;
   $: {
     if ((kind == 'Single') ||  (kind == 'ContAbs')) {

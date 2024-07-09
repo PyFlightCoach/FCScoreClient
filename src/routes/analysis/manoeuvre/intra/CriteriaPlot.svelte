@@ -5,9 +5,8 @@
   import {criteriaInfo} from '$lib/plots/traces';
   
   export let result: Result;
-  export let element: Record<string, any>;
+  export let downgrade: Record<string, any>;
 
-  $: downgrade = element.scoring[result.name];
   $: b0 = (downgrade.criteria.kind == 'InsideBound' || downgrade.criteria.kind == 'OutsideBound') ? downgrade.criteria.bound[0] : null;
   $: b1 = (downgrade.criteria.kind == 'InsideBound' || downgrade.criteria.kind == 'OutsideBound') ? downgrade.criteria.bound[1] : null;
   $: b = (downgrade.criteria.kind == 'MaxBound' || downgrade.criteria.kind == 'MinBound') ? downgrade.criteria.bound : null;

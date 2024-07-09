@@ -28,7 +28,21 @@
 
   $: showintra = activeElName != null && activeCriteria != null  && activeCriteria != 'Total';
   
-  
+
+  function getDG(eln: string|null, critn: string|null) {
+    let ocrit;
+    if (eln) {
+      man?.mdef.eds[eln].dgs.forEach((crit: Record<string, any>) => {
+      if (critn==crit.display_name) {
+        ocrit = crit;
+      }
+    });
+    }
+    return ocrit;
+  }
+
+  $: dg = getDG(activeElName, activeCriteria);
+
 </script>
 
 
@@ -63,20 +77,21 @@
             {#if Object.keys(element).indexOf('roll') >=0}<p>roll = {(element.roll * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
             {#if Object.keys(element).indexOf('angle') >=0}<p>angle = {(element.angle * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
           {/if}          
-          <p>downgrade = {man.scores.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
-          <p>{activeIndex}</p>  
+          <p>downgrade = {man.scores?.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
         </div>
-        
-        <CriteriaPlot
-          result={man.scores.intra.data[activeElName].data[activeCriteria]}
-          element={man.manoeuvre.getEl(activeElName)}
-        />
+        {#if dg}
+          <CriteriaPlot
+            result={man.scores.intra.data[activeElName].data[activeCriteria]}
+            downgrade={dg}
+          />
+        {/if}
         
       </div>  
       <div class='plot fullwidth'><DGPlot 
         result={man.scores.intra.data[activeElName].data[activeCriteria]}
         element={man.manoeuvre.getEl(activeElName)}  
-        bind:activeIndex={activeIndex}        
+        bind:activeIndex={activeIndex}
+        downgrade={dg}
       /></div>
 
     {/if}

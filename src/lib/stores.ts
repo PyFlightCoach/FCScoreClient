@@ -104,7 +104,7 @@ export async function analyseManoeuvre(name: string, force: boolean = false, opt
       );
       
       fcj.update(v=>{
-        v?.add_result(get(fa_version), name, FCJManResult.parse(res));
+        v?.add_result(res.fa_version, name, FCJManResult.parse(res));
         return v;
       });
 
