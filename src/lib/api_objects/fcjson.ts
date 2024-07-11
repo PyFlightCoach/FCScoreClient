@@ -227,7 +227,7 @@ export class FCJson {
     return this.data.slice(this.mans[i].start, this.mans[i].stop);
   }
 
-  get_result(version: string) {
+  get_result(version: string | undefined) {
     return this.fcs_scores.find((v: FCSResult) => v.fa_version === version);
   }
 

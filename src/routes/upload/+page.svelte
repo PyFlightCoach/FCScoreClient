@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Fileupload, Label, Button, P } from 'flowbite-svelte'
-  import { fcj, direction, clearFlight, internals, activeResult} from '$lib/stores.js';
+  import { fcj, direction, clearFlight, internals, selectedResult} from '$lib/stores.js';
   import { goto } from '$app/navigation';
   import { base } from '$app/paths'
   import { Alert } from 'flowbite-svelte';
@@ -30,7 +30,7 @@
             'POST'
           ).then(res=>$direction=res);
           if ($fcj.fcs_scores.length > 0) {
-            $activeResult = $fcj.fcs_scores[$fcj.fcs_scores.length-1];
+            $selectedResult = $fcj.fcs_scores[$fcj.fcs_scores.length-1].fa_version;
           }
         };
         console.log(file);

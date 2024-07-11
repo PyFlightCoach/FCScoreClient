@@ -1,7 +1,5 @@
-import { Man } from '$lib/api_objects/mandata';
-import {server, difficulty, truncate} from '$lib/stores';
+import {server} from '$lib/stores';
 import {get} from 'svelte/store';
-import type { FCJData, FCJson, Origin} from './api_objects/fcjson';
 
 export async function serverFunc(func_name: string, kwargs: Record<string, any>={}, method: string='POST') {
   

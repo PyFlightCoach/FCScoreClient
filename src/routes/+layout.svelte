@@ -4,39 +4,26 @@
     DropdownDivider, Helper, NavHamburger, Checkbox, Radio, Input
   } from 'flowbite-svelte'
   import {fcj, clearFlight, navitems, optimise, activeManoeuvre, 
-    activeResult, loadExample, custom_server, analyseList, mouse, 
-    server, long_output, exportFCJ, getVersion, difficulty, truncate} from '$lib/stores';
+    loadExample, custom_server, analyseList, mouse, 
+    server, long_output, exportFCJ, difficulty, truncate,
+    selectedResult
+  } from '$lib/stores';
   import { base } from '$app/paths'
   import {goto} from '$app/navigation';
   import { page } from '$app/stores';  
-	import { onMount } from 'svelte';
   	
-  let selectedResult: string;
-	$: selectedResult = $activeResult?.fa_version || 'no result selected';
   $: $difficulty = Math.round($difficulty)
-  let active_server = 'UK';
-  
-  onMount(()=>{
-    
-    $server = localStorage.getItem('server') || 'http://localhost:5000';
-    
-    active_server = {
+  let active_server = {
       'http://localhost:5000': 'local',
       'https://madeupmodels.com:5010': 'UK'
     }[$server] || 'custom';
-
-    $optimise = localStorage.getItem('optimise') === 'true';
-
-    $long_output = localStorage.getItem('long_output') ? localStorage.getItem('long_output') === 'true' : false;
-  })
+  
 
   $: $server = {
     local: 'http://localhost:5000',
     UK: 'https://madeupmodels.com:5010',
     custom: $custom_server
   }[active_server]!;
-
-  $: if ($server) {getVersion()}
 
   let oddopen=false;
   let fddopen=false;
@@ -119,7 +106,7 @@
             <DropdownDivider/>
             <Helper>Available Analyses</Helper>
             {#each $fcj.fcs_scores as res}
-              <DropdownItem><Radio bind:group={selectedResult} value={res.fa_version} on:click={()=>{$activeResult=res}}>{res.fa_version}</Radio></DropdownItem>
+              <DropdownItem><Radio bind:group={$selectedResult} value={res.fa_version}>{res.fa_version}</Radio></DropdownItem>
             {/each}
 
           {:else}

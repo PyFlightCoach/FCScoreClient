@@ -9,6 +9,7 @@ import {base} from '$app/paths';
 export class Internals{
 
   constructor (
+    readonly fa_version: string,
     readonly mdef: ManDef, readonly flown: States,
     readonly manoeuvre: Manoeuvre | null = null, readonly template: States | null = null, 
     readonly corrected: Manoeuvre | null = null, readonly corrected_template: States | null = null, 
@@ -17,6 +18,7 @@ export class Internals{
 
   static parse(data: Record<string, any>) {
     return new Internals(
+      data.fa_version,
       ManDef.parse(data.mdef),
       States.parse(data.flown),
       'manoeuvre' in data ? Manoeuvre.parse(data.manoeuvre) : null,
@@ -28,16 +30,19 @@ export class Internals{
   }
 
   static async parse_example(name: string) {
-    return Internals.parse(await (await fetch(`${base}/example/${name}.json`)).json());
+    const data = await (await fetch(`${base}/example/${name}.json`)).json()
+    return Internals.parse(data);
   }
 
   update (
+    fa_version: string | null,
     mdef: ManDef | null = null, flown: States | null = null,
     manoeuvre: Manoeuvre | null = null, template: States | null = null,
     corrected: Manoeuvre | null = null, corrected_template: States | null = null,
     scores: ManoeuvreResult | null = null
   ) {
     return new Internals(
+      fa_version || this.fa_version,
       mdef === null ? this.mdef : mdef,
       flown === null ? this.flown : flown,
       manoeuvre === null ? this.manoeuvre : manoeuvre,

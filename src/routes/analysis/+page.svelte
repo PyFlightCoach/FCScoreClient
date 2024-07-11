@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {fcj, activeResult, fa_version, difficulty, truncate} from '$lib/stores';
+  import {fcj, activeResult, difficulty, truncate} from '$lib/stores';
   import AnalysisSummary from './AnalysisSummary.svelte';
 
   $: scores = $activeResult?.get_scores($difficulty, $truncate);

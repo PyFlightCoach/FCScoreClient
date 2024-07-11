@@ -1,6 +1,6 @@
 
 <script lang="ts">
-	import { fcj, activeManoeuvre, internals, activeResult} from '$lib/stores';
+	import { fcj, activeManoeuvre, internals} from '$lib/stores';
   import type { States} from '$lib/geometry';
   import Plot from 'svelte-plotly.js';
   import {coloured_ribbons, points, boxtrace} from '$lib/plots/traces';

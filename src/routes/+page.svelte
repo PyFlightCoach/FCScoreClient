@@ -3,17 +3,12 @@
   import {base} from '$app/paths';
   import {goto} from '$app/navigation';
   import { version, dev } from '$app/environment';
-  import {fa_version, server_version, getVersion, loadExample} from '$lib/stores';
- 
-  
+  import {fa_version, server_version, loadExample} from '$lib/stores';  
   import {fcj} from '$lib/stores';
 
-  
   $: if ($fcj != null) {
     goto(base + '/analysis');
-  }
-
-  
+  } 
 
 </script>
 
@@ -24,8 +19,8 @@
 
     <br/>
     <div>Client:{version || 'next'}</div>
-    <div>Server:<button on:click={()=>getVersion()}>{$server_version}</button></div>
-    <div>Library:<button on:click={()=>getVersion()}>{$fa_version}</button></div>
+    <div>Server:<button>{$server_version}</button></div>
+    <div>Library:<button>{$fa_version}</button></div>
     <A href="https://github.com/PyFlightCoach/FCScore/blob/main/changelog.md">Version Info</A>
     <br/>
     <br/>

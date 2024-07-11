@@ -8,11 +8,11 @@
 
   export let manname: string;
 
-  $: manid = $fcj?.unique_names.indexOf(manname);
+  $: manid = $fcj!.unique_names.indexOf(manname);
 
   $: colours = [yellColors, tealsColrs, redsColors][$difficulty-1];
   
-  $: scores = $activeResult?.get_scores($difficulty, $truncate)[manid!]?.score;
+  $: scores = $activeResult?.get_scores($difficulty, $truncate)[manid]?.score;
 
   $: intra = scores?.intra || 0;
   $: inter = scores?.inter || 0;
