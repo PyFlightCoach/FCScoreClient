@@ -31,7 +31,7 @@
 
   function getDG(eln: string|null, critn: string|null) {
     let ocrit;
-    if (eln) {
+    if (eln && Object.keys(man?.mdef.eds).includes(eln)) {
       man?.mdef.eds[eln].dgs.forEach((crit: Record<string, any>) => {
       if (critn==crit.display_name) {
         ocrit = crit;
