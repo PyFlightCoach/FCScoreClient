@@ -101,7 +101,9 @@ export async function analyseManoeuvre(name: string, force: boolean = false, opt
       props.sinfo = _fcj!.sinfo;
       props.site = _fcj!.origin;
       props.data = _fcj!.get_mandata(manid);
-      props.els = _fcj.get_result(source_result!)?.manresults[manid]?.els;
+      if (_fcj.get_result(source_result!)?.manresults[manid]?.els) {
+        props.els = _fcj.get_result(source_result!)?.manresults[manid]?.els;
+      }
       
     }
 
