@@ -3,7 +3,7 @@ import {get} from 'svelte/store';
 
 export async function serverFunc(func_name: string, kwargs: Record<string, any>={}, method: string='POST') {
   
-  let msg = {
+  let msg: Record<string, any> = {
     method, 
     headers: {"Content-Type": "application/json"},
     mode: "cors", 
@@ -16,15 +16,15 @@ export async function serverFunc(func_name: string, kwargs: Record<string, any>=
 
   try {
     const response = await fetch(`${spath}/${func_name}` , msg);
-    const data = await response.json();
     if (response.ok) {
-      return data;
+      return await response.json();
     } else {
-      console.log(data);
+      console.log(response.statusText);
+      console.log(response);
       return {};
     }
   } catch (e: any) {
-    console.log(e);
+    console.log( e);
     return e.message;
   }
   

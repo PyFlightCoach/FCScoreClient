@@ -1,7 +1,8 @@
 
 <script lang="ts">
 
-  import {activeManoeuvre, analyseManoeuvre, activeResult, running, difficulty, truncate, fcj} from '$lib/stores';
+  import {activeManoeuvre, analyseManoeuvre, activeResult, running, 
+    difficulty, truncate, fcj, optimise, long_output} from '$lib/stores';
   import {colscale, redsColors, tealsColrs, yellColors} from '$lib/plots/styling';
   import { base } from '$app/paths';
   import {goto} from '$app/navigation';
@@ -25,6 +26,10 @@
     goto(base + '/analysis/manoeuvre/'+page);
   }
 
+  function runMan() {
+    analyseManoeuvre(manname, true, $optimise, $long_output, $activeResult?.fa_version);
+  }
+
 </script>
 
 <div>{manid}</div>
@@ -42,18 +47,22 @@
   <div>-</div>
 {/if}
 
+{#if scores}
+  <button 
+    on:click={()=>activate_man(manname, '')} 
+    data-sveltekit-preload-data="tap"
+    style:background-color={colscale((10 - score) * k, 20, colours)}
+  >{score.toFixed(1)}</button>
+{:else}
+  <div>-</div>
+{/if} 
 
-  {#if $running.includes(manname)}
-    <div>Busy</div>
-  {:else if scores}
-    <button 
-      on:click={()=>activate_man(manname, '')} 
-      data-sveltekit-preload-data="tap"
-      style:background-color={colscale((10 - score) * k, 20, colours)}
-    >{score.toFixed(1)}</button>
-  {:else}
-    <button color='light' style='width:200px' on:click={()=> {analyseManoeuvre(manname);}}>Run Analysis</button>
-  {/if} 
+
+{#if $running.includes(manname)}
+  <div>Busy</div>
+{:else}
+  <button color='light' style='width:200px' on:click={runMan}>Run</button>
+{/if} 
 
 
 

@@ -91,21 +91,22 @@ export async function analyseManoeuvre(name: string, force: boolean = false, opt
       truncate: 'both'
     };
 
+    let method: string = 'run_short_manoeuvre';
     if (internal_data && internal_data.fa_version == source_result) {
       props.mdef = internal_data.mdef;
       props.flown = internal_data.flown.data;
+
+      method = 'run_long_manoeuvre';
     } else {
       props.sinfo = _fcj!.sinfo;
       props.site = _fcj!.origin;
       props.data = _fcj!.get_mandata(manid);
-      if (source_result) {props.els = _fcj.get_result(source_result)?.manresults[manid]?.els;}
+      props.els = _fcj.get_result(source_result!)?.manresults[manid]?.els;
+      
     }
 
     try {
-      const res = await serverFunc(
-        internal_data ? 'run_long_manoeuvre': 'run_short_manoeuvre',
-        props
-      );
+      const res = await serverFunc(method,props);
       
       fcj.update(v=>{
         v?.add_result(res.fa_version || get(fa_version), name, FCJManResult.parse(res));
