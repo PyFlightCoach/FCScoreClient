@@ -106,18 +106,19 @@ export const points = (pos: Point[], text: string[] | null = null): Record<strin
 export const downgrade_info = (result: Record<string, any>, scale = 1.0) => {
   let info: string[] = [];
   for (let i = 0; i < result.keys.length; i++) {
+    let k = result.sample_keys[result.keys[i]];
     info.push(
       'measurement = ' +
-        (result.measurement.value[result.keys[i]] * scale).toFixed(2) +
+        (result.measurement.value[k] * scale).toFixed(2) +
         '<br>error = ' +
         (result.errors[i] * scale).toFixed(1).toString() +
         '<br>visibility = ' +
-        result.measurement.visibility[result.keys[i]].toFixed(2).toString() +
+        result.measurement.visibility[k].toFixed(2).toString() +
         '<br>downgrade = ' +
         result.dgs[i].toFixed(2).toString()
     );
   }
-  const x = linspace(0, result.sample.length -1, result.sample.length);
+  const x = linspace(0, result.measurement.value.length -1, result.measurement.value.length);
   return [
     {
       type: 'scatter',
@@ -145,7 +146,7 @@ export const downgrade_info = (result: Record<string, any>, scale = 1.0) => {
     },
     {
       type: 'scatter',
-      x,
+      x: result.sample_keys,
       y: result.sample.map((p) => {
         if (p != null) {
           return p * scale;
@@ -160,7 +161,7 @@ export const downgrade_info = (result: Record<string, any>, scale = 1.0) => {
     },
     {
       type: 'scatter',
-      x: result.keys,
+      x: result.keys.map((k) => result.sample_keys[k]),
       y: result.keys.map((k) => result.sample[k] * scale),
       text: result.dgs.map((dg) => dg.toFixed(3)),
       hovertext: info,

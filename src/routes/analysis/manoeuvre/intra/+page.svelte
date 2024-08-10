@@ -29,19 +29,7 @@
   $: showintra = activeElName != null && activeCriteria != null  && activeCriteria != 'Total';
   
 
-  function getDG(eln: string|null, critn: string|null) {
-    let ocrit;
-    if (eln && Object.keys(man?.mdef.eds).includes(eln)) {
-      man?.mdef.eds[eln].dgs.forEach((crit: Record<string, any>) => {
-      if (critn==crit.display_name) {
-        ocrit = crit;
-      }
-    });
-    }
-    return ocrit;
-  }
-
-  $: dg = getDG(activeElName, activeCriteria);
+  $: dg = man?.mdef.getDG(activeElName, activeCriteria);
 
 </script>
 
@@ -68,15 +56,12 @@
     {#if showintra}  
       <div class='plot split'>
         <div>
-          {#if activeElName == 'entry_line'}
-            <p>The entry line is assessed for roll angle and track only.</p>
-          {:else}
             <p>{activeCriteria} downgrade for {element.kind} element {activeElName}</p>
             {#if Object.keys(element).indexOf('length') >=0}<p>length = {element.length.toFixed(0)} m</p>{/if}
             {#if Object.keys(element).indexOf('radius') >=0}<p>radius = {element.radius.toFixed(0)} m</p>{/if}
             {#if Object.keys(element).indexOf('roll') >=0}<p>roll = {(element.roll * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
             {#if Object.keys(element).indexOf('angle') >=0}<p>angle = {(element.angle * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
-          {/if}          
+          
           <p>downgrade = {man.scores?.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
         </div>
         {#if dg}
