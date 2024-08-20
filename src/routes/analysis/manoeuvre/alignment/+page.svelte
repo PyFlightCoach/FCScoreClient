@@ -79,6 +79,5 @@
 </div>
 
 <style>
-  #parent {position: relative;}
   #buttons {position: absolute; bottom: 0;right: 0;}
 </style>

@@ -22,7 +22,7 @@
   let layout = layout3d;
 
   const createModelTrace = (st: States|null, i: number|null) => {
-    if ((st != null) && i && (i<st.data.length)) {
+    if ((st != null) && (i<st.data.length)) {
       const fst = st.data[i];
       return colddraft.scale(scale).to_mesh3d(
         fst.pos(), fst.att(), {opacity: 1.0, hoverinfo: 'skip', name: 'fl model'}
@@ -44,7 +44,7 @@
     tp_model,
   ];
 
-  let player:NodeJS.Timeout;
+  let player;//:NodeJS.Timeout;
   
   const play = () => {
     player=setInterval(

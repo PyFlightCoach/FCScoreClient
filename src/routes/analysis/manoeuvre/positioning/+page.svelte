@@ -13,13 +13,13 @@
 
   const get_points = (states: Record<string, States>) => {
     return man!.mdef.info.centre_points.map(i=>{
-      return Object.values(states)[i].data.at(-1).pos();
+      return Object.values(states)[i-1].data.at(-1).pos();
     })
   }
 
   const get_el_points = (states: Record<string, States>) => {
     return man!.mdef.info.centred_els.map(i=>{
-      let el = Object.values(states)[i[0]+1].data;
+      let el = Object.values(states)[i[0]].data;
       return el[Math.round(i[1] * el.length)].pos();
     })
   }

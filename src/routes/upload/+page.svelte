@@ -78,11 +78,5 @@
     transform: translate(-50%, -50%);
   }
 
-  .container {
-    width: 100%; 
-    display:grid;  
-    align-content: start; 
-    justify-content: start;
-    grid-template-columns: repeat(4,1fr);
-  }
+
 </style>

@@ -21,34 +21,35 @@
   $: templates = man!.template!.split();
   
   let activeCriteria: null|string = null;
-  let activeElName: null|string = null;
+  let activeDGName: null|string = null;
   let activeIndex: null|number = 0;
 
-  $: element = man!.manoeuvre!.getEl(activeElName);
+  $: activeED = man?.mdef.getEd(activeDGName);
+  $: dg = activeED?.getDG(activeCriteria);
 
-  $: showintra = activeElName != null && activeCriteria != null  && activeCriteria != 'Total';
-  
+  $: element = man!.manoeuvre!.getEl(activeED?.name);
 
-  $: dg = man?.mdef.getDG(activeElName, activeCriteria);
+  $: showintra = activeDGName != null && activeCriteria != null  && activeCriteria != 'Total';
+  $: result = activeDGName && activeCriteria ? man.scores!.intra.data[activeDGName].data[activeCriteria] : undefined;
 
 </script>
 
 
 <div id='container'>
-  <ColouedTable data={summaries} bind:activeRow={activeElName} bind:activeCol={activeCriteria}/>  
+  <ColouedTable data={summaries} bind:activeRow={activeDGName} bind:activeCol={activeCriteria}/>  
 
   <div id='intra_summary'>
     <div class='plot' class:fullwidth={!showintra} class:fullheight={!showintra}> 
-      {#if activeElName}
+      {#if activeED}
         <PlotSec 
-          flst={states[activeElName]}
-          tpst={templates[activeElName]}
+          flst={states[activeED.name]}
+          tpst={templates[activeED.name]}
           bind:i={activeIndex}
         />
       {:else}
         <PlotDTW
           sts={states}
-          bind:activeEl={activeElName}
+          bind:activeEl={activeDGName}
         />
       {/if}
     </div>
@@ -56,27 +57,22 @@
     {#if showintra}  
       <div class='plot split'>
         <div>
-            <p>{activeCriteria} downgrade for {element.kind} element {activeElName}</p>
+            <p>{dg.name.replaceAll('_', ' ')} downgrade for {element.kind} element {activeDGName}</p>
             {#if Object.keys(element).indexOf('length') >=0}<p>length = {element.length.toFixed(0)} m</p>{/if}
             {#if Object.keys(element).indexOf('radius') >=0}<p>radius = {element.radius.toFixed(0)} m</p>{/if}
             {#if Object.keys(element).indexOf('roll') >=0}<p>roll = {(element.roll * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
             {#if Object.keys(element).indexOf('angle') >=0}<p>angle = {(element.angle * 180 / Math.PI).toFixed(0)} degrees</p>{/if}
           
-          <p>downgrade = {man.scores?.intra.data[activeElName].data[activeCriteria].total.toFixed(2)}</p>
+          <p>downgrade = {man.scores?.intra.data[activeDGName].data[activeCriteria].total.toFixed(2)}</p>
         </div>
         {#if dg}
-          <CriteriaPlot
-            result={man.scores.intra.data[activeElName].data[activeCriteria]}
-            downgrade={dg}
-          />
+          <CriteriaPlot {result} downgrade={dg}/>
         {/if}
         
       </div>  
       <div class='plot fullwidth'><DGPlot 
-        result={man.scores.intra.data[activeElName].data[activeCriteria]}
-        element={man.manoeuvre.getEl(activeElName)}  
+        {result}
         bind:activeIndex={activeIndex}
-        downgrade={dg}
       /></div>
 
     {/if}

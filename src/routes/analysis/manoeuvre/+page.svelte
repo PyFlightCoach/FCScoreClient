@@ -9,9 +9,6 @@
 
 <div id='container'>
   <div id='table'>
-
-    
-
     {#if score}
       {#each Object.entries(score.properties) as [key, value]}
         <div>{key}</div><div>{value}</div>

@@ -281,10 +281,15 @@ export class States {
 
     split() {
         let states: Record<string, States> = {};
+        let last_el = '';
         this.data.forEach((st) => {
             if (st.element in states) {
                 states[st.element].data.push(st);
             } else {
+                if (last_el != '') {
+                    states[last_el].data.push(st);
+                }
+                last_el = st.element;
                 states[st.element] = new States([st]);
             }
         });
