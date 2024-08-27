@@ -1,4 +1,5 @@
 import { parse_dict } from '$lib/arrays';
+import { includes } from 'underscore';
 import { Result } from './scores';
 
 export const Heights = ['BTM', 'MID', 'TOP'] as const;
@@ -88,14 +89,24 @@ export class Criteria {
 	constructor(
 		readonly lookup: Record<string, any>,
 		readonly kind: string,
-		readonly bound: number | number[] | undefined = undefined,
-		readonly cutoff: number | undefined = undefined,
+		readonly min_bound: number | undefined = undefined,
+		readonly max_bound: number | undefined = undefined,
 		readonly limit: number | undefined = undefined
 	) {}
 	static parse(data: Record<string, any>) {
-		return new Criteria(data.lookup, data.kind, data.bound, data.cutoff, data.limit);
+		return new Criteria(data.lookup, data.kind, data.min_bound, data.max_bound, data.limit);
 	}
 }
+
+
+export function split_arg_string(arg_string: string) {
+	const args = arg_string.split(',');
+	return Object.fromEntries(args.map((arg) => {
+		const [key, value] = arg.split(':');
+		return [key, Number(value)];
+	}));
+}
+
 
 export class DownGrade {
 	constructor(
@@ -107,29 +118,72 @@ export class DownGrade {
 		readonly display_name: string
 	) {}
 
-	description(result: Result) {
+
+	criteria_description(result: Result) {
 		let fac = result.scale();// result.measurement.unit == 'rad' ? 180 / Math.PI : 1;
 		let unit = result.measurement.unit.replace('rad', '°');
+		
 		switch (this.criteria.kind){
-			case 'Single': 
-				return `The ${this.selectors![0].substring(0, this.selectors![0].length - 2).replaceAll("_", " ")} value is downgraded.`;
-			case 'Limit': 
-				return `The ${this.selectors![0].substring(0, this.selectors![0].length - 2).replaceAll("_", " ")} value is downgraded if it exceeds ${(this.criteria.limit! * fac).toFixed(2)} ${unit}.`;
-			case 'Continuous': 
-				return 'All peaks in the absolute value of the sample are downgraded.';
-			case 'ContinuousValue': 
-				return 'All peaks and troughs are downgraded.';
-			case 'MaxBound': 
-				return `All values above ${(this.criteria.bound * fac).toFixed(2)} ${unit} are downgraded.`;
-			case 'MinBound': 
-				return `All values below ${(this.criteria.bound * fac).toFixed(2)} ${unit} are downgraded.`;
-			case 'InsideBound': 
-				return `All values below ${(this.criteria.bound[0] * fac).toFixed(2)} ${unit} or above ${(this.criteria.bound[1] * fac).toFixed(2)} ${unit} are downgraded.`;
-			case 'OutsideBound': 
-				return `All values between ${(this.criteria.bound[0] * fac).toFixed(2)} ${unit} and ${(this.criteria.bound[1] * fac).toFixed(2)} ${unit} are downgraded.`;
+			case 'Trough': 
+				return `The largest absolute value is downgraded based on its distance below ${(fac * this.criteria.limit!).toFixed(2)} ${unit}.`;
 			case 'Peak': 
-				return `The largest absolute value above ${(this.criteria.limit  * fac).toFixed(2)} ${unit} is downgraded.`;
+				return `The largest absolute value is downgraded based on its distance above ${(this.criteria.limit  * fac).toFixed(2)} ${unit}.`;
+			case 'Single': 
+				return `All values in the sample are downgraded.`;
+			case 'Limit': 
+				return `All values are downgraded based on the distance above ${(this.criteria.limit! * fac).toFixed(2)} ${unit}.`;
+			case 'Continuous': 
+				return `All peaks in the absolute value of the sample are downgraded based on the distance above the last trough or zero.`;
+			case 'ContinuousValue': 
+				return `All peaks and troughs are downgraded based on the distance from the last peak or trough.`;
+			case 'Bounded':
+				return `Regions of the sample below ${(this.criteria.min_bound! * fac).toFixed(2)} ${unit} or above ${(this.criteria.max_bound! * fac).toFixed(2)} ${unit} are downgraded.`;
 		  };
+	}
+
+	describe_selectors() {
+
+		let all=true;
+		const sels: string[] = this.selectors.reverse().map(v=>{
+			const method = v.match(/^[^(]+/);
+			const argmatch = v.match(/\(([^()]+)\)/);
+			const args = argmatch? split_arg_string(argmatch[1]) : {};
+	
+			switch (method![0]) {
+				case 'before_slowdown':
+				case 'after_slowdown':
+				case 'after_speedup':
+				case 'before_speedup':
+					const before = method![0].includes('before')? 'before' : 'after';
+					const increased = method![0].includes('speedup')? 'increased above' : 'reduced below';
+	
+					return `${before} the speed has ${increased} ${args.sp} m/s`;
+					
+				case 'autorot_break':
+					return `before the autorotation has rotated by ${(args.rot * 180 / Math.PI).toFixed(0)}°.`;
+				case 'autorot_recovery':
+					return `during the last ${(args.rot * 180 / Math.PI).toFixed(0)}° of autorotation`;
+				case 'autorotation':
+					return `${(args.brot * 180 / Math.PI).toFixed(0)}° from the start to ${(args.rrot * 180 / Math.PI).toFixed(0)}° before the end of the autorotation`;
+				case 'before_recovery':
+					return `before the last ${(args.rot * 180 / Math.PI).toFixed(0)}° of autorotation`;
+				case 'first':
+				case 'last':
+				case 'first_and_last':
+				case 'maximum':
+				case 'minimum':
+					all=false;
+					return `${method![0].replaceAll("_", " ")} value`;
+				case 'absmax':
+					all=false;
+					return `maximum absolute value`;
+				default:
+					return '';
+			}
+			
+		});
+	
+		return `${all? 'All values': 'The'} ${sels.join(' ')}`;
 	}
 
 

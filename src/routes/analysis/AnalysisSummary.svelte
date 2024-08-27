@@ -15,6 +15,7 @@
   <div>Inter</div>
   <div>Position</div>
   <div style:grid-row='1 / 3' style:grid-column=8></div>
+  <div style:grid-row='1 / 3' style:grid-column=9></div>
   {#if $fcj}
     {#each $fcj.unique_names.slice(1,-1) as mn}
       <ManSummary manname={mn}/>
@@ -27,7 +28,7 @@
 
   #parent {
     display: grid;
-    grid-template-columns: repeat(8, 1fr) ;
+    grid-template-columns: repeat(8, 1fr) auto ;
     align-items: center;
     height: 100%;
     width: 100%;

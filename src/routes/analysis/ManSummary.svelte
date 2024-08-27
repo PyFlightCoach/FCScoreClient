@@ -2,7 +2,7 @@
 <script lang="ts">
 
   import {activeManoeuvre, analyseManoeuvre, activeResult, running, 
-    difficulty, truncate, fcj, optimise, long_output} from '$lib/stores';
+    difficulty, truncate, fcj, optimise, long_output, runInfo} from '$lib/stores';
   import {colscale, redsColors, tealsColrs, yellColors} from '$lib/plots/styling';
   import { base } from '$app/paths';
   import {goto} from '$app/navigation';
@@ -64,8 +64,21 @@
   <button color='light' style='width:200px' on:click={runMan}>Run</button>
 {/if} 
 
+{#if $runInfo[manname]}
+  <div id='status'>{$runInfo[manname]}</div>
+{:else}
+  <div></div>
+{/if}
 
 
 <style>
   div {text-align: center;}
+
+  #status {
+    font-size: x-small;
+    font-weight: lighter;
+    justify-self: start;
+  }
 </style>
+
+

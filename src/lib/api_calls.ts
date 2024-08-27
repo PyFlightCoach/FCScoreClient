@@ -14,18 +14,12 @@ export async function serverFunc(func_name: string, kwargs: Record<string, any>=
   }
   let spath: string = get(server);
 
-  try {
-    const response = await fetch(`${spath}/${func_name}` , msg);
-    if (response.ok) {
-      return await response.json();
-    } else {
-      console.log(response.statusText);
-      console.log(response);
-      return {};
-    }
-  } catch (e: any) {
-    console.log( e);
-    return e.message;
+
+  const response = await fetch(`${spath}/${func_name}` , msg);
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw new Error(`${response.statusText}: ${(await response.json()).detail}`) ;
   }
   
 }
