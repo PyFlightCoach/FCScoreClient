@@ -25,8 +25,6 @@
     custom: $custom_server
   }[active_server]!;
 
-  let oddopen=false;
-  let fddopen=false;
   
 </script>
 
@@ -55,8 +53,13 @@
       </NavUl>
 
       <NavUl {hidden}>
+        {#if !$fcj}
+          <NavLi class="cursor-pointer" href={base + '/splitter'}>splitter</NavLi>
+        {/if}
+
+
         <NavLi class="cursor-pointer">Options</NavLi>
-        <Dropdown bind:open={oddopen} class="w-80 z-20">
+        <Dropdown class="w-80 z-20">
           <Helper class="ps-6">Analysis Server</Helper>
           <DropdownItem><Radio bind:group={active_server} value='local'>Local</Radio></DropdownItem>
           <DropdownItem><Radio bind:group={active_server} value='UK'>UK</Radio></DropdownItem>
@@ -86,7 +89,7 @@
           </Dropdown>
         {/if} 
 
-        <NavLi bind:open={fddopen} class="cursor-pointer">Flight</NavLi>
+        <NavLi class="cursor-pointer">Flight</NavLi>
         <Dropdown class="w-44 z-20">
           <DropdownItem on:click={()=>{clearFlight(base + '/upload')}}>{$fcj ? 'clear' : 'load'}</DropdownItem>
           {#if $fcj}
@@ -110,7 +113,7 @@
             {/each}
 
           {:else}
-            <DropdownItem on:click={()=>{fddopen=false;loadExample();}} data-sveltekit-preload-data="tap">example</DropdownItem>
+            <DropdownItem on:click={()=>{loadExample(); goto(base + '/upload')}} data-sveltekit-preload-data="tap">example</DropdownItem>
           {/if} 
         </Dropdown> 
         <NavLi id='info' class="cursor-pointer" href="https://pfcdocumentation.readthedocs.io/fcscore/index.html" target="_blank">Info</NavLi>

@@ -57,7 +57,7 @@
 				<p>select a Flight Coach json file or a FCScore Analysis json file</p>
 			{/if}
 		</Label>
-		<Fileupload on:change={readjson} />
+		<Fileupload on:change={readjson} accept='.json' />
 		{#if warning_msg}
 			<Alert>This file doesn't look like a FC json</Alert>
 			<P>{warning_msg}</P>
