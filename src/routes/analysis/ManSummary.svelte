@@ -78,6 +78,7 @@
     font-size: x-small;
     font-weight: lighter;
     justify-self: start;
+    white-space: nowrap;
   }
 </style>
 

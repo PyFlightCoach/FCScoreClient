@@ -255,9 +255,12 @@ export class States {
         } else {
             return new States(data.map(st => State.parse(st)))
         }
-        
-
     }
+
+    static parse_bin_data(xkf1) {
+
+        }
+
     pos () {return this.data.map(state => state.pos())}
     att () {return this.data.map(state => state.att())}
     vel () {return this.data.map(state => state.vel())}

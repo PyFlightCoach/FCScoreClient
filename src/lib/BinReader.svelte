@@ -5,7 +5,7 @@
 	const worker = new BINWorker();
 
   export let data: Record<string, any> = {};
-	let bin: File;
+	export let bin: File|undefined=undefined;
 	let percentage: number;
 	let startTime: Date = new Date();
 	let ready: boolean = false;
