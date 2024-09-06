@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Point, Quaternion, State} from '$lib/geometry';
+import {Point, Quaternion, GPS} from '$lib/geometry';
 
 
 describe("Point", () => {
@@ -57,4 +57,19 @@ describe("Quaternion", () => {
         expect(Quaternion.parse_euler(new Point(0,0,0)).x).toBe(0);
         expect(Quaternion.parse_euler(new Point(Math.PI,0,0)).w).toBeCloseTo(0);
     })
+})
+
+
+describe("GPS", () => {
+
+    it("sub", () => {
+        const g1 = new GPS(51.6416787,-2.5257777, 10);
+        const g2 = new GPS(51.64241177060382, -2.5266143823510574, 10);
+        const p = GPS.sub(g2, g1);
+        expect(p.z).toBeCloseTo(0, 1);
+        expect(p.x).toBeCloseTo(81.6, 1);
+        expect(p.y).toBeCloseTo(-57.8, 1);
+        
+    })
+
 })

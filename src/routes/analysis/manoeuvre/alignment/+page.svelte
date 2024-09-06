@@ -1,8 +1,9 @@
 
 
 <script lang="ts">
-  import { analyseManoeuvre, internals, activeManoeuvre, fcj, fa_version, selectedResult } from '$lib/stores';
-  import {Tooltip, Input, BottomNavItem, BottomNav, Select, ButtonGroup, Button, NumberInput} from 'flowbite-svelte';
+  import { internals, activeManoeuvre, fcj, fa_version } from '$lib/stores';
+  import { analyseManoeuvre } from '$lib/analysis';
+  import {Tooltip, Select, ButtonGroup, Button, NumberInput} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
 	import { Internals } from '$lib/api_objects/mandata';

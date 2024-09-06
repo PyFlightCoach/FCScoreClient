@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Fileupload, Label, Button, P } from 'flowbite-svelte';
-	import { fcj, direction, clearFlight, internals, selectedResult, runInfo } from '$lib/stores.js';
+	import { fcj, direction, internals, selectedResult, runInfo } from '$lib/stores.js';
+	import { clearFlight } from '$lib/analysis';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
 	import { Alert } from 'flowbite-svelte';

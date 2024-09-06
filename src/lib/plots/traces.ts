@@ -1,7 +1,6 @@
-import { State, Point, Quaternion, States } from '$lib/geometry';
-import { linspace } from '$lib/arrays';
+import { Point, Quaternion, States } from '$lib/geometry';
 import ObjFile from 'obj-file-parser';
-import type { Result } from '$lib/api_objects/scores';
+
 
 export const ribbon = (
 	st: States,

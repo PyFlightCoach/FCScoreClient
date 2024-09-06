@@ -2,7 +2,6 @@ import BINWorker from '$lib/JsDataflashParser/parser.js?worker';
 import {readFileSync} from 'fs';
 import {describe, expect, it} from 'vitest';
 import '@vitest/web-worker';
-import {mergeTimestamps} from './binHandling';
 import nj from "numjs"; 
 
 let parsed = false;
@@ -47,8 +46,6 @@ describe("loaded data", () => {
         expect(data.POS).toBeDefined();
         expect(Object.keys(data.POS.time_boot_ms).length).toBeGreaterThan(0);
     });
-
-
 
 })
 

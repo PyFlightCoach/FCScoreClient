@@ -1,5 +1,6 @@
 
-import { analyseManoeuvre, fcj, activeManoeuvre, internals } from '$lib/stores';
+import { fcj, activeManoeuvre, internals } from '$lib/stores';
+import { analyseManoeuvre } from '$lib/analysis';
 import {get} from 'svelte/store';
 
 export async function load() {

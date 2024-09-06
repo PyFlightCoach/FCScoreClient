@@ -1,8 +1,9 @@
 
 <script lang="ts">
 
-  import {activeManoeuvre, analyseManoeuvre, activeResult, running, 
+  import {activeManoeuvre, activeResult, running, 
     difficulty, truncate, fcj, optimise, long_output, runInfo} from '$lib/stores';
+  import {analyseManoeuvre} from '$lib/analysis';
   import {colscale, redsColors, tealsColrs, yellColors} from '$lib/plots/styling';
   import { base } from '$app/paths';
   import {goto} from '$app/navigation';

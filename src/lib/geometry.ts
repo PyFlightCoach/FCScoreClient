@@ -139,7 +139,7 @@ export class Quaternion {
 }
 
 
-const LOCFAC = 6378100 * Math.PI / 180
+const LOCFAC = 111318.84502145034
 export class GPS {
     constructor(readonly lat: number, readonly lon: number, readonly alt: number) {}
     static parse(data: Record<string, any>) {
@@ -157,6 +157,15 @@ export class GPS {
             this.alt - pin.z
         )
     }
+
+    static sub(a: GPS, b: GPS) {
+        return new Point(
+            (a.lat - b.lat) * LOCFAC,
+            (a.lon - b.lon) * LOCFAC * Math.max(Math.cos(a.lat * Math.PI / 180), 0.01),
+            b.alt - a.alt
+        )
+    }
+
 }
 
 
@@ -169,7 +178,7 @@ export class State {
         readonly u: number, readonly v: number, readonly w: number,
         readonly p: number, readonly q: number, readonly r: number, 
         readonly du: number, readonly dv: number, readonly dw: number, 
-        manoeuvre: string='unknown', element: string='unknown'
+        manoeuvre: string|undefined=undefined, element: string|undefined=undefined
     ) {this.manoeuvre=manoeuvre; this.element=element;}
 
     static parse(data: Record<string, any>) {
@@ -179,10 +188,9 @@ export class State {
             data.rw, data.rx, data.ry, data.rz,
             data.u, data.v, data.w,
             data.p, data.q, data.r,
-            data.du, data.dv, data.dw
+            data.du, data.dv, data.dw,
+            data.manoeuvre, data.element
         );
-        if ('manoeuvre' in data) {st.manoeuvre = data.manoeuvre}
-        if ('element' in data) {st.element = data.element}
         return st;
     }
 
@@ -213,7 +221,7 @@ export class State {
         vel: Point=new Point(0,0,0), rvel: Point=new Point(0,0,0), 
         acc: Point=new Point(0,0,0), 
         t: number=0, dt: number=1/30, 
-        manoeuvre: string='unknown', element: string='unknown'
+        manoeuvre: string|undefined=undefined, element: string|undefined=undefined
     ) {
         return new State(
             t, dt,
@@ -250,16 +258,16 @@ export class States {
     constructor(data: State[]) {this.data=data;}
 
     static parse (data: Record<string, any>[] | Record<string, Record<string, any[]>>): States{
-        if ('data' in data) {
-            return new States(data.data.map(st => State.parse(st)))
-        } else {
-            return new States(data.map(st => State.parse(st)))
-        }
+        return new States((data.hasOwnProperty('data') ? data.data : data).map(st => State.parse(st)))
     }
 
-    static parse_bin_data(xkf1) {
-
+    getFCJIndexOffset(minalt=10) {
+        for (let i = 0; i < this.data.length; i++) {
+            if (this.data[i].z > minalt) {
+                return i;
+            }
         }
+    }
 
     pos () {return this.data.map(state => state.pos())}
     att () {return this.data.map(state => state.att())}

@@ -1,24 +1,29 @@
 <script lang="ts">
-	import BinReader from '$lib/BinReader.svelte';
-	import Plot from 'svelte-plotly.js';
-	import { bind } from 'underscore';
+	import BinToState from '$lib/splitter/BinToState.svelte';
+	import type { States } from '$lib/geometry';
+	import Splitter from '$lib/splitter/Splitter.svelte';
+	import { FCJson, Origin } from '$lib/api_objects/fcjson';
+
+
 	let binFile: File;
 	let binData: Record<string, any>;
-</script>
-<div>
-	<BinReader bind:data={binData} bind:bin={binFile}/>
-	{#if binData && binData['XKF1[0]']}
-	<Plot
-				data={[{
-					x: binData['XKF1[0]'].PN,
-					y: binData['XKF1[0]'].PE,
-					z: binData['XKF1[0]'].PD,
-					
-					type: 'scatter3d',
-					mode: 'lines',
-				}]}
-				fillParent={true}
-			/>
+	let binOrigin: Origin;
+	let fcj: FCJson;
+	let states: States;
 
-	{/if}
-</div>
+	let mans: Record<string, any>[];
+
+</script>
+{#if !states}
+	<BinToState
+		bind:binFile
+		bind:binData
+		bind:binOrigin
+		bind:fcj
+		bind:states
+	/>
+{:else}
+	<Splitter {states} bind:mans bind:fcj />
+{/if}
+
+

@@ -36,3 +36,4 @@ export async function get_telemetry(): Promise<Blob> {
   ).then(res => res.blob())
   
 }
+
