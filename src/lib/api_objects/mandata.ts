@@ -1,56 +1,71 @@
-import {States} from '$lib/geometry';
+import { States } from '$lib/geometry';
 import { Manoeuvre } from '$lib/api_objects/manoeuvre';
 import { ManDef } from '$lib/api_objects/mandef';
 import { ManoeuvreResult } from '$lib/api_objects/scores';
-import _ from 'underscore';
-import {base} from '$app/paths';
+import { FCJManResult, FCJScore, ScheduleInfo } from '$lib/api_objects/fcjson';
+import { serverFunc } from '$lib/api_calls';
+import { selectedResult, fa_version, running, runInfo } from '$lib/stores';
+import { get } from 'svelte/store';
 
+export class MA {
+	constructor(
+		readonly name: string,
+		readonly id: number,
+		readonly schedule: ScheduleInfo,
+		readonly scheduleDirection: string,
+		readonly flown: States,
+		readonly history: Record<string, FCJManResult> = {},
+		readonly k: number = undefined,
+		readonly mdef: ManDef = undefined,
+		readonly manoeuvre: Manoeuvre = undefined,
+		readonly template: States = undefined,
+		readonly corrected: Manoeuvre = undefined,
+		readonly corrected_template: States = undefined,
+		readonly scores: ManoeuvreResult = undefined
+	) {
+		runInfo[id-1].set(`Empty analysis created at ${new Date().toLocaleTimeString()}`);
+	}
 
-export class Internals{
+	get_score(selectedResult: string, difficulty: number, truncate: boolean) {
+		if (!this.history[selectedResult]) {
+			return FCJScore.empty();
+		} else {
+			return this.history[selectedResult].get_score(difficulty, truncate).score;
+		}
+	}
 
-  constructor (
-    readonly fa_version: string,
-    readonly mdef: ManDef, readonly flown: States,
-    readonly manoeuvre: Manoeuvre | null = null, readonly template: States | null = null, 
-    readonly corrected: Manoeuvre | null = null, readonly corrected_template: States | null = null, 
-    readonly scores: ManoeuvreResult | null = null,
-  ) {}
+	async run(optimise: boolean=false) {
+		const res = await serverFunc(
+			'run_manoeuvre_new',
+			{
+				name: this.name,
+				category: this.schedule.category,
+				schedule: this.schedule.name,
+				schedule_direction: this.scheduleDirection,
+				flown: this.flown.data,
+				optimise_alignment: optimise,
+			},
+			'POST'
+		);
 
-  static parse(data: Record<string, any>) {
-    return new Internals(
-      data.fa_version,
-      ManDef.parse(data.mdef),
-      States.parse(data.flown),
-      'manoeuvre' in data ? Manoeuvre.parse(data.manoeuvre) : null,
-      'template' in data ? States.parse(data.template) : null,
-      'corrected' in data ? Manoeuvre.parse(data.corrected) : null,
-      'corrected_template' in data ? States.parse(data.corrected_template) : null,
-      'full_scores' in data ? ManoeuvreResult.parse(data.full_scores) : null,
-    );
-  }
+		let history = this.history;
+		history[res.fa_version] = FCJManResult.parse(res);
+		selectedResult.set(get(fa_version));
 
-  static async parse_example(name: string) {
-    const data = await (await fetch(`${base}/example/${name}.json`)).json()
-    return Internals.parse(data);
-  }
-
-  update (
-    fa_version: string | null,
-    mdef: ManDef | null = null, flown: States | null = null,
-    manoeuvre: Manoeuvre | null = null, template: States | null = null,
-    corrected: Manoeuvre | null = null, corrected_template: States | null = null,
-    scores: ManoeuvreResult | null = null
-  ) {
-    return new Internals(
-      fa_version || this.fa_version,
-      mdef === null ? this.mdef : mdef,
-      flown === null ? this.flown : flown,
-      manoeuvre === null ? this.manoeuvre : manoeuvre,
-      template === null ? this.template : template,
-      corrected === null ? this.corrected : corrected,
-      corrected_template === null ? this.corrected_template : corrected_template,
-      scores === null ? this.scores : scores
-    )
-  }
-
+		return new MA(
+			this.name,
+			this.id,
+			this.schedule,
+			this.scheduleDirection,
+			States.parse(res.flown),
+			history,
+			res.k,
+			ManDef.parse(res.mdef),
+			Manoeuvre.parse(res.manoeuvre),
+			States.parse(res.template),
+			Manoeuvre.parse(res.corrected),
+			States.parse(res.corrected_template),
+			ManoeuvreResult.parse(res.full_scores)
+		);
+	}
 }

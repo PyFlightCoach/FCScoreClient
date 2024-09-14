@@ -4,11 +4,11 @@
 	import { GPS, Point, Quaternion } from '$lib/geometry';
 	
 	export let binData: Record<string, any>;
-	export let binOrigin: Origin;
+	export let origin: Origin;
 
-	$: origin = new GPS(binOrigin.lat, binOrigin.lng, binOrigin.alt);
-	$: rotation = Quaternion.parse_euler(new Point(Math.PI, 0, binOrigin.heading * Math.PI / 180 + Math.PI / 2));
-	$: centre = origin.offset(rotation.transform_point(new Point(0, 300, 0)));
+	$: ppos = new GPS(origin.lat, origin.lng, origin.alt);
+	$: rotation = Quaternion.parse_euler(new Point(Math.PI, 0, origin.heading * Math.PI / 180 + Math.PI / 2));
+	$: centre = ppos.offset(rotation.transform_point(new Point(0, 300, 0)));
 </script>
 
 <Plot
@@ -22,8 +22,8 @@
 			showlegend: false
 		},
 		{
-			lat: [binOrigin.lat],
-			lon: [binOrigin.lng],
+			lat: [origin.lat],
+			lon: [origin.lng],
 			type: 'scattermap',
 			mode: 'markers',
 			showlegend: false,
@@ -33,8 +33,8 @@
 			}
 		},
 		{
-			lat: [binOrigin.lat, centre.lat],
-			lon: [binOrigin.lng, centre.lon],
+			lat: [origin.lat, centre.lat],
+			lon: [origin.lng, centre.lon],
 			type: 'scattermap',
 			mode: 'lines',
 			showlegend: false,

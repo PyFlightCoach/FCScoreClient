@@ -16,19 +16,19 @@
 		Input
 	} from 'flowbite-svelte';
 	import {
-		fcj,
+		fcj, bin, manNames,
 		navitems,
 		optimise,
-		activeManoeuvre,
+		selManID,
 		custom_server,
 		mouse,
 		server,
-		long_output,
 		difficulty,
 		truncate,
-		selectedResult
+		selectedResult, fa_version
 	} from '$lib/stores';
-	import { clearFlight, analyseList, loadExample, exportFCJ } from '$lib/analysis';
+	import { loadExample, exportFCJ, analyseAll } from '$lib/analysis';
+	import { clearAnalysis } from '$lib/stores';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -45,11 +45,16 @@
 		UK: 'https://madeupmodels.com:5010',
 		custom: $custom_server
 	}[active_server]!;
+
+
+	$: tabname = $bin ? $bin.name : $fcj ? $fcj.short_name : 'FCScore';
+
+	let fddopen = false;
+
+
 </script>
 
-<svelte:head>
-	<title>{$fcj ? `${$fcj.sinfo.name} ${$fcj.short_name.slice(-4)}` : 'FCScore'}</title>
-</svelte:head>
+<svelte:head><title>{tabname}</title></svelte:head>
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
 	id="parent"
@@ -65,20 +70,14 @@
 			<NavHamburger on:click={toggle} />
 
 			<NavUl {hidden}>
-				{#if $fcj}
-					{#if $page.url.pathname.includes('manoeuvre')}
-						{#each $navitems as ni}
-							<NavLi class="cursor-pointer" href={ni.href} on:click={ni.onclick}>{ni.name}</NavLi>
-						{/each}
-					{/if}
+				{#if $page.url.pathname.includes('manoeuvre')}
+					{#each $navitems as ni}
+						<NavLi class="cursor-pointer" href={ni.href} on:click={ni.onclick}>{ni.name}</NavLi>
+					{/each}
 				{/if}
 			</NavUl>
 
 			<NavUl {hidden}>
-				{#if !$fcj}
-					<NavLi class="cursor-pointer" href={base + '/splitter'}>splitter</NavLi>
-				{/if}
-
 				<NavLi class="cursor-pointer">Options</NavLi>
 				<Dropdown class="w-80 z-20">
 					<Helper class="ps-6">Analysis Server</Helper>
@@ -91,29 +90,28 @@
 					>
 					<DropdownDivider />
 					<Helper class="ps-6">Analysis Options</Helper>
-					<DropdownItem><Checkbox bind:checked={$long_output}>Long Output</Checkbox></DropdownItem>
-					<DropdownItem
-						><Checkbox bind:checked={$optimise}>Optimise Alignment</Checkbox></DropdownItem
-					>
+					<DropdownItem>
+						<Checkbox bind:checked={$optimise}>Optimise Alignment</Checkbox>
+					</DropdownItem>
 					<DropdownDivider />
 					<Helper class="ps-6">Results to Display</Helper>
 					{#each [1, 2, 3] as diff}
-						<DropdownItem
-							><Radio bind:group={$difficulty} value={diff}
-								>{['Easy', 'Medium', 'Hard'][diff - 1]}</Radio
-							></DropdownItem
-						>
+						<DropdownItem>
+							<Radio bind:group={$difficulty} value={diff}>
+								{['Easy', 'Medium', 'Hard'][diff - 1]}
+							</Radio>
+						</DropdownItem>
 					{/each}
 					<DropdownDivider />
 					<DropdownItem><Checkbox bind:checked={$truncate}>Truncate</Checkbox></DropdownItem>
 				</Dropdown>
-				{#if $fcj}
+				{#if $manNames}
 					<NavLi class="cursor-pointer">Manoeuvres</NavLi>
 					<Dropdown class="w-44 z-20">
-						{#each $fcj.unique_names.slice(1, -1) as name}
+						{#each $manNames as name, i}
 							<DropdownItem
 								on:click={() => {
-									$activeManoeuvre = name;
+									$selManID = i;
 									goto(base + '/analysis/manoeuvre');
 								}}>{name}</DropdownItem
 							>
@@ -122,44 +120,41 @@
 				{/if}
 
 				<NavLi class="cursor-pointer">Flight</NavLi>
-				<Dropdown class="w-44 z-20">
-					<DropdownItem
-						on:click={() => {
-							clearFlight(base + '/upload');
-						}}>{$fcj ? 'clear' : 'load'}</DropdownItem
-					>
-					{#if $fcj}
-						<DropdownDivider />
-						<Helper>{$fcj.short_name}</Helper>
-						<DropdownItem href={base + '/analysis'}>Analysis</DropdownItem>
-						<DropdownItem
-							on:click={() => {
-								analyseList($fcj.unique_names.slice(1, -1), false, $optimise);
-							}}>Run Remaining</DropdownItem
-						>
+				<Dropdown class="w-44 z-20" bind:open={fddopen}>
 
-						<DropdownItem
-							on:click={() => {
-								analyseList($fcj.unique_names.slice(1, -1), true, $optimise);
-							}}>Run All</DropdownItem
-						>
+					{#if $manNames}
+						<DropdownItem on:click={()=>clearAnalysis()} href={base + '/'}>Clear</DropdownItem>
+						<DropdownDivider />
+						<Helper>{tabname}</Helper>
+						{#if !$page.url.pathname.endsWith('analysis')}
+							<DropdownItem href={base + '/analysis'}>Analysis</DropdownItem>
+						{/if}
+						<DropdownItem on:click={()=>analyseAll($optimise, true)}>Run All</DropdownItem>
+						<DropdownItem on:click={()=>analyseAll($optimise, false)}>Run Remaining</DropdownItem>
 
 						<DropdownItem on:click={exportFCJ}>export</DropdownItem>
 
 						<DropdownDivider />
 						<Helper>Available Analyses</Helper>
-						{#each $fcj.fcs_scores as res}
-							<DropdownItem
-								><Radio bind:group={$selectedResult} value={res.fa_version}>{res.fa_version}</Radio
-								></DropdownItem
-							>
-						{/each}
+						{#if $fcj}
+							{#each $fcj.fcs_scores as res}
+								{#if !($fa_version == res.fa_version)}
+									<DropdownItem>
+										<Radio bind:group={$selectedResult} value={res.fa_version}>
+											{res.fa_version}
+										</Radio>
+									</DropdownItem>
+								{/if}
+							{/each}
+						{/if}
+						<Radio bind:group={$selectedResult} value={$fa_version}>Latest: {$fa_version}</Radio>
 					{:else}
+						<DropdownItem href={base + '/upload'}>Load</DropdownItem>
 						<DropdownItem
-							on:click={() => {
-								loadExample();
-								goto(base + '/upload');
-							}}
+							on:click={() => {loadExample().then(()=>{
+								  fddopen=false;
+									goto(base + '/analysis');
+							})}}
 							data-sveltekit-preload-data="tap">example</DropdownItem
 						>
 					{/if}

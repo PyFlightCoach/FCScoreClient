@@ -1,20 +1,21 @@
 import _ from 'underscore';
 import { GPS, Quaternion, Point } from '$lib/geometry';
+import { serverFunc } from '$lib/api_calls';
 
 export class Origin {
-	lat: number
-	lng: number
-	alt: number
-	heading: number
-	move_east: number
-	move_north: number
+	lat: number;
+	lng: number;
+	alt: number;
+	heading: number;
+	move_east: number;
+	move_north: number;
 	constructor(
 		lat: number,
 		lng: number,
 		alt: number,
 		heading: number,
-		move_east: number,
-		move_north: number
+		move_east: number = 0,
+		move_north: number = 0
 	) {
 		this.lat = lat;
 		this.lng = lng;
@@ -22,20 +23,27 @@ export class Origin {
 		this.heading = heading;
 		this.move_east = move_east;
 		this.move_north = move_north;
-		
 	}
 
 	static from_centre(pilot: GPS, centre: GPS) {
 		const vec = GPS.sub(centre, pilot);
-		return new Origin(pilot.lat, pilot.lon, pilot.alt, Math.atan2(vec.y, vec.x) * 180 / Math.PI, 0, 0);
+		return new Origin(
+			pilot.lat,
+			pilot.lon,
+			pilot.alt,
+			(Math.atan2(vec.y, vec.x) * 180) / Math.PI,
+			0,
+			0
+		);
 	}
 
-  get_box_loc(lat: number, lng: number, alt: number) {
-    const rot = Quaternion.parse_euler(new Point(Math.PI, 0, this.heading * Math.PI / 180 + Math.PI / 2));
-    const pned = GPS.sub(new GPS(lat, lng, alt), new GPS(this.lat, this.lng, this.alt));
-    return rot.transform_point(new Point(pned.y, pned.x, -pned.z ))
-  }
-
+	get_box_loc(lat: number, lng: number, alt: number) {
+		const rot = Quaternion.parse_euler(
+			new Point(Math.PI, 0, (this.heading * Math.PI) / 180 + Math.PI / 2)
+		);
+		const pned = GPS.sub(new GPS(lat, lng, alt), new GPS(this.lat, this.lng, this.alt));
+		return rot.transform_point(new Point(pned.y, pned.x, -pned.z));
+	}
 }
 
 export class ScheduleInfo {
@@ -46,6 +54,20 @@ export class ScheduleInfo {
 
 	static from_fcj_sch(sch: string[]): ScheduleInfo {
 		return new ScheduleInfo(sch[0], sch[1]);
+	}
+
+	async to_pfc() {
+		return await serverFunc(
+			'convert_schedule_info',
+			this,
+			'POST'
+		).then((sinfo) => {
+      return Object.setPrototypeOf(sinfo, ScheduleInfo.prototype);
+    });
+	}
+
+	to_string() {
+		return `${this.category}_${this.name}`;
 	}
 }
 
@@ -134,6 +156,9 @@ export class FCJScore {
 		readonly positioning: number,
 		readonly total: number
 	) {}
+	static empty() {
+		return new FCJScore(0, 0, 0, 0);
+	}
 }
 
 export class FCJResult {
@@ -224,8 +249,7 @@ export class FCJson {
 		readonly human_scores: FCJHumanResult[] = [],
 		readonly fcs_scores: FCSResult[] = [],
 		readonly mans: FCJMan[],
-		readonly data: FCJData[],
-		readonly jhash: number
+		readonly data: FCJData[]
 	) {
 		this.mans.forEach((man: FCJMan) => {
 			let mname = man.name;
@@ -243,7 +267,7 @@ export class FCJson {
 			this.parameters.originLat,
 			this.parameters.originLng,
 			this.parameters.originAlt,
-			this.parameters.rotation * 180 / Math.PI,
+			(this.parameters.rotation * 180) / Math.PI,
 			this.parameters.moveEast,
 			this.parameters.moveNorth
 		);
@@ -267,8 +291,16 @@ export class FCJson {
 			data.human_scores!,
 			data.fcs_scores ? data.fcs_scores.map((v) => FCSResult.parse(v)) : [],
 			data.mans.map((v) => Object.setPrototypeOf(v, FCJMan.prototype)),
-			data.data.map((v) => Object.setPrototypeOf(v, FCJData.prototype)),
-			data.jhash
+			data.data.map((v) => Object.setPrototypeOf(v, FCJData.prototype))
+			//data.jhash
+		);
+	}
+
+	manhistory(mid: number) {
+		return Object.fromEntries(
+			this.fcs_scores.map((mr) => {
+				return [mr.fa_version, mr.manresults[mid]];
+			})
 		);
 	}
 

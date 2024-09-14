@@ -1,23 +1,20 @@
 <script lang='ts'>
-  import { fcj, activeManoeuvre, internals, activeResult } from '$lib/stores';
+  import { selManID, analyses, selectedResult, difficulty, truncate } from '$lib/stores';
   import PlotSec from '$lib/plots/PlotSec.svelte';
-
-  $: manid = $fcj?.unique_names.indexOf($activeManoeuvre!);
-  $: score = $activeResult?.manresults[manid!]?.get_score(3, false);
+  $: man = analyses[$selManID]
+  $: result = $man.history[$selectedResult]?.get_score($difficulty, $truncate)?.score;
 </script>  
-
 
 <div id='container'>
   <div id='table'>
-    {#if score}
-      {#each Object.entries(score.properties) as [key, value]}
-        <div>{key}</div><div>{value}</div>
+    {#if result}
+      {#each Object.entries(result) as [key, value]}
+        <div>{key}</div><div>{value.toFixed(2)}</div>
       {/each}
-      <div>Total Score</div><div>{score.score.total.toFixed(2)}</div>
     {/if}
   </div>
-  {#if $internals && manid} 
-    <PlotSec flst={$internals[manid].flown} i={1}/>
+  {#if $man} 
+    <PlotSec flst={$man.flown} i={1}/>
   {/if}
 
 </div>

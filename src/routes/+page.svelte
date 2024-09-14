@@ -1,16 +1,8 @@
 <script lang="ts">
-  import {  Heading, AccordionItem, Accordion, A, P } from 'flowbite-svelte'
-  import {base} from '$app/paths';
-  import {goto} from '$app/navigation';
-  import { version, dev } from '$app/environment';
+  import {  Heading, A } from 'flowbite-svelte'
+  import { version, } from '$app/environment';
   import {fa_version, server_version} from '$lib/stores';  
-  import {loadExample} from '$lib/analysis';
-  import {fcj} from '$lib/stores';
-
-  $: if ($fcj != null) {
-    goto(base + '/analysis');
-  } 
-
+  
 </script>
 
   <div>

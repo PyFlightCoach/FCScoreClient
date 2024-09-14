@@ -5,12 +5,11 @@
     import {modeltrace, ribbon} from '$lib/plots/traces';
     import {layout3d} from '$lib/plots/layouts';    
     import {Checkbox, BottomNav, BottomNavItem} from 'flowbite-svelte';
-    import { internals, activeManoeuvre, fcj} from '$lib/stores';
+    import { analyses, selManID, fcj} from '$lib/stores';
     import type {States} from '$lib/geometry';
     import colddraft from '$lib/plots/colddraft.js';
     
-    $: manid = $fcj?.unique_names.indexOf($activeManoeuvre!);
-    $: man = $internals![manid!];
+    $: man = analyses[$selManID];
  
   
     const make_trace = (tp: States, models: boolean, name: string, color: string) => {
@@ -24,9 +23,9 @@
   
     const make_traces = (bf: boolean, bi: boolean, bc: boolean) => {
       const trs = [];
-      if (bf) {trs.push(...make_trace(man.flown, true, 'flown', 'red'))}
-      if (bi) {trs.push(...make_trace(man.template!, true, 'intended', 'blue'))}
-      if (bc) {trs.push(...make_trace(man.corrected_template!, true, 'corrected', 'green'))}
+      if (bf) {trs.push(...make_trace($man.flown, true, 'flown', 'red'))}
+      if (bi) {trs.push(...make_trace($man.template!, true, 'intended', 'blue'))}
+      if (bc) {trs.push(...make_trace($man.corrected_template!, true, 'corrected', 'green'))}
       return trs
     }
   

@@ -1,16 +1,13 @@
 <script lang="ts">
-  import {fcj, activeResult, difficulty, truncate} from '$lib/stores';
+  
   import AnalysisSummary from './AnalysisSummary.svelte';
-
-  $: scores = $activeResult?.get_scores($difficulty, $truncate);
-
-  $: total = scores?.map((v, i)=>v!.score.total * $fcj!.mans[i].k).reduce((a, b) => a + b, 0);
- 
+  import {totalScore, manNames} from '$lib/stores';
+	  
 </script>
 
 <div id='parent'>
   <div style='grid-column:2;'><AnalysisSummary/></div>
-  <h2>Total Score = {total ? total.toFixed(1) : '---'}</h2>  
+  <h2>Total Score = {$totalScore }</h2>  
 </div>
 
 <style>

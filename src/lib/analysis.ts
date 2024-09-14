@@ -1,151 +1,83 @@
 import {
-	internals,
-	direction,
-	fcj,
-	selectedResult,
-	activeManoeuvre,
+	createAnalyses,
+	analyses,
+	manNames,
 	running,
-	fa_version,
-    optimise, long_output, runInfo
+	runInfo,
+	clearAnalysis,
 } from '$lib/stores';
-import { Internals } from '$lib/api_objects/mandata';
+import { MA } from '$lib/api_objects/mandata';
 import { serverFunc } from '$lib/api_calls';
-import { browser } from '$app/environment';
-import { FCJManResult, FCJson } from '$lib/api_objects/fcjson';
+import { States } from '$lib/geometry';
+import { FCJson, type FCJMan, ScheduleInfo } from '$lib/api_objects/fcjson';
 import { get } from 'svelte/store';
-import { goto } from '$app/navigation';
 import { base } from '$app/paths';
+import { fcj } from '$lib/stores';
+import { Manoeuvre } from '$lib/api_objects/manoeuvre';
+
 import pkg from 'file-saver';
+import { ManDef } from './api_objects/mandef';
+import { ManoeuvreResult } from './api_objects/scores';
+
 const { saveAs } = pkg;
 
-
-export function clearFlight(target: string | null = null) {
-	internals.set(undefined);
-	direction.set(undefined);
-	fcj.set(undefined);
-	selectedResult.set(undefined);
-	activeManoeuvre.set(undefined);
-	if (browser && target !== null) {
-		goto(target || base);
-	}
+export async function analyseMans(ids: number[], optim: boolean, force: boolean) {
+	ids.forEach(async (id) => {
+		await analyseManoeuvre(id, optim, force);
+	});
 }
 
-export async function analyseManoeuvre(
-	name: string,
-	force: boolean = false,
-	optim: boolean | null = null,
-	long = false,
-	source_result: string | null = null
-) {
-	const _fcj = get(fcj)!;
-	const manid = _fcj!.unique_names.indexOf(name);
+export async function analyseAll(optim: boolean, force: boolean) {
+	analyses.forEach(async (ma, i) => {
+		await analyseManoeuvre(i, optim, force);
+	});
+}
 
-	if (
-		!get(running).includes(name) &&
-		(!_fcj.get_result(get(fa_version))?.manresults[manid] || force)
-	) {
-		running.update((v) => {
-			v.push(name);
-			return v;
-		});
-
-		const internal_data = get(internals)![manid];
-
-		const props: Record<string, any> = {
-			id: manid - 1,
-			direction: get(direction)!,
-			optimise_alignment: optim === null ? get(optimise) : optim,
-			long_output: long || get(long_output),
-			difficulty: 'all',
-			truncate: 'both'
-		};
-
-		let method: string = 'run_short_manoeuvre';
-		if (internal_data && internal_data.fa_version == source_result) {
-			props.mdef = internal_data.mdef;
-			props.flown = internal_data.flown.data;
-
-			method = 'run_long_manoeuvre';
-		} else {
-			props.sinfo = _fcj!.sinfo;
-			props.site = _fcj!.origin;
-			props.data = _fcj!.get_mandata(manid);
-			if (_fcj.get_result(source_result!)?.manresults[manid]?.els) {
-				props.els = _fcj.get_result(source_result!)?.manresults[manid]?.els;
-			}
-		}
+export async function analyseManoeuvre(id: number, optimise: boolean, force: boolean) {
+	const ma = get(analyses[id]);
+	if ((!ma.scores || force) && !get(running[id])) {
+		runInfo[id].set(`Running analysis at ${new Date().toLocaleTimeString()}`);
+		running[id].set(true);
 
 		try {
-			const res = await serverFunc(method, props);
-
-			fcj.update((v) => {
-				v?.add_result(res.fa_version || get(fa_version), name, FCJManResult.parse(res));
-				return v;
+			await ma.run(optimise).then((res) => {
+				analyses[id].set(res);
 			});
-			selectedResult.set(undefined);
-			selectedResult.set(res.fa_version || get(fa_version));
-
-			if (Object.keys(res).includes('mdef')) {
-				if (Object.keys(res).includes('fa_version')) {
-					internals.update((v) => {
-						v![manid] = Internals.parse(res);
-						return v;
-					});
-				} else {
-					console.log(`Cant display internals for version ${get(fa_version)}`);
-				}
-			}
-			runInfo.update((v) => {
-				v[name] = `Run at ${new Date().toLocaleString()}`;
-				return v;
-			});
+			runInfo[id].set(`Analysis complete at: ${new Date().toLocaleTimeString()}`);
 		} catch (err) {
-			runInfo.update((v) => {
-				v[name] = `Error: ${err.message}`;
-				return v;
-			});
-
-			console.log('Error running manoeuvre ' + name + ': ' + err.message);
+			runInfo[id].set(`Analysis Failed: ${err.message}`);
 		}
-
-		running.update((v) => v.filter((item) => item !== name));
+		running[id].set(false);
 	}
-}
-
-export async function analyseList(
-	names: string[],
-	force = false,
-	optim: boolean | null = null,
-	internals: boolean = false
-) {
-	const source_result = get(selectedResult);
-	names.forEach(async (name) => {
-		await analyseManoeuvre(name, force, optim, internals, source_result);
-	});
 }
 
 export async function loadExample() {
-	fcj.set(FCJson.parse(await (await fetch(`${base}/example/example_p25.json`)).json()));
-	direction.set(1);
-	const _fcj = get(fcj)!;
-	selectedResult.set(_fcj.fcs_scores[_fcj.fcs_scores.length - 1].fa_version);
-	internals.set(Array(_fcj.mans.length));
-	_fcj.unique_names.forEach((name, i) => {
-		Internals.parse_example(name).then((data) => {
-			internals.update((v) => {
-				v![i] = data;
-				return v;
+	clearAnalysis();
+	const _fcj = FCJson.parse(await (await fetch(`${base}/example/example_fcjson.json`)).json());
+	createAnalyses(_fcj.unique_names.slice(1, _fcj.unique_names.length - 1));
+	get(manNames).forEach(async (name, i) => {
+		fetch(`${base}/example/${name}.json`).then(async (res) => {
+			res.json().then((data) => {
+				analyses[i].set(
+					new MA(
+						name,
+						i + 1,
+						new ScheduleInfo('f3a', 'p25'),
+						'RighttoLeft',
+						States.parse(data.flown),
+						_fcj.manhistory(i + 1),
+						data.k,
+						ManDef.parse(data.mdef),
+						Manoeuvre.parse(data.manoeuvre),
+						States.parse(data.template),
+						Manoeuvre.parse(data.corrected),
+						States.parse(data.corrected_template),
+						ManoeuvreResult.parse(data.full_scores)
+					)
+				);
 			});
 		});
 	});
-
-	runInfo.set(
-		Object.fromEntries(
-			_fcj.unique_names.map((mn) => {
-				return [mn, `Example loaded at ${new Date().toLocaleString()}`];
-			})
-		)
-	);
 }
 
 export async function exportFCJ() {
@@ -155,15 +87,43 @@ export async function exportFCJ() {
 	);
 }
 
-
 export async function listCategories() {
-	return await serverFunc('categories', {}, 'GET')
+	return await serverFunc('categories', {}, 'GET');
 }
 
 export async function listSchedules(category: string) {
-	return await serverFunc(`${category}/schedules`, {}, 'GET')
+	return (await serverFunc(`${category}/schedules`, {}, 'GET')).schedules;
 }
 
-export async function listManoeuvres(category: string, sName: string) {
-	return await serverFunc(`${category}/${sName}/manoeuvre_names`, {}, 'GET')
+export async function listManoeuvres(category: string, schedule: string) {
+	return await serverFunc(`${category}/${schedule}/manoeuvres`, {}, 'GET');
 }
+
+export async function parseFCJMans(fcj: FCJson, offset: number) {
+	const sdets = await listManoeuvres(
+		fcj.sinfo.category.replaceAll(' ', '_'),
+		fcj.sinfo.name.replaceAll(' ', '_')
+	);
+
+	return fcj.mans.map((man: FCJMan, i: number) => {
+		let serverMan;
+		switch (i) {
+			case 0:
+				serverMan = 'Takeoff';
+				break;
+			case fcj.mans.length - 1:
+				serverMan = 'Landing';
+				break;
+			default:
+				serverMan = sdets.manoeuvres[i - 1];
+		}
+		return {
+			category: i == 0 || i == fcj.mans.length - 1 ? undefined : sdets.category,
+			schedule: i == 0 || i == fcj.mans.length - 1 ? undefined : sdets.schedule,
+			manoeuvre: serverMan,
+			id: i,
+			stop: man.stop + offset
+		};
+	});
+}
+

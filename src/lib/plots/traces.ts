@@ -50,45 +50,13 @@ export const ribbon = (
 	return { ...data, i: _i, j: _j, k: _k, type: 'mesh3d', ...props };
 };
 
-export const ribbonb = (x, y, z, r, p, yw, sp: number) => {
-	const semisp = sp / 2;
-	const points = [];
-	const ltip = new Point(0, semisp, 0);
-	const rtip = new Point(0, -semisp, 0);
-	for (let i = 0; i < x.length; i++) {
-		const cg = new Point(x[i], y[i], z[i]);
-		const q = Quaternion.parse_euler(new Point(r[i], p[i], yw[i]));
-		points.push(q.transform_point(ltip).offset(cg));
-		points.push(q.transform_point(rtip).offset(cg));
-	}
-
-	let _i = [];
-	let _j = [];
-	let _k = [];
-	for (let i = 0; i < points.length - 2; i += 2) {
-		_i.push(i);
-		_j.push(i + 1);
-		_k.push(i + 2);
-		_i.push(i + 1);
-		_j.push(i + 3);
-		_k.push(i + 2);
-	}
-
-	let data = { x: [], y: [], z: [] };
-	points.forEach((val) => {
-		data.x.push(val.x);
-		data.y.push(val.y);
-		data.z.push(val.z);
-	});
-
-	return { ...data, i: _i, j: _j, k: _k, type: 'mesh3d' };
-};
-
 export const coloured_ribbons = (states: Record<string, States>, span: number) => {
 	return Object.keys(states).map((el) => {
 		return { ...ribbon(states[el], span), name: el };
 	});
 };
+
+
 
 export const vectors = (
 	pos: Point[],

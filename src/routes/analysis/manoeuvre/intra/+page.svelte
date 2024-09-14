@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PlotSec from '$lib/plots/PlotSec.svelte';
 	import PlotDTW from '$lib/plots/PlotDTW.svelte';
-	import { internals, activeManoeuvre, fcj } from '$lib/stores';
+	import { analyses, selManID } from '$lib/stores';
 	import type { States } from '$lib/geometry';
 	import CriteriaPlot from './CriteriaPlot.svelte';
 	import VisPlot from './VisPlot.svelte';
@@ -9,33 +9,29 @@
 	import ColouedTable from '$lib/ColouedTable.svelte';
 	import { goto } from '$app/navigation';
 
-	$: manid = $fcj?.unique_names.indexOf($activeManoeuvre!);
-	$: man = $internals![manid!];
 
-	$: if (!man.scores) {
-		goto('/analysis/');
-	}
+	$: man = analyses[$selManID];
 
-	$: summaries = man!.scores!.intra.summaries();
+	$: summaries = $man.scores.intra.summaries();
 
 	let states: Record<string, States>;
 	let templates: Record<string, States>;
-	$: states = man!.flown.split();
-	$: templates = man!.template!.split();
+	$: states = $man.flown.split();
+	$: templates = $man.template!.split();
 
 	let activeCriteria: null | string = null;
 	let activeDGName: null | string = null;
 	let activeIndex: null | number = 0;
 
-	$: activeED = man?.mdef.getEd(activeDGName);
+	$: activeED = $man.mdef.getEd(activeDGName);
 	$: dg = activeED?.getDG(activeCriteria);
 
-	$: element = man!.manoeuvre!.getEl(activeED?.name);
+	$: element = $man!.manoeuvre!.getEl(activeED?.name);
 
 	$: showintra = activeDGName != null && activeCriteria != null && activeCriteria != 'Total';
 	$: result =
 		activeDGName && activeCriteria
-			? man.scores!.intra.data[activeDGName].data[activeCriteria]
+			? $man.scores!.intra.data[activeDGName].data[activeCriteria]
 			: undefined;
 </script>
 

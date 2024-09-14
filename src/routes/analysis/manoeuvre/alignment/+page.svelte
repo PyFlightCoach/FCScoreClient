@@ -1,20 +1,19 @@
 
 
 <script lang="ts">
-  import { internals, activeManoeuvre, fcj, fa_version } from '$lib/stores';
-  import { analyseManoeuvre } from '$lib/analysis';
+  import { analyses, selManID, fcj, fa_version } from '$lib/stores';
+  import {analyseManoeuvre} from '$lib/analysis';
   import {Tooltip, Select, ButtonGroup, Button, NumberInput} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
-	import { Internals } from '$lib/api_objects/mandata';
+	import { MA } from '$lib/api_objects/mandata';
   
-  $: manid = $fcj?.unique_names.indexOf($activeManoeuvre!);
-  $: man = $internals![manid!];
+  $: man = analyses[$selManID];
 
   let step: number = 0.5;
   
-  $: elements = man.flown.elements();
-  $: end_info = man.flown.end_info();
+  $: elements = $man?.flown.elements();
+  $: end_info = $man?.flown.end_info();
   
   let element: string|null = null
 
@@ -28,8 +27,8 @@
         end_info[elname].lastt + stp, 
         end_info[elements[elindex+1]].lastt - 0.1
       );
-      while (man.flown.data[end_info[elements[elindex]].lastid + i].t < endt) {
-        man.flown.data[end_info[elements[elindex]].lastid + i].element = elname; 
+      while ($man.flown.data[end_info[elements[elindex]].lastid + i].t < endt) {
+        $man.flown.data[end_info[elements[elindex]].lastid + i].element = elname; 
         i++;
       }
 
@@ -38,16 +37,19 @@
         end_info[elname].lastt + stp, 
         end_info[elname].firstt + 0.1
       );
-      while (man.flown.data[end_info[elements[elindex]].lastid - i].t > endt) {
-        man.flown.data[end_info[elements[elindex]].lastid - i].element = elements[elindex+1]; i++;
+      while ($man.flown.data[end_info[elements[elindex]].lastid - i].t > endt) {
+        $man.flown.data[end_info[elements[elindex]].lastid - i].element = elements[elindex+1]; i++;
       }
     }
-    $internals![manid!] = new Internals(man.fa_version, man.mdef,man.flown)
-    delete $fcj?.get_result($fa_version)?.manresults[manid!];
+    let history = $man.history;
+    delete history[$fa_version];
+    $man = new MA(
+      $man.name, $man.id, $man.schedule, $man.scheduleDirection, $man.flown, history, $man.k
+    );
+    delete $fcj?.get_result($fa_version)?.manresults[$selManID];
   };
 
-
-  $: states = man.flown.split();
+  $: states = $man?.flown.split();
 
 </script>
 
@@ -65,8 +67,8 @@
       <NumberInput  id="stepsize" bind:value={step} step=0.1/>
       <Button  id="adjustback" on:click={() => {editsplit(-Number(step), element)}}>&#60</Button>
       <Button  id="adjustfor" on:click={() => {editsplit(Number(step), element)}}>&#62</Button>
-      <Button  id="optimse" on:click={()=>analyseManoeuvre($activeManoeuvre, true, true, true, man.fa_version)}>Optimise</Button>
-      <Button  id="score" on:click={()=>analyseManoeuvre($activeManoeuvre, true, false, true, man.fa_version)}>Score</Button>
+      <Button  id="optimse" on:click={()=>{analyseManoeuvre($selManID, true, true)}}>Optimise</Button>
+      <Button  id="score" on:click={()=>{analyseManoeuvre($selManID, false, true)}}>Score</Button>
       <Button  id="back" on:click={() => {goto('/analysis/')}}>back</Button>
     </ButtonGroup>
   </div>

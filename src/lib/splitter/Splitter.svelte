@@ -7,33 +7,60 @@
 		DropdownItem,
 		Tooltip,
 		Button,
-		ButtonGroup
+		ButtonGroup,
+		Toggle
 	} from 'flowbite-svelte';
-	import { listCategories, listSchedules, listManoeuvres } from '$lib/analysis';
-	import { onMount } from 'svelte';
-	import { ChevronDownOutline } from 'flowbite-svelte-icons';
+
 	import { FCJson } from '$lib/api_objects/fcjson';
 	import { parseFCJMans } from './splitting';
+	import { ChevronDownOutline } from 'flowbite-svelte-icons';
+	import {
+		categories,
+		schedules,
+		manoeuvres,
+		loadCategories,
+		loadSchedules,
+		loadManoeuvres
+	} from '$lib/stores';
+	import {ManSplit } from '$lib/splitter/splitting';
+	
 
-  export let states: States;
-	export let mans: Record<string, any>[] = [
-		{ category: undefined, schedule: undefined, manoeuvre: 'Takeoff', stop: undefined }
-	];
-
+	export let compFlight: boolean = false;
+	export let states: States;
+	export let mans: ManSplit[] = [ManSplit.TakeOff()];
 	export let fcj: FCJson = undefined;
-
-  $: if(fcj) { 
-    mans = parseFCJMans(fcj, states.getFCJIndexOffset());
-    activeMan = 1;
-  };
-
-	//     eg:            F3A            P25      trgle
-	let categories: Record<string, Record<string, string[]>> = {};
+	export let modified: boolean = false;
 
 	let activeMan = 0;
 	let range: number[] = [0, states.data.length];
 	let msddOpen = false;
 	let stddOpen = false;
+
+	const removeFCJ = (reason: string = 'unknown') => {
+		if (fcj) {
+			console.log(`Removing FCJ: ${reason}`);
+			fcj = undefined;
+		}
+	};
+
+	$: if (fcj) {
+		fcj.sinfo
+			.to_pfc()
+			.then((pfcSinfo) => {
+				loadSchedules(pfcSinfo.category);
+				return loadManoeuvres(pfcSinfo.category, pfcSinfo.name);
+			})
+			.then((manDetails) => {
+				return parseFCJMans(fcj.mans, manDetails, states.getFCJIndexOffset());
+			})
+			.then((fcjManSplits) => {
+				mans = fcjManSplits;
+				activeMan = 1;
+//				compFlight = true;
+				console.log('Loaded mans from fcj');
+			});
+	}
+
 
 	const updateRange = (activeMan: number) => {
 		const start = activeMan == 0 ? 0 : mans[activeMan - 1].stop;
@@ -41,7 +68,7 @@
 		let stop = mans[activeMan].stop;
 
 		if (!stop) {
-			if (mans[activeMan].manoeuvre == 'Landing') {
+			if (mans[activeMan].name == 'Landing') {
 				stop = states.data.length;
 			} else {
 				switch (activeMan) {
@@ -56,29 +83,18 @@
 				}
 			}
 		}
-
 		return [start, Math.min(stop, states.data.length)];
 	};
 	$: range = updateRange(activeMan);
 
-	onMount(async () => {
-		(await listCategories()).forEach(async (category: string) => {
-			categories[category] = {};
-			(await listSchedules(category))?.forEach(async (schedule: string) => {
-				categories[category][schedule] = await listManoeuvres(category, schedule);
-			});
-		});
-	});
 
-	const setManoeuvre = (
-		i: number,
-		name: string,
-		category: string = undefined,
-		schedule: string = undefined
-	) => {
-		mans[i] = { category, schedule, manoeuvre: name, stop: undefined };
+	const setManoeuvre = (i: number, manoeuvre: ManSplit) => {
+		mans[i] = manoeuvre;
 		msddOpen = false;
+		checkComp();
+		removeFCJ('manoeuvre changed');
 	};
+
 
 	const setRange = () => {
 		mans[activeMan].stop = Math.min(
@@ -86,46 +102,55 @@
 			activeMan == mans.length - 1 ? states.data.length : mans[activeMan + 1].stop
 		);
 		if (
-			mans[activeMan].manoeuvre != 'Landing' &&
+			mans[activeMan].name != 'Landing' &&
 			mans[activeMan].stop < states.data.length &&
 			activeMan == mans.length - 1
 		) {
 			addMan();
 		}
+		removeFCJ('manoeuvre end point modified');
 	};
+
+
 	const addMan = () => {
+		//Add a new manoeuvre to the end of the list, make some assumptions about what it is based
+		//on the previous manoeuvre
 		if (activeMan < mans.length) {
-			const category = mans[activeMan].category;
-			const schedule = mans[activeMan].schedule;
-			let manoeuvre: string = 'Select';
-			if (category && schedule) {
-				const manid = categories[category][schedule].indexOf(mans[activeMan].manoeuvre);
-				if (manid < categories[category][schedule].length - 1) {
-					manoeuvre = categories[category][schedule][manid + 1];
+			let name: string = 'Select';
+			const manid = mans[activeMan].id;
+			if (mans[activeMan].sinfo) {
+				const shedmans = $manoeuvres[mans[activeMan].sinfo.to_string()];
+				if (manid < Object.values(shedmans).length) {
+					name = shedmans[manid].name;
 				} else {
-					manoeuvre = 'Landing';
+					name = 'Landing';
 				}
 			}
 
-			mans.push({
-				category,
-				schedule,
-				manoeuvre,
-				stop: undefined
-			});
+			mans.push(
+				new ManSplit(
+					name,
+					name == 'Landing' ? undefined : mans[activeMan].sinfo,
+					mans[activeMan].id + 1,
+					undefined
+				)
+			);
 		}
 		activeMan += 1;
+		removeFCJ('manoeuvre added');
 	};
+
 
 	const deleteMan = (i: number) => {
 		mans.splice(i, 1);
 		activeMan = Math.max(activeMan - 1, 0);
+		removeFCJ('manoeuvre deleted');
 	};
 
 	const keyPress = (k: string) => {
 		switch (k) {
 			case 's':
-				if (mans[activeMan].manoeuvre != 'Select') {
+				if (mans[activeMan].name != 'Select') {
 					setRange();
 				}
 				break;
@@ -143,71 +168,141 @@
 
 	const clearSplitting = () => {
 		activeMan = 0;
-		mans = [{ category: undefined, schedule: undefined, manoeuvre: 'Takeoff', stop: undefined }];
+		mans = [ManSplit.TakeOff()];
+		stddOpen = false;
+		removeFCJ('manoeuvres cleared');
+	};
+
+	const parseFCJ = (event) => {
+
+		const reader = new FileReader();
+		reader.onload = () => {
+			if (reader.result) {
+				fcj = FCJson.parse(JSON.parse(reader.result as string));
+			}
+			
+		};
+		reader.readAsText(event.target.files[0]);
 		stddOpen = false;
 	};
 
-	const getFCJMans = (event) => {
-		const reader = new FileReader();
-		reader.onload = () => {
-			fcj = FCJson.parse(JSON.parse(reader.result as string));
+	const checkComp = (alerts = false) => {
+		const fail = (msg: string) => {
+			if (alerts) {
+				alert(msg);
+			}
+			console.log(msg);
+			compFlight = false;
 		};
-		reader.readAsText(event.target.files[0]);
+
+		if (mans[0].name != 'Takeoff') {
+			return fail('Invalid Competition Flight, expected to start with Takeoff');
+		}
+		if (mans.length > 1) {
+			if (!mans[1].sinfo) {
+				return fail(
+					'Invalid Competition Flight, expected first manoeuvre to have a category and schedule'
+				);
+			}
+			const checkMans = $manoeuvres[mans[1].sinfo.to_string()];
+			let failedMans = [];
+			mans.slice(1, mans.length).forEach((man, i) => {
+				if (i < checkMans.length && man.name != checkMans[i].name) {
+					failedMans.push(`${i}: ${checkMans[i].name}`);
+				}
+			});
+			if (failedMans.length > 0) {
+				return fail(`Invalid Competition Flight, expected manoeuvres:\n${failedMans.join('\n')}`);
+			}
+		}
 	};
+
+	$: if (compFlight) {checkComp(true);}
+	
+
 </script>
 
 <div class="parent">
 	<div class="plot">
 		<PlotSec flst={states} controls={['slider', 'rangeEndClick']} scale={5} bind:range />
-		<Tooltip>Click on the ribbon or slide the slider to adjust the end of active range</Tooltip>
 	</div>
 	<div class="options">
 		<ButtonGroup>
-			<Button>Options <ChevronDownOutline /></Button>
+			<Button>Load FCJ <ChevronDownOutline /></Button>
 			<Dropdown bind:open={stddOpen}>
-				<Fileupload on:change={getFCJMans}  />
-
-				<Tooltip>Read the manoeuvre splitting from a Flight Coach json file</Tooltip>
-				<DropdownItem on:click={clearSplitting}>Clear Manoeuvres</DropdownItem>
-				<Tooltip>Clear the manoeuvre splitting</Tooltip>
-        <DropdownItem>Save</DropdownItem>
+				<DropdownItem>
+					<Fileupload
+						on:change={(e) => {
+							parseFCJ(e);
+							modified = true;
+						}}
+						accept=".json"
+					/>
+				</DropdownItem>
 			</Dropdown>
-			<Button>Complete</Button><Tooltip>Finish splitting and move onto scoring</Tooltip>
+			<Button on:click={clearSplitting}>Clear</Button>
+			<Toggle bind:checked={compFlight}>{compFlight ? 'Competition' : 'Training'}</Toggle>
 		</ButtonGroup>
 	</div>
 	<div class="manSelect">
 		<strong>Manoeuvre</strong>
-		<strong>Start</strong>
 		<strong>End</strong>
 
 		{#each mans as man, i}
 			{#if activeMan == i}
 				<div class="cell col1">
-					<button>{i}: {man.manoeuvre} ▼</button>
-					<Dropdown bind:open={msddOpen}>
-						<DropdownItem on:click={() => setManoeuvre(i, 'Takeoff')}>Takeoff</DropdownItem>
-						<DropdownItem on:click={() => setManoeuvre(i, 'break')}>break</DropdownItem>
-						<DropdownItem on:click={() => setManoeuvre(i, 'Landing')}>Landing</DropdownItem>
-						{#each Object.entries(categories) as [category, schedules]}
+					<button>{i}: {man.name} ▼</button>
+					<Dropdown bind:open={msddOpen} on:show={loadCategories}>
+						{#if i == 0}
+							<DropdownItem on:click={() => setManoeuvre(i, ManSplit.TakeOff(i, mans[i]?.stop))}
+								>0: Takeoff</DropdownItem
+							>
+						{/if}
+						<DropdownItem on:click={() => setManoeuvre(i, ManSplit.Break(i, mans[i]?.stop))}
+							>{activeMan}: break</DropdownItem
+						>
+						{#if i == mans.length - 1}
+							<DropdownItem on:click={() => setManoeuvre(i, ManSplit.Landing(i, mans[i]?.stop))}
+								>{activeMan}: Landing</DropdownItem
+							>
+						{/if}
+						{#each $categories as category}
 							<DropdownItem>{category} {`\u232A`}</DropdownItem>
-							<Dropdown placement="right-start">
-								{#each Object.entries(schedules) as [sname, manoeuvres]}
-									<DropdownItem>{sname} {`\u232A`}</DropdownItem>
-									<Dropdown placement="right-start">
-										{#each manoeuvres as mname}
-											<DropdownItem on:click={() => setManoeuvre(i, mname, category, sname)}
-												>{mname}</DropdownItem
-											>
-										{/each}
-									</Dropdown>
-								{/each}
+							<Dropdown
+								placement="right-start"
+								on:show={() => {
+									loadSchedules(category);
+								}}
+							>
+								{#if $schedules[category]}
+									{#each $schedules[category] as schedule}
+										<DropdownItem>
+											{schedule}
+											{`\u232A`}
+										</DropdownItem>
+										<Dropdown
+											placement="right-start"
+											on:show={() => {
+												loadManoeuvres(category, schedule);
+											}}
+										>
+											{#if $manoeuvres[`${category}_${schedule}`]}{#each $manoeuvres[`${category}_${schedule}`] as manoeuvre}
+													<DropdownItem
+														on:click={() =>
+															setManoeuvre(i, new ManSplit(manoeuvre.name, manoeuvre.sinfo, i, mans[i]?.stop))}
+													>
+														{manoeuvre.id }: {manoeuvre.name}
+													</DropdownItem>
+												{/each}{/if}
+										</Dropdown>
+									{/each}
+								{/if}
 							</Dropdown>
 						{/each}
 					</Dropdown>
 				</div>
-				<div class="cell">{i == 0 ? 0 : mans[i - 1].stop}</div>
 				<div class="cell">
-					{#if man.manoeuvre != 'Select'}
+					{#if man.name != 'Select'}
 						<button on:click={setRange}>{man.stop || 'Set Range'}</button><Tooltip
 							>Set the end point of this manoeuvre to the end of the active range (or press 's')</Tooltip
 						>
@@ -223,10 +318,9 @@
 					<button
 						on:click={() => {
 							activeMan = i;
-						}}>{man.manoeuvre}</button
+						}}>{man.name}</button
 					><Tooltip>Activate Manoeuvre</Tooltip>
 				</div>
-				<div class="cell">{i == 0 ? 0 : mans[i - 1].stop}</div>
 				<div class="cell">{man.stop}</div>
 				<div class="cell">
 					<button
@@ -240,11 +334,11 @@
 	</div>
 	<div class="maninfo">
 		<strong>Category:</strong>
-		<p>{mans[activeMan].category || '-'}</p>
+		<p>{mans[activeMan]?.sinfo?.category || '-'}</p>
 		<strong>Schedule:</strong>
-		<p>{mans[activeMan].schedule || '-'}</p>
+		<p>{mans[activeMan]?.sinfo?.name || '-'}</p>
 		<strong>Manoeuvre:</strong>
-		<p>{mans[activeMan].manoeuvre}</p>
+		<p>{mans[activeMan]?.name}</p>
 	</div>
 </div>
 
@@ -263,8 +357,9 @@
 		color: darkgray;
 	}
 	.parent {
+		height: 100%;
 		display: grid;
-		grid-template-columns: 2fr 1fr;
+		grid-template-columns: 4fr 1fr;
 		grid-template-rows: min-content 1fr min-content;
 		gap: 1em;
 	}
@@ -273,7 +368,7 @@
 	}
 	.manSelect {
 		display: grid;
-		grid-template-columns: 2fr 2fr 2fr 1fr;
+		grid-template-columns: 2fr 2fr 1fr;
 		grid-gap: 0px;
 		grid-auto-rows: min-content;
 	}
@@ -281,13 +376,12 @@
 		grid-column: 2;
 	}
 	button {
-		height: 10px;
 		white-space: nowrap;
 		display: inline-block;
 	}
 
 	.cell {
-		align-content: center;
+		align-content: stretch;
 		font-size: medium;
 		justify-self: center;
 		margin-right: 2px;
