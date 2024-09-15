@@ -1,13 +1,13 @@
 import {describe, expect, it} from 'vitest';
 
-import { Internals} from '$lib/api_objects/mandata';
+import { MA} from '$lib/api_objects/mandata';
 import {ElDef, ManDef} from '$lib/api_objects/mandef';
 
 
-import data from '$lib/data/trgle.json';
+import data from '/example/trgle.json';
 
 
-const internals = Internals.parse(data);
+const internals = MA.parse(data);
 
 
 describe("Internals", () => {
