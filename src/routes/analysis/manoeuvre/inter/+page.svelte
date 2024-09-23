@@ -6,10 +6,11 @@
 	import { d3Color, colscale, redsColors } from '$lib/plots/styling.js';
 
   $: man = analyses[$selManID];
-  $: states = $man.flown.split();
+  $: states = $man?.flown.split();
   
 </script>
 
+{#if man}
 <Accordion>
 
   {#each Object.values($man.mdef.mps) as mp}
@@ -55,7 +56,9 @@
     
   {/each}
 </Accordion>
-
+{:else}
+  <div>no data</div>
+{/if}
 
 <style>
   .cell {color: black; height:100%; width: 100%; display: flex;

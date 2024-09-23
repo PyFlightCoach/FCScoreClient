@@ -25,6 +25,10 @@
 	export let speed = 50;
 
 	export let range = [0, flst.data.length];
+  export let fixRange: boolean = false;
+
+
+  $: if (flst && fixRange) { range=[0, flst.data.length]};
 
 	const createRibbonTrace = (st: States | undefined, min: number, max: number) => {
 		if (!st) {

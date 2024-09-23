@@ -6,7 +6,7 @@
   import {Tooltip, Select, ButtonGroup, Button, NumberInput} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
-	import { MA } from '$lib/api_objects/mandata';
+	import { MA } from '$lib/api_objects/ma';
   
   $: man = analyses[$selManID];
 
@@ -44,7 +44,7 @@
     let history = $man.history;
     delete history[$fa_version];
     $man = new MA(
-      $man.name, $man.id, $man.schedule, $man.scheduleDirection, $man.flown, history, $man.k
+      $man.name, $man.id, $man.start, $man.stop, $man.schedule, $man.scheduleDirection, $man.flown, history, $man.k
     );
     delete $fcj?.get_result($fa_version)?.manresults[$selManID];
   };
@@ -53,7 +53,7 @@
 
 </script>
 
-
+{#if $man}
 <div>
   <div style:height=100%>
     <PlotDTW sts={states} bind:activeEl={element} sp={3}/>
@@ -80,6 +80,9 @@
   <Tooltip triggeredBy="[id='adjustfor']">Adjust split location forwards</Tooltip>
   <Tooltip triggeredBy="[id='back']">Back to Main Page</Tooltip>
 </div>
+{:else}
+  <p>No Internal Data</p>
+{/if}
 
 <style>
   #buttons {position: absolute; bottom: 0;right: 0;}

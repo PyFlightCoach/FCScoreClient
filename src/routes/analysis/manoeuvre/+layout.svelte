@@ -29,7 +29,7 @@
 
 </script>
 
-{#if ($man)}
+{#if $man}
   {#if !$isRunning}
     <slot />
   {:else}

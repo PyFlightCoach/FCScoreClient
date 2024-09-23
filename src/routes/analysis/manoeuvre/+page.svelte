@@ -2,7 +2,7 @@
   import { selManID, analyses, selectedResult, difficulty, truncate } from '$lib/stores';
   import PlotSec from '$lib/plots/PlotSec.svelte';
   $: man = analyses[$selManID]
-  $: result = $man.history[$selectedResult]?.get_score($difficulty, $truncate)?.score;
+  $: result = $man?.history[$selectedResult]?.get_score($difficulty, $truncate)?.score;
 </script>  
 
 <div id='container'>

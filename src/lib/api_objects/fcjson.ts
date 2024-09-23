@@ -188,7 +188,7 @@ export class FCJManResult {
 		readonly results: FCJResult[]
 	) {}
 
-	static parse(data: FCJManResult) {
+	static parse(data: Record<string, any>) {
 		return new FCJManResult(
 			data.els.map((v) => Object.setPrototypeOf(v, ElSplit.prototype)),
 			data.results.map((v) => FCJResult.parse(v))

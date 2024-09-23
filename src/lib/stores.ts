@@ -1,10 +1,11 @@
 import { writable, type Writable } from 'svelte/store';
 import { serverFunc } from '$lib/api_calls';
 import { FCJson, Origin, ScheduleInfo } from '$lib/api_objects/fcjson';
-import { MA } from '$lib/api_objects/mandata';
+import { States } from '$lib/geometry';
+import { MA } from '$lib/api_objects/ma';
 import { browser } from '$app/environment';
 import { get } from 'svelte/store';
-import { ManDetails } from '$lib/splitter/splitting';
+import { ManDetails, ManSplit } from '$lib/splitting';
 
 export class NavContent {
 	constructor(
@@ -65,10 +66,15 @@ optimise.subscribe((value) => {
 export const mouse = writable({ x: 0, y: 0 });
 
 export const isCompFlight: Writable<boolean> = writable(true);
+
+export const activeHelp: Writable<string> = writable('main');
+
 export const bin: Writable<File> = writable();
 export const binData: Writable<Record<string, any>> = writable({});
 export const origin: Writable<Origin | undefined> = writable();
 export const fcj: Writable<FCJson | undefined> = writable();
+
+export const states: Writable<States> = writable();
 
 export const manNames: Writable<string[]> = writable();
 export const analyses: Writable<MA | undefined>[] = [];
@@ -86,36 +92,11 @@ scores.subscribe((value) => {
 	totalScore.set(value ? value.reduce((a, b) => a + b, 0).toFixed(2) : '---');
 });
 
-export function createAnalyses(mnames: string[]) {
-	manNames.set(mnames);
-	scores.set(new Array(mnames.length).fill(0));
-
-	mnames.forEach((name, i) => {
-		analyses.push(writable());
-		running.push(writable(false));
-		runInfo.push(writable(`Analysis Created At ${new Date().toLocaleTimeString()}`));
-
-		analyses[i].subscribe((value) => {
-			scores.update((s) => {
-				if (value) {
-					s[i] =
-						value.get_score(get(selectedResult), get(difficulty), get(truncate)).total *
-						(value.mdef?.info.k | value.k);
-					selectedResult.set(Object.keys(value.history)[Object.keys(value.history).length - 1]);
-				} else {
-					s[i] = 0;
-				}
-				return s;
-			});
-		});
-	});
-}
-
 function updateScores(result: string, diff: number, trunc: boolean) {
 	scores.set(
 		analyses.map((a) => {
 			const ma = get(a);
-			return ma ? ma.get_score(result, diff, trunc).total * (ma.mdef?.info.k | ma.k) : 0;
+			return ma ? ma.get_score(result, diff, trunc).total * (ma.mdef?.info?.k | ma.k) : 0;
 		})
 	);
 }
@@ -132,16 +113,6 @@ truncate.subscribe((value) => {
 	updateScores(get(selectedResult), get(difficulty), value);
 });
 
-export function clearAnalysis(target: string = undefined) {
-	selManID.set(undefined);
-	manNames.set(undefined);
-	scores.set(undefined);
-	selectedResult.set(undefined);
-	analyses.length = 0;
-	running.length = 0;
-	runInfo.length = 0;
-}
-
 fcj.subscribe((value) => {
 	if (value?.fcs_scores.length > 0) {
 		selectedResult.set(value.fcs_scores[value.fcs_scores.length - 1].fa_version);
@@ -150,14 +121,12 @@ fcj.subscribe((value) => {
 	}
 });
 
-
-
 export const manoeuvres: Writable<Record<string, ManDetails[]>> = writable({});
 export const schedules: Writable<Record<string, string[]>> = writable({});
 export const categories: Writable<string[]> = writable([]);
 
 export async function loadCategories() {
-	if (get(categories).length==0) {
+	if (get(categories).length == 0) {
 		categories.set(await serverFunc('categories', {}, 'GET'));
 	}
 	return get(categories);
@@ -179,8 +148,8 @@ export async function loadManoeuvres(category: string, schedule: string) {
 	const sinfo = new ScheduleInfo(category, schedule);
 
 	if (!manoeuvres[sinfo.to_string()]) {
-		await serverFunc(`${category}/${schedule}/manoeuvres`, {}, 'GET').then(pfcMans => {
-			manoeuvres.update(mans => {
+		await serverFunc(`${category}/${schedule}/manoeuvres`, {}, 'GET').then((pfcMans) => {
+			manoeuvres.update((mans) => {
 				mans[`${category}_${schedule}`] = pfcMans.map(
 					(m) => new ManDetails(m.name, m.id, m.k, sinfo)
 				);

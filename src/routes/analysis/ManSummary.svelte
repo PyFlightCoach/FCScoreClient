@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { selManID, selectedResult, difficulty, truncate, optimise, running, runInfo } from '$lib/stores';
 	import { colscale, redsColors, tealsColrs, yellColors } from '$lib/plots/styling';
+  import {Tooltip} from 'flowbite-svelte';
 	import {analyseManoeuvre} from '$lib/analysis';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
@@ -35,6 +36,11 @@
 <div>{$ma?.id}</div>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <button on:click={() => activate_man(id, '')} data-sveltekit-preload-data="tap">{$ma?.name}</button>
+<Tooltip>
+  {#each Object.entries($ma.summary()) as [key, value]}
+    <div>{key}: {value}</div>
+  {/each}
+</Tooltip>
 <div>{$ma?.k}</div>
 
 {#if scores}

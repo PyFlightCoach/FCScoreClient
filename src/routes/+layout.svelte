@@ -16,7 +16,9 @@
 		Input
 	} from 'flowbite-svelte';
 	import {
-		fcj, bin, manNames,
+		fcj,
+		bin,
+		manNames,
 		navitems,
 		optimise,
 		selManID,
@@ -25,10 +27,11 @@
 		server,
 		difficulty,
 		truncate,
-		selectedResult, fa_version
+		selectedResult,
+		fa_version
 	} from '$lib/stores';
-	import { loadExample, exportFCJ, analyseAll } from '$lib/analysis';
-	import { clearAnalysis } from '$lib/stores';
+	import { loadExample, exportFCJ, analyseAll, exportAnalysis, clearAnalysis } from '$lib/analysis';
+	import AnalysisReader from './AnalysisReader.svelte';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -46,12 +49,9 @@
 		custom: $custom_server
 	}[active_server]!;
 
-
 	$: tabname = $bin ? $bin.name : $fcj ? $fcj.short_name : 'FCScore';
 
 	let fddopen = false;
-
-
 </script>
 
 <svelte:head><title>{tabname}</title></svelte:head>
@@ -121,18 +121,18 @@
 
 				<NavLi class="cursor-pointer">Flight</NavLi>
 				<Dropdown class="w-44 z-20" bind:open={fddopen}>
-
 					{#if $manNames}
-						<DropdownItem on:click={()=>clearAnalysis()} href={base + '/'}>Clear</DropdownItem>
+						<DropdownItem on:click={() => clearAnalysis()} href={base + '/'}>Clear</DropdownItem>
 						<DropdownDivider />
 						<Helper>{tabname}</Helper>
 						{#if !$page.url.pathname.endsWith('analysis')}
 							<DropdownItem href={base + '/analysis'}>Analysis</DropdownItem>
 						{/if}
-						<DropdownItem on:click={()=>analyseAll($optimise, true)}>Run All</DropdownItem>
-						<DropdownItem on:click={()=>analyseAll($optimise, false)}>Run Remaining</DropdownItem>
+						<DropdownItem on:click={() => analyseAll($optimise, true)}>Run All</DropdownItem>
+						<DropdownItem on:click={() => analyseAll($optimise, false)}>Run Remaining</DropdownItem>
 
-						<DropdownItem on:click={exportFCJ}>export</DropdownItem>
+						<DropdownItem on:click={exportFCJ}>export FCJ</DropdownItem>
+						<DropdownItem on:click={exportAnalysis}>export Analysis</DropdownItem>
 
 						<DropdownDivider />
 						<Helper>Available Analyses</Helper>
@@ -149,22 +149,21 @@
 						{/if}
 						<Radio bind:group={$selectedResult} value={$fa_version}>Latest: {$fa_version}</Radio>
 					{:else}
-						<DropdownItem href={base + '/upload'}>Load</DropdownItem>
+            <DropdownItem href={base + '/upload'}>Load</DropdownItem>
+            <DropdownItem><i class="cil-chevron-left-alt"></i> Import</DropdownItem>
+            <AnalysisReader/>
 						<DropdownItem
-							on:click={() => {loadExample().then(()=>{
-								  fddopen=false;
+							on:click={() => {
+								loadExample().then(() => {
+									fddopen = false;
 									goto(base + '/analysis');
-							})}}
-							data-sveltekit-preload-data="tap">example</DropdownItem
+								});
+							}}
+							data-sveltekit-preload-data="tap">Example</DropdownItem
 						>
 					{/if}
 				</Dropdown>
-				<NavLi
-					id="info"
-					class="cursor-pointer"
-					href="https://pfcdocumentation.readthedocs.io/fcscore/index.html"
-					target="_blank">Info</NavLi
-				>
+				<NavLi class="cursor-pointer">Info</NavLi>
 			</NavUl>
 		</Navbar>
 	</div>
