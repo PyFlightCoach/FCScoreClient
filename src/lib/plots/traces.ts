@@ -1,7 +1,6 @@
-import { State, Point, Quaternion, States } from '$lib/geometry';
-import { linspace } from '$lib/arrays';
+import { Point, Quaternion, States } from '$lib/geometry';
 import ObjFile from 'obj-file-parser';
-import type { Result } from '$lib/api_objects/scores';
+
 
 export const ribbon = (
 	st: States,
@@ -57,6 +56,8 @@ export const coloured_ribbons = (states: Record<string, States>, span: number) =
 	});
 };
 
+
+
 export const vectors = (
 	pos: Point[],
 	vec: Point[],
@@ -108,7 +109,6 @@ export const points = (pos: Point[], text: string[] | null = null): Record<strin
 
 	return trs;
 };
-
 
 export const boxtrace = () => {
 	const xlim = 170 * Math.tan((60 * Math.PI) / 180);

@@ -2,6 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {OBJ} from '$lib/plots/traces';
 import {Point} from '$lib/geometry';
 import fs from 'fs';
+import { makeVector } from 'apache-arrow';
 
 
 describe("OBJ", () => {
@@ -33,3 +34,11 @@ describe("OBJ", () => {
 
 
 })
+
+describe("trying some array stuff", () => {
+    it("should add two matrices", () => {
+        const a = makeVector(Int32Array.from([1,1,1]));
+        const b = makeVector(Int32Array.from([1,1,1]));
+        
+    });
+});

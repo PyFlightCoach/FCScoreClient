@@ -1,84 +1,112 @@
-
 <script lang="ts">
+	import { selManID, selectedResult, difficulty, truncate, optimise, running, runInfo } from '$lib/stores';
+	import { colscale, redsColors, tealsColrs, yellColors } from '$lib/plots/styling';
+  import {Tooltip} from 'flowbite-svelte';
+	import {analyseManoeuvre} from '$lib/analysis';
+	import { base } from '$app/paths';
+	import { goto } from '$app/navigation';
+	import { analyses } from '$lib/stores';
 
-  import {activeManoeuvre, analyseManoeuvre, activeResult, running, 
-    difficulty, truncate, fcj, optimise, long_output, runInfo} from '$lib/stores';
-  import {colscale, redsColors, tealsColrs, yellColors} from '$lib/plots/styling';
-  import { base } from '$app/paths';
-  import {goto} from '$app/navigation';
+	export let id: number;
 
-  export let manname: string;
+	let ma = analyses[id];
 
-  $: manid = $fcj!.unique_names.indexOf(manname);
+	let isRunning = running[id];
+	let info = runInfo[id];
+	
+	$: colours = [yellColors, tealsColrs, redsColors][$difficulty - 1];
 
-  $: colours = [yellColors, tealsColrs, redsColors][$difficulty-1];
-  
-  $: scores = $activeResult?.get_scores($difficulty, $truncate)[manid]?.score;
+	$: scores = $ma?.get_score($selectedResult, $difficulty, $truncate);
+	$: intra = scores?.intra || 0;
+	$: inter = scores?.inter || 0;
+	$: positioning = scores?.positioning || 0;
+	$: score = scores?.total || 0;
 
-  $: intra = scores?.intra || 0;
-  $: inter = scores?.inter || 0;
-  $: positioning = scores?.positioning || 0;
-  $: score = scores?.total || 0; 
-  $: k = manid ? $fcj!.mans[manid].k : 0;
 
-  function activate_man(name: string, page: string) {
-    $activeManoeuvre=name;
-    goto(base + '/analysis/manoeuvre/'+page);
-  }
+	function activate_man(id: number, page: string) {
+		$selManID = id;
+		goto(base + '/analysis/manoeuvre/' + page);
+	}
 
-  function runMan() {
-    analyseManoeuvre(manname, true, $optimise, $long_output, $activeResult?.fa_version);
-  }
-
+	async function runMan() {
+		await analyseManoeuvre(id, $optimise, true);
+	}
 </script>
 
-<div>{manid}</div>
+<div>{$ma?.id}</div>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<button on:click={()=>activate_man(manname, '')} data-sveltekit-preload-data="tap">{manname}</button>
-<div>{k}</div>
+<button on:click={() => activate_man(id, '')} data-sveltekit-preload-data="tap">{$ma?.name}</button>
+<Tooltip>
+  {#each Object.entries($ma.summary()) as [key, value]}
+    <div>{key}: {value}</div>
+  {/each}
+</Tooltip>
+<div>{$ma?.k}</div>
 
 {#if scores}
-  <button style:background-color={colscale(intra, 6, colours)} data-sveltekit-preload-data="tap" on:click={()=>activate_man(manname, 'intra')}>{intra.toFixed(2)}</button>
-  <button style:background-color={colscale(inter, 6, colours)} data-sveltekit-preload-data="tap" on:click={()=>activate_man(manname, 'inter')}>{inter.toFixed(2)}</button>
-  <button style:background-color={colscale(positioning, 6, colours)} data-sveltekit-preload-data="tap" on:click={()=>activate_man(manname, 'positioning')}>{positioning.toFixed(2)}</button>
+	<button
+		style:background-color={colscale(intra, 6, colours)}
+		data-sveltekit-preload-data="tap"
+		on:click={() => activate_man(id, 'intra')}>{intra.toFixed(2)}</button
+	>
+	<button
+		style:background-color={colscale(inter, 6, colours)}
+		data-sveltekit-preload-data="tap"
+		on:click={() => activate_man(id, 'inter')}>{inter.toFixed(2)}</button
+	>
+	<button
+		style:background-color={colscale(positioning, 6, colours)}
+		data-sveltekit-preload-data="tap"
+		on:click={() => activate_man(id, 'positioning')}>{positioning.toFixed(2)}</button
+	>
 {:else}
-  <div>-</div>
-  <div>-</div>
-  <div>-</div>
+	<div>-</div>
+	<div>-</div>
+	<div>-</div>
 {/if}
 
 {#if scores}
-  <button 
-    on:click={()=>activate_man(manname, '')} 
-    data-sveltekit-preload-data="tap"
-    style:background-color={colscale((10 - score) * k, 20, colours)}
-  >{score.toFixed(1)}</button>
+	<button
+		on:click={() => activate_man(id, '')}
+		data-sveltekit-preload-data="tap"
+		style:background-color={colscale((10 - score) * $ma.k, 20, colours)}>{score.toFixed(1)}</button
+	>
 {:else}
-  <div>-</div>
-{/if} 
-
-
-{#if $running.includes(manname)}
-  <div>Busy</div>
-{:else}
-  <button color='light' style='width:200px' on:click={runMan}>Run</button>
-{/if} 
-
-{#if $runInfo[manname]}
-  <div id='status'>{$runInfo[manname]}</div>
-{:else}
-  <div></div>
+	<div>-</div>
 {/if}
 
+{#if $isRunning}
+	<div>Busy</div>
+{:else}
+	<button color="light" style="width:200px" on:click={runMan}>Run</button>
+{/if}
+
+<div id="status">
+  {$info} 
+  {#if !$isRunning && !$info.includes('Empty') && score==0 } 
+    <button class='albutton' on:click={()=>activate_man(id, 'alignment')}>Check Alignment</button>
+    <Tooltip class='text-wrap w-96'>
+      Failed analyses or unexpectedly low scores may be a result of a poor element alignment.
+      Go the the alignment page to check and fix it for this manoeuvre.
+      Alternatively try flying better.
+    </Tooltip>
+  {/if}
+</div>
 
 <style>
-  div {text-align: center;}
+	div {
+		text-align: center;
+	}
 
-  #status {
-    font-size: x-small;
-    font-weight: lighter;
-    justify-self: start;
+	#status {
+		font-size: x-small;
+		font-weight: lighter;
+		justify-self: start;
+		white-space: nowrap;
+	}
+
+  .albutton {
+	  color: blue;
+    font-weight: bold;
   }
 </style>
-
-

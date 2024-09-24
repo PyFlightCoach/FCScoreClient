@@ -11,6 +11,7 @@ export async function serverFunc(func_name: string, kwargs: Record<string, any>=
   }
   if (method==='POST') {
     msg.body = JSON.stringify(kwargs);
+    
   }
   let spath: string = get(server);
 
@@ -19,7 +20,10 @@ export async function serverFunc(func_name: string, kwargs: Record<string, any>=
   if (response.ok) {
     return await response.json();
   } else {
-    throw new Error(`${response.statusText}: ${(await response.json()).detail}`) ;
+    response.json().then((res) => {
+      throw new Error(`${response.statusText}: ${res.detail}`) ;
+    });
+    
   }
   
 }
@@ -36,3 +40,4 @@ export async function get_telemetry(): Promise<Blob> {
   ).then(res => res.blob())
   
 }
+

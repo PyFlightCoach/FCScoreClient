@@ -1,47 +1,43 @@
 <script lang="ts">
 	import PlotSec from '$lib/plots/PlotSec.svelte';
 	import PlotDTW from '$lib/plots/PlotDTW.svelte';
-	import { internals, activeManoeuvre, fcj } from '$lib/stores';
+	import { analyses, selManID } from '$lib/stores';
 	import type { States } from '$lib/geometry';
 	import CriteriaPlot from './CriteriaPlot.svelte';
 	import VisPlot from './VisPlot.svelte';
 	import DGPlot from './DGPlot.svelte';
 	import ColouedTable from '$lib/ColouedTable.svelte';
-	import { goto } from '$app/navigation';
+	
 
-	$: manid = $fcj?.unique_names.indexOf($activeManoeuvre!);
-	$: man = $internals![manid!];
+	$: man = analyses[$selManID];
 
-	$: if (!man.scores) {
-		goto('/analysis/');
-	}
-
-	$: summaries = man!.scores!.intra.summaries();
+	$: summaries = $man?.scores.intra.summaries();
 
 	let states: Record<string, States>;
 	let templates: Record<string, States>;
-	$: states = man!.flown.split();
-	$: templates = man!.template!.split();
+	$: states = $man?.flown.split();
+	$: templates = $man?.template!.split();
 
 	let activeCriteria: null | string = null;
 	let activeDGName: null | string = null;
 	let activeIndex: null | number = 0;
 
-	$: activeED = man?.mdef.getEd(activeDGName);
+	$: activeED = $man?.mdef.getEd(activeDGName);
 	$: dg = activeED?.getDG(activeCriteria);
 
-	$: element = man!.manoeuvre!.getEl(activeED?.name);
+	$: element = $man?.manoeuvre.getEl(activeED?.name);
 
 	$: showintra = activeDGName != null && activeCriteria != null && activeCriteria != 'Total';
 	$: result =
 		activeDGName && activeCriteria
-			? man.scores!.intra.data[activeDGName].data[activeCriteria]
+			? $man?.scores!.intra.data[activeDGName].data[activeCriteria]
 			: undefined;
 </script>
 
 <div id="container">
+  {#if $man}
 	<ColouedTable data={summaries} bind:activeRow={activeDGName} bind:activeCol={activeCriteria} />
-
+  
 	<div id="intra_summary">
 		<div class="plot" class:fullwidth={!showintra} class:fullheight={!showintra}>
 			{#if activeED}
@@ -49,6 +45,8 @@
 					flst={states[activeED.name]}
 					tpst={templates[activeED.name]}
 					bind:i={activeIndex}
+          controls={['play', 'scale', 'speed', 'projection', 'modelClick']}
+          fixRange
 				/>
 			{:else}
 				<PlotDTW sts={states} bind:activeEl={activeDGName} />
@@ -76,6 +74,9 @@
 			<div class="plot fullwidth"><DGPlot {result} bind:activeIndex /></div>
 		{/if}
 	</div>
+  {:else}
+    <div>No data</div>
+  {/if}
 </div>
 
 <style>

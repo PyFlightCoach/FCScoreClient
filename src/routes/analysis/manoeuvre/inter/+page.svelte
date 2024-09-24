@@ -1,25 +1,23 @@
 <script lang='ts'>
-  import { internals, activeManoeuvre, fcj } from '$lib/stores';
-  import type { States} from '$lib/geometry';
-  import {P} from 'flowbite-svelte';
+  import { analyses, selManID, fcj } from '$lib/stores';
+    import {P} from 'flowbite-svelte';
   import { AccordionItem, Accordion } from 'flowbite-svelte';
   import PlotInter from '$lib/plots/PlotInter.svelte';
-	import type { ManParm } from '$lib/api_objects/mandef.js';
 	import { d3Color, colscale, redsColors } from '$lib/plots/styling.js';
 
-  $: manid = $fcj?.unique_names.indexOf($activeManoeuvre!);
-  $: man = $internals![manid!];
-  $: states = man.flown.split();
+  $: man = analyses[$selManID];
+  $: states = $man?.flown.split();
   
 </script>
 
+{#if man}
 <Accordion>
 
-  {#each Object.values(man.mdef.mps) as mp}
+  {#each Object.values($man.mdef.mps) as mp}
     
     <AccordionItem>
-      <span slot="header">{mp.name} (dg={mp.name in man.scores.inter.data ? man.scores.inter.data[mp.name].total.toFixed(2) : 0})</span>
-      {#if mp.name in man.scores.inter.data}
+      <span slot="header">{mp.name} (dg={mp.name in $man.scores.inter.data ? $man.scores.inter.data[mp.name].total.toFixed(2) : 0})</span>
+      {#if mp.name in $man.scores.inter.data}
       
         <div class='container'>
           <div class='cell'>Collector</div>
@@ -30,20 +28,20 @@
 
           {#each Object.values(mp.collectors) as co, i}            
             <div class='cell' style:background-color={d3Color(i)}>{co}</div>
-            <div class='cell'>{man.scores.inter.data[mp.name].sample[i].toFixed(2)}</div>
-            <div class='cell'>{man.scores.inter.data[mp.name].errors[i].toFixed(2)}</div>
-            <div class='cell'>{man.scores.inter.data[mp.name].measurement.visibility[i].toFixed(2)}</div>
+            <div class='cell'>{$man.scores.inter.data[mp.name].sample[i].toFixed(2)}</div>
+            <div class='cell'>{$man.scores.inter.data[mp.name].errors[i].toFixed(2)}</div>
+            <div class='cell'>{$man.scores.inter.data[mp.name].measurement.visibility[i].toFixed(2)}</div>
             <div class='cell' style:background-color={colscale(
-              man.scores.inter.data[mp.name].dgs[i], 
-              man.scores.inter.data[mp.name].total, redsColors
-            )}>{man.scores.inter.data[mp.name].dgs[i].toFixed(2)}</div>
+              $man.scores.inter.data[mp.name].dgs[i], 
+              $man.scores.inter.data[mp.name].total, redsColors
+            )}>{$man.scores.inter.data[mp.name].dgs[i].toFixed(2)}</div>
           {/each}
         </div>
 
         <div style:height=600px>
           <PlotInter 
             sts={states} 
-            activeEls={mp.getCollectorEls(Object.keys(man.mdef.eds))}
+            activeEls={mp.getCollectorEls(Object.keys($man.mdef.eds))}
           />
         </div>
         
@@ -58,7 +56,9 @@
     
   {/each}
 </Accordion>
-
+{:else}
+  <div>no data</div>
+{/if}
 
 <style>
   .cell {color: black; height:100%; width: 100%; display: flex;

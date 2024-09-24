@@ -1,35 +1,19 @@
-import { writable, type Writable, get } from 'svelte/store';
+import { writable, type Writable } from 'svelte/store';
 import { serverFunc } from '$lib/api_calls';
-import { ElSplit, FCJManResult, FCJson, FCSResult } from '$lib/api_objects/fcjson';
-import { Internals } from '$lib/api_objects/mandata';
-import pkg from 'file-saver';
+import { FCJson, Origin, ScheduleInfo } from '$lib/api_objects/fcjson';
+import { States } from '$lib/geometry';
+import { MA } from '$lib/api_objects/ma';
 import { browser } from '$app/environment';
-import _ from 'underscore';
-import { goto } from '$app/navigation';
-import { base } from '$app/paths';
+import { get } from 'svelte/store';
+import { ManDetails, ManSplit } from '$lib/splitting';
 
-const { saveAs } = pkg;
-
-export const fcj: Writable<FCJson | undefined> = writable();
-export const direction: Writable<number | undefined> = writable();
-export const internals: Writable<Internals[] | undefined> = writable();
-export const running: Writable<string[]> = writable([]);
-
-export const runInfo: Writable<Record<string, string>> = writable();
-
-export const server_version: Writable<string> = writable('not connected to server');
-export const fa_version: Writable<string> = writable('not connected to server');
-
-export const selectedResult: Writable<string | undefined> = writable();
-export const activeResult: Writable<FCSResult | undefined> = writable();
-selectedResult.subscribe((value) => {
-	activeResult.set(get(fcj)?.get_result(value));
-});
-
-export const activeManoeuvre: Writable<string | undefined> = writable();
-
-export const difficulty: Writable<number> = writable(3);
-export const truncate: Writable<boolean> = writable(false);
+export class NavContent {
+	constructor(
+		readonly name: string,
+		readonly href: string,
+		readonly onclick = () => {}
+	) {}
+}
 
 export const navitems: Writable<NavContent[]> = writable([]);
 
@@ -44,6 +28,7 @@ server.subscribe((value) => {
 	}
 });
 
+export const fa_version: Writable<string> = writable('not connected to server');
 server.subscribe(async () => {
 	try {
 		fa_version.set(await serverFunc('fa_version', {}, 'GET'));
@@ -52,6 +37,7 @@ server.subscribe(async () => {
 	}
 });
 
+export const server_version: Writable<string> = writable('not connected to server');
 server.subscribe(async () => {
 	try {
 		server_version.set(await serverFunc('version', {}, 'GET'));
@@ -76,154 +62,107 @@ optimise.subscribe((value) => {
 		localStorage.optimise = String(value);
 	}
 });
-export const long_output = writable<boolean>(
-	browser ? localStorage.getItem('long_output') === 'true' : false
-);
-long_output.subscribe((value) => {
-	if (browser) {
-		localStorage.long_output = String(value);
-	}
-});
 
 export const mouse = writable({ x: 0, y: 0 });
 
-export function clearFlight(target: string | null = null) {
-	internals.set(undefined);
-	direction.set(undefined);
-	fcj.set(undefined);
-	selectedResult.set(undefined);
-	activeManoeuvre.set(undefined);
-	if (browser && target !== null) {
-		goto(target || base);
-	}
-}
+export const isCompFlight: Writable<boolean> = writable(true);
 
-export async function analyseManoeuvre(
-	name: string,
-	force: boolean = false,
-	optim: boolean | null = null,
-	long = false,
-	source_result: string | null = null
-) {
-	const _fcj = get(fcj)!;
-	const manid = _fcj!.unique_names.indexOf(name);
+export const activeHelp: Writable<string> = writable('main');
 
-	if (
-		!get(running).includes(name) &&
-		(!_fcj.get_result(get(fa_version))?.manresults[manid] || force)
-	) {
-		running.update((v) => {
-			v.push(name);
-			return v;
-		});
+export const bin: Writable<File> = writable();
+export const binData: Writable<Record<string, any>> = writable();
+export const origin: Writable<Origin | undefined> = writable();
+export const fcj: Writable<FCJson | undefined> = writable();
 
-		const internal_data = get(internals)![manid];
+export const states: Writable<States> = writable();
 
-		const props: Record<string, any> = {
-			id: manid - 1,
-			direction: get(direction)!,
-			optimise_alignment: optim === null ? get(optimise) : optim,
-			long_output: long || get(long_output),
-			difficulty: 'all',
-			truncate: 'both'
-		};
+export const manNames: Writable<string[]> = writable();
+export const analyses: Writable<MA | undefined>[] = [];
+export const running: Writable<boolean>[] = [];
+export const runInfo: Writable<string>[] = [];
+export const scores: Writable<number[]> = writable();
+export const totalScore: Writable<string> = writable('---');
+export const fa_versions: Writable<string[]> = writable([]);
 
-		let method: string = 'run_short_manoeuvre';
-		if (internal_data && internal_data.fa_version == source_result) {
-			props.mdef = internal_data.mdef;
-			props.flown = internal_data.flown.data;
+fa_versions.subscribe((value) => {
+  if (value.length > 0) {
+    selectedResult.set(value[value.length - 1]);
+  }
+});
 
-			method = 'run_long_manoeuvre';
-		} else {
-			props.sinfo = _fcj!.sinfo;
-			props.site = _fcj!.origin;
-			props.data = _fcj!.get_mandata(manid);
-			if (_fcj.get_result(source_result!)?.manresults[manid]?.els) {
-				props.els = _fcj.get_result(source_result!)?.manresults[manid]?.els;
-			}
-		}
+export const selectedResult: Writable<string | undefined> = writable();
+export const difficulty: Writable<number> = writable(3);
+export const truncate: Writable<boolean> = writable(false);
+export const selManID: Writable<number | undefined> = writable();
 
-		try {
-			const res = await serverFunc(method, props);
+scores.subscribe((value) => {
+	totalScore.set(value ? value.reduce((a, b) => a + b, 0).toFixed(2) : '---');
+});
 
-			fcj.update((v) => {
-				v?.add_result(res.fa_version || get(fa_version), name, FCJManResult.parse(res));
-				return v;
-			});
-			selectedResult.set(undefined);
-			selectedResult.set(res.fa_version || get(fa_version));
-
-			if (Object.keys(res).includes('mdef')) {
-				if (Object.keys(res).includes('fa_version')) {
-					internals.update((v) => {
-						v![manid] = Internals.parse(res);
-						return v;
-					});
-				} else {
-					console.log(`Cant display internals for version ${get(fa_version)}`);
-				}
-			}
-      runInfo.update( v => {v[name] = `Run at ${new Date().toLocaleString()}`; return v;});
-		} catch (err) {
-
-      runInfo.update( v => {v[name] = `Error: ${err.message}`; return v;});
-      
-			console.log('Error running manoeuvre ' + name + ': ' + err.message);
-		}
-
-		running.update((v) => v.filter((item) => item !== name));
-	}
-}
-
-export async function analyseList(
-	names: string[],
-	force = false,
-	optim: boolean | null = null,
-	internals: boolean = false
-) {
-	const source_result = get(selectedResult);
-	names.forEach(async (name) => {
-		await analyseManoeuvre(name, force, optim, internals, source_result);
-	});
-}
-
-export async function loadExample() {
-	fcj.set(FCJson.parse(await (await fetch(`${base}/example/example_p25.json`)).json()));
-	direction.set(1);
-	const _fcj = get(fcj)!;
-	selectedResult.set(_fcj.fcs_scores[_fcj.fcs_scores.length - 1].fa_version);
-	internals.set(Array(_fcj.mans.length));
-	_fcj.unique_names.forEach((name, i) => {
-		Internals.parse_example(name).then((data) => {
-			internals.update((v) => {
-				v![i] = data;
-				return v;
-			});
-		});
-	});
-
-	runInfo.set(
-		Object.fromEntries(
-			_fcj.unique_names.map((mn) => {
-				return [mn, `Example loaded at ${new Date().toLocaleString()}`];
-			})
-		)
-	);
-
-
-}
-
-export async function exportFCJ() {
-	saveAs(
-		new Blob([JSON.stringify(get(fcj)!.export_data())], { type: 'application/json' }),
-		get(fcj)!.name
+function updateScores(result: string, diff: number, trunc: boolean) {
+	scores.set(
+		analyses.map((a) => {
+			const ma = get(a);
+			return ma ? ma.get_score(result, diff, trunc).total * (ma.mdef?.info?.k | ma.k) : 0;
+		})
 	);
 }
 
-export class NavContent {
-	constructor(
-		readonly name: string,
-		readonly href: string,
-		readonly onclick = () => {}
-	) {}
+selectedResult.subscribe((value) => {
+	updateScores(value, get(difficulty), get(truncate));
+});
+
+difficulty.subscribe((value) => {
+	updateScores(get(selectedResult), value, get(truncate));
+});
+
+truncate.subscribe((value) => {
+	updateScores(get(selectedResult), get(difficulty), value);
+});
+
+fcj.subscribe((value) => {
+	if (value?.fcs_scores.length > 0) {
+		selectedResult.set(value.fcs_scores[value.fcs_scores.length - 1].fa_version);
+	} else {
+		selectedResult.set(undefined);
+	}
+});
+
+export const manoeuvres: Writable<Record<string, ManDetails[]>> = writable({});
+export const schedules: Writable<Record<string, string[]>> = writable({});
+export const categories: Writable<string[]> = writable([]);
+
+export async function loadCategories() {
+	if (get(categories).length == 0) {
+		categories.set(await serverFunc('categories', {}, 'GET'));
+	}
+	return get(categories);
+}
+
+export async function loadSchedules(category: string) {
+	if (!schedules[category]) {
+		await serverFunc(`${category}/schedules`, {}, 'GET').then((res) => {
+			schedules.update((s) => {
+				s[category] = res;
+				return s;
+			});
+		});
+	}
+	return get(schedules)[category];
+}
+
+export async function loadManoeuvres(category: string, schedule: string) {
+	const sinfo = new ScheduleInfo(category, schedule);
+
+	if (!manoeuvres[sinfo.to_string()]) {
+		await serverFunc(`${category}/${schedule}/manoeuvres`, {}, 'GET').then((pfcMans) => {
+			manoeuvres.update((mans) => {
+				mans[`${category}_${schedule}`] = pfcMans.map(
+					(m) => new ManDetails(m.name, m.id, m.k, sinfo)
+				);
+				return mans;
+			});
+		});
+	}
+	return get(manoeuvres)[sinfo.to_string()];
 }

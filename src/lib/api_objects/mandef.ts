@@ -1,6 +1,7 @@
 import { parse_dict } from '$lib/arrays';
 import { includes } from 'underscore';
 import { Result } from './scores';
+import type { an } from 'vitest/dist/chunks/reporters.C_zwCd4j.js';
 
 export const Heights = ['BTM', 'MID', 'TOP'] as const;
 export const Directions = ['DRIVEN', 'UPWIND', 'DOWNWIND'] as const;
@@ -50,6 +51,7 @@ export class ManInfo {
 			'man',
 			0,
 			'CENTRE',
+      {Kind:'TriangularBox'},
 			new BoxLocation('BTM', 'UPWIND', 'UPRIGHT'),
 			new BoxLocation('BTM', 'DRIVEN', 'DRIVEN'),
 			[],
@@ -177,6 +179,9 @@ export class DownGrade {
 				case 'absmax':
 					all=false;
 					return `maximum absolute value`;
+        case 'borders':
+          all=false;
+          return `middle of the sample, with a margin of ${args.tb} seconds`;
 				default:
 					return '';
 			}
@@ -230,7 +235,8 @@ export class ManDef {
 		readonly info: ManInfo,
 		readonly mps: Record<string, ManParm>,
 		readonly eds: Record<string, ElDef>,
-		readonly options: ManDef[] | null = null
+		readonly box: Record<string, any>,
+    readonly options: ManDef[] | null = null,
 	) {}
 	static parse(data: Record<string, any> | Record<string, any>[]): ManDef {
 		if (Array.isArray(data)) {
@@ -244,11 +250,12 @@ export class ManDef {
 			return new ManDef(
 				ManInfo.parse(data.info),
 				parse_dict(data.mps, ManParm.parse),
-				Object.fromEntries(
+        Object.fromEntries(
 					Object.entries(data.eds).map(([k, v]) => {
 						return [k, ElDef.parse(v)];
 					})
-				)
+				),
+        data.box,
 			);
 		}
 	}
