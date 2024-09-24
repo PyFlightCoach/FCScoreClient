@@ -163,7 +163,7 @@
             <DropdownItem on:click={() => {$states = undefined}}>Clear</DropdownItem>
 					{/if}
 				</Dropdown>
-				<NavLi class="cursor-pointer">Info</NavLi>
+				<NavLi href='https://pfcdocumentation.readthedocs.io/fcscore/index.html' class="cursor-pointer">Info</NavLi>
 			</NavUl>
 		</Navbar>
 	</div>
