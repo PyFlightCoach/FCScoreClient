@@ -70,7 +70,7 @@ export const isCompFlight: Writable<boolean> = writable(true);
 export const activeHelp: Writable<string> = writable('main');
 
 export const bin: Writable<File> = writable();
-export const binData: Writable<Record<string, any>> = writable({});
+export const binData: Writable<Record<string, any>> = writable();
 export const origin: Writable<Origin | undefined> = writable();
 export const fcj: Writable<FCJson | undefined> = writable();
 
@@ -82,6 +82,13 @@ export const running: Writable<boolean>[] = [];
 export const runInfo: Writable<string>[] = [];
 export const scores: Writable<number[]> = writable();
 export const totalScore: Writable<string> = writable('---');
+export const fa_versions: Writable<string[]> = writable([]);
+
+fa_versions.subscribe((value) => {
+  if (value.length > 0) {
+    selectedResult.set(value[value.length - 1]);
+  }
+});
 
 export const selectedResult: Writable<string | undefined> = writable();
 export const difficulty: Writable<number> = writable(3);

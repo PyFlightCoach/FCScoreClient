@@ -28,7 +28,8 @@
 		difficulty,
 		truncate,
 		selectedResult,
-		fa_version
+		fa_version,
+    fa_versions,states
 	} from '$lib/stores';
 	import { loadExample, exportFCJ, analyseAll, exportAnalysis, clearAnalysis } from '$lib/analysis';
 	import AnalysisReader from './AnalysisReader.svelte';
@@ -130,25 +131,22 @@
 						{/if}
 						<DropdownItem on:click={() => analyseAll($optimise, true)}>Run All</DropdownItem>
 						<DropdownItem on:click={() => analyseAll($optimise, false)}>Run Remaining</DropdownItem>
-
-						<DropdownItem on:click={exportFCJ}>export FCJ</DropdownItem>
+            {#if $fcj}
+						<DropdownItem on:click={()=>exportFCJ($fcj)}>export FCJ</DropdownItem>
+            {/if}
 						<DropdownItem on:click={exportAnalysis}>export Analysis</DropdownItem>
 
 						<DropdownDivider />
 						<Helper>Available Analyses</Helper>
-						{#if $fcj}
-							{#each $fcj.fcs_scores as res}
-								{#if !($fa_version == res.fa_version)}
-									<DropdownItem>
-										<Radio bind:group={$selectedResult} value={res.fa_version}>
-											{res.fa_version}
-										</Radio>
-									</DropdownItem>
-								{/if}
-							{/each}
-						{/if}
-						<Radio bind:group={$selectedResult} value={$fa_version}>Latest: {$fa_version}</Radio>
-					{:else}
+						
+            {#each $fa_versions as faV}
+              <DropdownItem>
+                <Radio bind:group={$selectedResult} value={faV}>
+                  {faV + ($fa_version == faV ? ' (Current)' : '')}
+                </Radio>
+              </DropdownItem>
+            {/each}
+					{:else if !$states}
             <DropdownItem href={base + '/upload'}>Load</DropdownItem>
             <DropdownItem><i class="cil-chevron-left-alt"></i> Import</DropdownItem>
             <AnalysisReader/>
@@ -161,6 +159,8 @@
 							}}
 							data-sveltekit-preload-data="tap">Example</DropdownItem
 						>
+          {:else}
+            <DropdownItem on:click={() => {$states = undefined}}>Clear</DropdownItem>
 					{/if}
 				</Dropdown>
 				<NavLi class="cursor-pointer">Info</NavLi>

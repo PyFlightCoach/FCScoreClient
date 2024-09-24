@@ -25,6 +25,10 @@ export class Origin {
 		this.move_north = move_north;
 	}
 
+  noMove() {
+    return new Origin(this.lat, this.lng, this.alt, this.heading, 0, 0);
+  }
+
 	static from_centre(pilot: GPS, centre: GPS) {
 		const vec = GPS.sub(centre, pilot);
 		return new Origin(
@@ -191,7 +195,7 @@ export class FCJManResult {
 	static parse(data: Record<string, any>) {
 		return new FCJManResult(
 			data.els.map((v) => Object.setPrototypeOf(v, ElSplit.prototype)),
-			data.results.map((v) => FCJResult.parse(v))
+			data.results?.map((v) => FCJResult.parse(v)) || [] 
 		);
 	}
 
@@ -313,13 +317,18 @@ export class FCJson {
 	}
 
 	add_result(version: string, name: string, manresult: FCJManResult) {
-		let res = this.get_result(version);
+		this.add_result_id(version, this.unique_names.indexOf(name), manresult);
+	}
+
+  add_result_id(version: string, id: number, manresult: FCJManResult) {
+    let res = this.get_result(version);
+    
 		if (!res) {
 			res = new FCSResult(version, Array(this.mans.length));
 			this.fcs_scores.push(res);
 		}
-		res.manresults[this.unique_names.indexOf(name)] = manresult;
-	}
+		res.manresults[id] = manresult;
+  }
 
 	export_data() {
 		return {

@@ -4,7 +4,7 @@ import { ManDef } from '$lib/api_objects/mandef';
 import { ManoeuvreResult } from '$lib/api_objects/scores';
 import { FCJManResult, FCJScore, ScheduleInfo } from '$lib/api_objects/fcjson';
 import { serverFunc } from '$lib/api_calls';
-import { selectedResult, fa_version, running, runInfo } from '$lib/stores';
+import { selectedResult, fa_version, runInfo } from '$lib/stores';
 import { get } from 'svelte/store';
 
 export class MA {
@@ -41,7 +41,7 @@ export class MA {
 		if (!this.history[selectedResult]) {
 			return FCJScore.empty();
 		} else {
-			return this.history[selectedResult].get_score(difficulty, truncate).score;
+			return this.history[selectedResult].get_score(difficulty, truncate)?.score || FCJScore.empty(); 
 		}
 	}
 
@@ -77,12 +77,13 @@ export class MA {
 				ManDef.parse(res.mdef),
 				Manoeuvre.parse(res.manoeuvre),
 				States.parse(res.template),
-				Manoeuvre.parse(res.corrected),
-				States.parse(res.corrected_template),
-				ManoeuvreResult.parse(res.full_scores)
+				res.corrected ? Manoeuvre.parse(res.corrected) : undefined,
+				res.corrected_template ? States.parse(res.corrected_template) : undefined,
+				res.full_scores ? ManoeuvreResult.parse(res.full_scores) : undefined
 			);
 		} catch (err) {
 			runInfo[this.id - 1].set(`Analysis Failed: ${err.message}`);
+      console.trace();
 			return this;
 		}
 	}
@@ -106,3 +107,5 @@ export class MA {
 		);
 	}
 }
+
+

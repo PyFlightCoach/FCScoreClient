@@ -2,12 +2,11 @@
 	import BinReader from './BinReader.svelte';
 	import BoxReader from './BoxReader.svelte';
 	import FcJsonReader from './FCJsonReader.svelte';
-  import AnalysisReader from '../AnalysisReader.svelte';
 	import { GPS, States } from '$lib/geometry';
 	import Splitter from './Splitter.svelte';
 	import { Origin } from '$lib/api_objects/fcjson';
 	import BoxPlot from './BoxPlot.svelte';
-	import { ButtonGroup, RadioButton, Button, P, List, Li , Heading} from 'flowbite-svelte';
+	import { ButtonGroup, RadioButton, Button, P, List, Li , Heading, Tooltip} from 'flowbite-svelte';
 	import { serverFunc } from '$lib/api_calls';
 	import { MA } from '$lib/api_objects/ma';
 	import {
@@ -17,7 +16,7 @@
 		fcj,
 		isCompFlight,
 		manoeuvres,
-		states, activeHelp
+		states, activeHelp, binData
 	} from '$lib/stores';
   import { createAnalyses, clearAnalysis} from '$lib/analysis';
 	import { goto } from '$app/navigation';
@@ -32,23 +31,22 @@
 	let mans: ManSplit[];
 	let activeTab = 'Info';
 	let boxKind = 'F3A';
-	let binData: Record<string, any> = {};
 
   $: $activeHelp = activeTab;
 
 	const handleNewBin = () => {
-		if (binData.hasOwnProperty('ORGN[1]') && !$fcj) {
+		if ($binData.hasOwnProperty('ORGN[1]') && !$fcj) {
 			if (
 				!$origin ||
 				GPS.sub(
-					new GPS(binData['ORGN[1]'].Lat[0], binData['ORGN[1]'].Lng[0], binData['ORGN[1]'].Alt[0]),
+					new GPS($binData['ORGN[1]'].Lat[0], $binData['ORGN[1]'].Lng[0], $binData['ORGN[1]'].Alt[0]),
 					new GPS($origin.lat, $origin.lng, $origin.alt)
 				).length() > 300
 			) {
 				$origin = new Origin(
-					binData['ORGN[1]'].Lat[0],
-					binData['ORGN[1]'].Lng[0],
-					binData['ORGN[1]'].Alt[0],
+					$binData['ORGN[1]'].Lat[0],
+					$binData['ORGN[1]'].Lng[0],
+					$binData['ORGN[1]'].Alt[0],
 					0
 				);
 			}
@@ -56,7 +54,6 @@
 		activeTab = 'Box';
     
 	};
-
 
 	const handleNewFCJ = () => {
 		$origin = $fcj.origin;
@@ -66,7 +63,7 @@
 	async function createState() {
 		if ($bin && $origin) {
 			states.set(
-				States.parse(await serverFunc('create_state', { data: binData, site: $origin }, 'POST'))
+				States.parse(await serverFunc('create_state', { data: $binData, site: $origin.noMove() }, 'POST'))
 			);
 			activeTab = 'Manoeuvres';
 		} else if ($fcj) {
@@ -76,14 +73,6 @@
 				)
 			);
 			activeTab = 'Manoeuvres';
-		}
-	}
-
-	$: if ($states && $fcj) {
-		const fcjl = $states.getFCJLength();
-		if ($fcj.data.length != fcjl) {
-			console.log(`removing fcj as length (${$fcj.data.length}) does not match $states (${fcjl})`);
-			//$fcj = undefined;
 		}
 	}
 
@@ -115,6 +104,10 @@
 		});
 		goto(base + '/analysis');
 	}
+
+  $: if($states==undefined && activeTab=='Manoeuvres'){
+    activeTab = 'Info';
+  }
 </script>
 
 <div class="parent">
@@ -122,7 +115,7 @@
 		<ButtonGroup>
 			{#if !$states}
 				<BinReader
-					bind:data={binData}
+					bind:data={$binData}
 					bind:bin={$bin}
 					on:newBin={handleNewBin}
 					on:clear={() => {
@@ -146,12 +139,23 @@
   <div class="bg">
 		<ButtonGroup>
 			<RadioButton bind:group={activeTab} value={'Info'}>Info</RadioButton>
-			<RadioButton bind:group={activeTab} value={'Box'} disabled={!binData}>Box</RadioButton>
+			<RadioButton bind:group={activeTab} value={'Box'} disabled={!$binData}>Box</RadioButton>
 			<RadioButton bind:group={activeTab} value={'Manoeuvres'} disabled={!$states}
 				>Manoeuvres</RadioButton
 			>
 		</ButtonGroup>
 	</div>
+  {#if $fcj && $states && $fcj.data.length != $states.getFCJLength()}
+  <ButtonGroup>
+    <P size='sm' color="text-red-700 dark:text-red-500">Warning: FCJ.length={$fcj.data.length}, st.length={$states.getFCJLength()}</P>
+    <Button on:click={()=>{$fcj=undefined}}>dissconnect FCJ</Button>
+  </ButtonGroup>
+  <Tooltip>
+    Either the FCJ was created from a different BIN file (probably not good), 
+    or the flight coach plotter used a different set of sources (probably fine). 
+    Double check splitting and consider dissconnecting FCJ file from this analysis.
+  </Tooltip>
+  {/if}
 	<div class="display">
 		{#if activeTab == 'Info'}
       <div class="info">
@@ -165,7 +169,7 @@
       </div>
       
 		{:else if activeTab == 'Box'}
-			<BoxPlot bind:binData bind:origin={$origin} bind:kind={boxKind} />
+			<BoxPlot bind:binData={$binData} bind:origin={$origin} bind:kind={boxKind} />
 		{:else if activeTab == 'Manoeuvres'}
 			<Splitter bind:states={$states} bind:mans bind:fcj={$fcj} bind:compFlight={$isCompFlight} />
 		{/if}

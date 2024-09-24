@@ -11,7 +11,9 @@ import {
 	origin,
 	selectedResult,
 	difficulty,
-	truncate
+	truncate,
+	fa_versions,
+	binData
 } from '$lib/stores';
 import { MA } from '$lib/api_objects/ma';
 import { AnalysisExport, MAExport } from '$lib/analysis_export';
@@ -45,11 +47,14 @@ export function createAnalyses(mnames: string[]) {
 					s[i] =
 						value.get_score(get(selectedResult), get(difficulty), get(truncate)).total *
 						(value.mdef?.info?.k | value.k);
-					selectedResult.set(Object.keys(value.history)[Object.keys(value.history).length - 1]);
 				} else {
 					s[i] = 0;
 				}
 				return s;
+			});
+
+			fa_versions.update((v) => {
+				return [...new Set([...v, ...Object.keys(value?.history || [])])];
 			});
 		});
 	});
@@ -57,10 +62,15 @@ export function createAnalyses(mnames: string[]) {
 
 export function clearAnalysis() {
 	selManID.set(undefined);
-  states.set(undefined);
+	states.set(undefined);
 	manNames.set(undefined);
 	scores.set(undefined);
 	selectedResult.set(undefined);
+	fa_versions.set([]);
+	binData.set({});
+	origin.set(undefined);
+	fcj.set(undefined);
+	bin.set(undefined);
 	analyses.length = 0;
 	running.length = 0;
 	runInfo.length = 0;
@@ -122,31 +132,34 @@ export async function createAnalysisExport() {
 export async function exportAnalysis() {
 	saveAs(
 		new Blob([JSON.stringify(await createAnalysisExport())], { type: 'application/json' }),
-		`${get(bin)?.name || get(fcj)?.name || 'exported'}_analysis.json`
+		`${(get(bin)?.name.replace('.BIN', '') || get(fcj)?.name.replace('.json', '') || 'exported')}_analysis.json`
 	);
 }
 
 export async function importAnalysis(aE: AnalysisExport) {
-  clearAnalysis();
-  origin.set(aE.box);
-  isCompFlight.set(aE.isComp);
-  states.set(aE.states);
+	clearAnalysis();
+	origin.set(aE.box);
+	isCompFlight.set(aE.isComp);
+	states.set(aE.states);
 
+	createAnalyses(aE.mans.map((mae) => mae.name));
 
-  createAnalyses(aE.mans.map((mae) => mae.name));
-
-  aE.mans.forEach((mae, i) => {
-    analyses[i].set(new MA(
-      mae.name, mae.id, mae.start, mae.stop, 
-      mae.sinfo, aE.direction(), 
-      new States(aE.states.data.slice(mae.start, mae.stop + 1)),
-      mae.history,
-      mae.k,
-    ));
-  });
+	aE.mans.forEach((mae, i) => {
+		analyses[i].set(
+			new MA(
+				mae.name,
+				mae.id,
+				mae.start,
+				mae.stop,
+				mae.sinfo,
+				aE.direction(),
+				new States(aE.states.data.slice(mae.start, mae.stop + 1)),
+				mae.history,
+				mae.k
+			)
+		);
+	});
 }
-
-
 
 export async function analyseMans(ids: number[], optim: boolean, force: boolean) {
 	ids.forEach(async (id) => {
@@ -173,12 +186,29 @@ export async function analyseManoeuvre(id: number, optimise: boolean, force: boo
 	}
 }
 
+export async function checkFCJ(fcjson: FCJson) {
+	let matches = true;
+	analyses.forEach(async (ma, i) => {
+		if (fcjson.mans[i + 1].start != get(ma).start || fcjson.mans[i + 1].stop != get(ma).stop) {
+			matches = false;
+		}
+	});
+	return matches;
+}
 
-export async function exportFCJ() {
-	saveAs(
-		new Blob([JSON.stringify(get(fcj)!.export_data())], { type: 'application/json' }),
-		get(fcj)!.name
-	);
+export async function exportFCJ(oldfcj: FCJson) {
+	if (checkFCJ(oldfcj)) {
+		analyses.forEach(async (ma, i) => {
+      Object.entries(get(ma).history).forEach(([key, value]) => {
+        oldfcj.add_result_id(key, i+1, value);
+      });
+		});
+
+		saveAs(
+			new Blob([JSON.stringify(oldfcj.export_data())], { type: 'application/json' }),
+			oldfcj.name
+		);
+	}
 }
 
 export async function listCategories() {

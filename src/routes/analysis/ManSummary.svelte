@@ -81,7 +81,17 @@
 	<button color="light" style="width:200px" on:click={runMan}>Run</button>
 {/if}
 
-<div id="status">{$info}</div>
+<div id="status">
+  {$info} 
+  {#if !$isRunning && !$info.includes('Empty') && score==0 } 
+    <button class='albutton' on:click={()=>activate_man(id, 'alignment')}>Check Alignment</button>
+    <Tooltip class='text-wrap w-96'>
+      Failed analyses or unexpectedly low scores may be a result of a poor element alignment.
+      Go the the alignment page to check and fix it for this manoeuvre.
+      Alternatively try flying better.
+    </Tooltip>
+  {/if}
+</div>
 
 <style>
 	div {
@@ -94,4 +104,9 @@
 		justify-self: start;
 		white-space: nowrap;
 	}
+
+  .albutton {
+	  color: blue;
+    font-weight: bold;
+  }
 </style>
