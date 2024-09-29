@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ButtonGroup, RadioButton, Button, P, List, Li , Heading} from 'flowbite-svelte';
+  import { List, Li , Heading} from 'flowbite-svelte';
 </script>
 
 <div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Fileupload, Dropdown, DropdownItem } from 'flowbite-svelte';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
-	import { FCJson } from '$lib/api_objects/fcjson';
+	import { FCJson } from '$lib/fcjson';
 	import {createEventDispatcher} from 'svelte';
 	const dispatch = createEventDispatcher();
 

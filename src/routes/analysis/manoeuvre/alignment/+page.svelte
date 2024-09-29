@@ -6,13 +6,13 @@
   import {Tooltip, Select, ButtonGroup, Button, NumberInput} from 'flowbite-svelte';
   import { goto } from '$app/navigation';
   import PlotDTW from '$lib/plots/PlotDTW.svelte';
-	import { MA } from '$lib/api_objects/ma';
+	import { MA } from '$lib/ma';
   
   $: man = analyses[$selManID];
 
   let step: number = 0.5;
   
-  $: elements = $man?.flown.elements();
+  $: elements = $man?.flown.element;
   $: end_info = $man?.flown.end_info();
   
   let element: string|null = null
@@ -20,7 +20,7 @@
   const editsplit = (stp: number, elname: string | null) => {
     
     if (elname == null) return; 
-    const elindex = elements.indexOf(elname);
+    const elindex = elements.lastIndexOf(elname);
     let i=0;
     if (stp>0) {
       const endt = Math.min(
@@ -44,7 +44,7 @@
     let history = $man.history;
     delete history[$fa_version];
     $man = new MA(
-      $man.name, $man.id, $man.start, $man.stop, $man.schedule, $man.scheduleDirection, $man.flown, history, $man.k
+      $man.name, $man.id, $man.tStart, $man.tStop, $man.schedule, $man.scheduleDirection, history, $man.k,  $man.flown
     );
     delete $fcj?.get_result($fa_version)?.manresults[$selManID];
   };

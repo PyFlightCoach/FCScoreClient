@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Origin } from '$lib/api_objects/fcjson';
+	import { Origin } from '$lib/fcjson';
 	import {
 		Helper,
 		Button,
@@ -11,7 +11,7 @@
 	} from 'flowbite-svelte';
 	import { GPS } from '$lib/geometry';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
-	import { FCJson, type FCJMan } from '$lib/api_objects/fcjson';
+	import { FCJson, type FCJMan } from '$lib/fcjson';
 	import {createEventDispatcher} from 'svelte';
 	import DgPlot from '../../routes/analysis/manoeuvre/intra/DGPlot.svelte';
 	const dispatch = createEventDispatcher();

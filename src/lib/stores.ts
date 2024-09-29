@@ -1,11 +1,12 @@
 import { writable, type Writable } from 'svelte/store';
 import { serverFunc } from '$lib/api_calls';
-import { FCJson, Origin, ScheduleInfo } from '$lib/api_objects/fcjson';
-import { States } from '$lib/geometry';
-import { MA } from '$lib/api_objects/ma';
+import { FCJson, Origin, ScheduleInfo } from '$lib/fcjson';
+import { States } from '$lib/state';
+import { MA } from '$lib/ma';
 import { browser } from '$app/environment';
 import { get } from 'svelte/store';
-import { ManDetails, ManSplit } from '$lib/splitting';
+import { ManDetails } from '$lib/splitting';
+import { BinData } from '$lib/bindata';
 
 export class NavContent {
 	constructor(
@@ -67,10 +68,8 @@ export const mouse = writable({ x: 0, y: 0 });
 
 export const isCompFlight: Writable<boolean> = writable(true);
 
-export const activeHelp: Writable<string> = writable('main');
-
 export const bin: Writable<File> = writable();
-export const binData: Writable<Record<string, any>> = writable();
+export const binData: Writable<BinData> = writable();
 export const origin: Writable<Origin | undefined> = writable();
 export const fcj: Writable<FCJson | undefined> = writable();
 

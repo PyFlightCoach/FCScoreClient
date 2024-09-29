@@ -2,13 +2,13 @@
 	import BinReader from './BinReader.svelte';
 	import BoxReader from './BoxReader.svelte';
 	import FcJsonReader from './FCJsonReader.svelte';
-	import { GPS, States } from '$lib/geometry';
+	import { GPS } from '$lib/geometry';
+	import { split_states, States } from '$lib/state';
 	import Splitter from './Splitter.svelte';
-	import { Origin } from '$lib/api_objects/fcjson';
+	import { Origin } from '$lib/fcjson';
 	import BoxPlot from './BoxPlot.svelte';
 	import { ButtonGroup, RadioButton, Button, P, List, Li, Heading, Tooltip } from 'flowbite-svelte';
-	import { serverFunc } from '$lib/api_calls';
-	import { MA } from '$lib/api_objects/ma';
+	import { MA } from '$lib/ma';
 	import {
 		analyses,
 		bin,
@@ -16,14 +16,14 @@
 		fcj,
 		isCompFlight,
 		manoeuvres,
-		states,
-		activeHelp,
-		binData
+		binData,
+		loadSchedules,
+		loadManoeuvres
 	} from '$lib/stores';
 	import { createAnalyses, clearAnalysis } from '$lib/analysis';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
-	import { ManSplit } from '$lib/splitting';
+	import { parseFCJMans, ManSplit } from '$lib/splitting';
 	import { get } from 'svelte/store';
 	import Info from './Info.svelte';
 
@@ -33,63 +33,46 @@
 	let activeTab = 'Info';
 	let boxKind = 'F3A';
 	let busy = false;
+	let states: States | undefined;
+	let activeMan: number = 0;
 
-	$: $activeHelp = activeTab;
-
-	const handleNewBin = () => {
-		if ($binData.hasOwnProperty('ORGN[1]') && !$fcj) {
-			if (
-				!$origin ||
-				GPS.sub(
-					new GPS(
-						$binData['ORGN[1]'].Lat[0],
-						$binData['ORGN[1]'].Lng[0],
-						$binData['ORGN[1]'].Alt[0]
-					),
-					new GPS($origin.lat, $origin.lng, $origin.alt)
-				).length() > 300
-			) {
-				$origin = new Origin(
-					$binData['ORGN[1]'].Lat[0],
-					$binData['ORGN[1]'].Lng[0],
-					$binData['ORGN[1]'].Alt[0],
-					0
-				);
-			}
+	$: if ($binData && !$fcj) {
+		if (
+			!$origin ||
+			GPS.sub(
+				new GPS($binData.orgn.Lat[0], $binData.orgn.Lng[0], $binData.orgn.Alt[0]),
+				new GPS($origin.lat, $origin.lng, $origin.alt)
+			).length() > 300
+		) {
+			$origin = new Origin($binData.orgn.Lat[0], $binData.orgn.Lng[0], $binData.orgn.Alt[0], 0);
 		}
-		activeTab = 'Box';
-	};
+	}
 
-	const handleNewFCJ = () => {
-		$origin = $fcj.origin;
-		mans = undefined;
-	};
+	$: if ($binData) {
+		states = States.from_xkf1($origin.noMove(), $binData.orgn, $binData.xkf1);
+	}
 
-	async function createState() {
-		busy = true;
-		if ($bin && $origin) {
-			states.set(
-				States.parse(
-					await serverFunc(
-						'create_state', {data: $binData, site: $origin.noMove() },
-						'POST'
-					)
-				)
-			);
-			activeTab = 'Manoeuvres';
-		} else if ($fcj) {
-			states.set(
-				States.parse(
-					await serverFunc('create_state_fcj', { data: $fcj.data, site: $origin }, 'POST')
-				)
-			);
-			activeTab = 'Manoeuvres';
+	$: if ($fcj) {
+		if (!$binData) {
+			states = States.from_fcj($fcj);
 		}
-		busy = false;
+		$fcj.sinfo
+			.to_pfc()
+			.then((pfcSinfo) => {
+				loadSchedules(pfcSinfo.category);
+				return loadManoeuvres(pfcSinfo.category, pfcSinfo.name);
+			})
+			.then((manDetails) => {
+				return parseFCJMans($fcj.mans, manDetails, states.getFCJIndexOffset());
+			})
+			.then((fcjManSplits) => {
+				mans = fcjManSplits;
+				console.log('Loaded mans from fcj');
+			});
 	}
 
 	function createAnalysis() {
-		let direction = $isCompFlight ? $states.data[mans[0].stop].direction_str() : 'Infer';
+		let direction = $isCompFlight ? states.data[mans[0].stop].direction_str() : 'Infer';
 		let analysisMans: number[] = [];
 		mans.forEach((man, i) => {
 			if (man.sinfo) {
@@ -99,68 +82,67 @@
 
 		createAnalyses(analysisMans.map((i) => mans[i].name));
 
+		const sts = $binData ? undefined : split_states(states.data, 'manoeuvre');
 		analysisMans.forEach((id, i) => {
 			analyses[i].set(
 				new MA(
 					mans[id].name,
 					i + 1,
-					id > 0 ? mans[id - 1].stop : 0,
-					mans[id].stop,
+					id > 0 ? states.data[mans[id - 1].stop].t : 0,
+					states.data[mans[id].stop].t,
 					mans[id].sinfo,
 					direction,
-					new States($states.data.slice(mans[id - 1]?.stop | 0, mans[id].stop)),
 					$fcj?.manhistory(id) || {},
-					get(manoeuvres)[mans[id].sinfo.to_string()][mans[id].id - 1].k
+					get(manoeuvres)[mans[id].sinfo.to_string()][mans[id].id - 1].k,
+					sts
+						? new States(
+								states.data.slice(id > 0 ? mans[id - 1].stop : 0, mans[id].stop)
+							)
+						: undefined
 				)
 			);
 		});
 		goto(base + '/analysis');
-	}
-
-	$: if ($states == undefined && activeTab == 'Manoeuvres') {
-		activeTab = 'Info';
 	}
 </script>
 
 <div class="parent">
 	<div class="bg">
 		<ButtonGroup>
-			{#if !$states}
-				<BinReader
-					bind:data={$binData}
-					bind:bin={$bin}
-					on:newBin={handleNewBin}
-					on:clear={() => {
-						activeTab = 'Info';
-					}}
-				/>
-				<FcJsonReader bind:fcj={$fcj} on:newFCJ={handleNewFCJ} />
-				<BoxReader bind:origin={$origin} bind:kind={boxKind} />
-				<Button on:click={createState}>Create State</Button>
-			{:else}
-				<Button
-					on:click={() => {
-						$states = undefined;
-						activeTab = 'Info';
-					}}>Clear State</Button
-				>
-				<Button on:click={createAnalysis}>Setup Analysis</Button>
-			{/if}
+			<BinReader
+				on:loaded={(e) => {
+					$binData = e.detail.data;
+					$bin = e.detail.file;
+				}}
+				on:clear={() => {
+					activeTab = 'Info';
+					$bin = undefined;
+					$binData = undefined;
+				}}
+			/>
+			<FcJsonReader
+				bind:fcj={$fcj}
+				on:newFCJ={() => {
+					$origin = $fcj.origin;
+				}}
+			/>
+			<BoxReader bind:origin={$origin} bind:kind={boxKind} />
+			<Button on:click={createAnalysis}>Setup Analysis</Button>
 		</ButtonGroup>
 	</div>
 	<div class="bg">
 		<ButtonGroup>
 			<RadioButton bind:group={activeTab} value={'Info'}>Info</RadioButton>
 			<RadioButton bind:group={activeTab} value={'Box'} disabled={!$binData}>Box</RadioButton>
-			<RadioButton bind:group={activeTab} value={'Manoeuvres'} disabled={!$states}
+			<RadioButton bind:group={activeTab} value={'Manoeuvres'} disabled={!states}
 				>Manoeuvres</RadioButton
 			>
 		</ButtonGroup>
 	</div>
-	{#if $fcj && $states && $fcj.data.length != $states.getFCJLength()}
+	{#if $fcj && states && $fcj.data.length != states.getFCJLength()}
 		<ButtonGroup>
 			<P size="sm" color="text-red-700 dark:text-red-500"
-				>Warning: FCJ.length={$fcj.data.length}, st.length={$states.getFCJLength()}</P
+				>Warning: FCJ.length={$fcj.data.length}, st.length={states.getFCJLength()}</P
 			>
 			<Button
 				on:click={() => {
@@ -186,16 +168,17 @@
 		{:else if activeTab == 'Info'}
 			<div class="info">
 				<Info />
-				<Heading tag="h4">Loaded Files:</Heading>
-				<List>
-					<Li>Bin File: {$bin?.name}</Li>
-					<Li>FC json: {$fcj?.name}</Li>
-				</List>
 			</div>
 		{:else if activeTab == 'Box'}
 			<BoxPlot bind:binData={$binData} bind:origin={$origin} bind:kind={boxKind} />
 		{:else if activeTab == 'Manoeuvres'}
-			<Splitter bind:states={$states} bind:mans bind:fcj={$fcj} bind:compFlight={$isCompFlight} />
+			<Splitter
+				bind:states
+				bind:mans
+				bind:fcj={$fcj}
+				bind:compFlight={$isCompFlight}
+				bind:activeMan
+			/>
 		{/if}
 	</div>
 </div>

@@ -1,5 +1,5 @@
 <script lang='ts'>
-  import type {States} from '$lib/geometry';
+  import type {States} from '$lib/state';
   import Plot from 'svelte-plotly.js';
   import {ribbon} from '$lib/plots/traces';
 	import {layout3d} from '$lib/plots/layouts';

@@ -2,7 +2,7 @@
 	import PlotSec from '$lib/plots/PlotSec.svelte';
 	import PlotDTW from '$lib/plots/PlotDTW.svelte';
 	import { analyses, selManID } from '$lib/stores';
-	import type { States } from '$lib/geometry';
+	import type { States } from '$lib/state';
 	import CriteriaPlot from './CriteriaPlot.svelte';
 	import VisPlot from './VisPlot.svelte';
 	import DGPlot from './DGPlot.svelte';

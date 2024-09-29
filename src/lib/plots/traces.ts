@@ -1,4 +1,5 @@
-import { Point, Quaternion, States } from '$lib/geometry';
+import { Point, Quaternion} from '$lib/geometry';
+import { States } from '$lib/state';
 import ObjFile from 'obj-file-parser';
 
 
@@ -225,11 +226,10 @@ export class OBJ {
 }
 
 export const modeltrace = (sts: States, model: OBJ, props: Record<string, any> = {}) => {
-	return sts.data.map((st) => model.to_mesh3d(st.pos(), st.att(), props));
+	return sts.data.map((st) => model.to_mesh3d(st.pos, st.att, props));
 };
 
 import { d3Color } from '$lib/plots/styling';
-import type { Criteria } from '$lib/api_objects/mandef';
 
 export const alignment_traces = (
 	sts: Record<string, States>,

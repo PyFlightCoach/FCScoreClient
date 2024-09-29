@@ -15,19 +15,19 @@ import {
 	fa_versions,
 	binData
 } from '$lib/stores';
-import { MA } from '$lib/api_objects/ma';
+import { MA } from '$lib/ma';
 import { AnalysisExport, MAExport } from '$lib/analysis_export';
 import { serverFunc } from '$lib/api_calls';
-import { States } from '$lib/geometry';
-import { FCJson, type FCJMan, ScheduleInfo } from '$lib/api_objects/fcjson';
+import {States} from '$lib/state';
+import { FCJson, type FCJMan, ScheduleInfo } from '$lib/fcjson';
 import { get } from 'svelte/store';
 import { base } from '$app/paths';
 import { fcj } from '$lib/stores';
-import { Manoeuvre } from '$lib/api_objects/manoeuvre';
+import { Manoeuvre } from '$lib/manoeuvre';
 import { dev } from '$app/environment';
 import pkg from 'file-saver';
-import { ManDef } from './api_objects/mandef';
-import { ManoeuvreResult } from './api_objects/scores';
+import { ManDef } from './mandef';
+import { ManoeuvreResult } from './scores';
 import { writable, type Writable } from 'svelte/store';
 
 const { saveAs } = pkg;
@@ -67,7 +67,7 @@ export function clearAnalysis() {
 	scores.set(undefined);
 	selectedResult.set(undefined);
 	fa_versions.set([]);
-	binData.set({});
+	binData.set(undefined);
 	origin.set(undefined);
 	fcj.set(undefined);
 	bin.set(undefined);
@@ -82,12 +82,6 @@ export async function loadExample() {
 
 	createAnalyses(_fcj.unique_names.slice(1, _fcj.unique_names.length - 1));
 
-	const sts = States.parse(await (await fetch(`${base}/example/example_state.json`)).json());
-	const fcjoffset = sts.getFCJIndexOffset();
-	if (dev) {
-		states.set(sts);
-	}
-
 	get(manNames).forEach(async (name, i) => {
 		fetch(`${base}/example/${name}.json`).then(async (res) => {
 			res.json().then((data) => {
@@ -95,13 +89,13 @@ export async function loadExample() {
 					new MA(
 						name,
 						i + 1,
-						_fcj.mans[i + 1].start + fcjoffset,
-						_fcj.mans[i + 1].stop + fcjoffset,
+						_fcj.data[_fcj.mans[i + 1].start].time,
+						_fcj.data[_fcj.mans[i + 1].stop].time,
 						new ScheduleInfo('f3a', 'p25'),
 						'RighttoLeft',
-						States.parse(data.flown),
 						_fcj.manhistory(i + 1),
 						data.mdef.info.k,
+            States.parse(data.flown),
 						ManDef.parse(data.mdef),
 						Manoeuvre.parse(data.manoeuvre),
 						States.parse(data.template),
@@ -123,9 +117,8 @@ export async function createAnalysisExport() {
 		get(fcj)?.name || undefined,
 		analyses.map((_ma, i) => {
 			const ma = get(_ma);
-			return new MAExport(ma.name, ma.id, ma.schedule, ma.start, ma.stop, ma.k, ma.history);
-		}),
-		get(states)
+			return new MAExport(ma.name, ma.id, ma.schedule, ma.tStart, ma.tStop, ma.k, ma.flown, ma.history);
+		})
 	);
 }
 
@@ -140,8 +133,7 @@ export async function importAnalysis(aE: AnalysisExport) {
 	clearAnalysis();
 	origin.set(aE.box);
 	isCompFlight.set(aE.isComp);
-	states.set(aE.states);
-
+	
 	createAnalyses(aE.mans.map((mae) => mae.name));
 
 	aE.mans.forEach((mae, i) => {
@@ -149,13 +141,13 @@ export async function importAnalysis(aE: AnalysisExport) {
 			new MA(
 				mae.name,
 				mae.id,
-				mae.start,
-				mae.stop,
+				mae.tStart,
+				mae.tStop,
 				mae.sinfo,
 				aE.direction(),
-				new States(aE.states.data.slice(mae.start, mae.stop + 1)),
 				mae.history,
-				mae.k
+				mae.k,
+        mae.flown,
 			)
 		);
 	});
@@ -189,7 +181,7 @@ export async function analyseManoeuvre(id: number, optimise: boolean, force: boo
 export async function checkFCJ(fcjson: FCJson) {
 	let matches = true;
 	analyses.forEach(async (ma, i) => {
-		if (fcjson.mans[i + 1].start != get(ma).start || fcjson.mans[i + 1].stop != get(ma).stop) {
+		if (fcjson.mans[i + 1].start != get(ma).tStart || fcjson.mans[i + 1].stop != get(ma).tStop) {
 			matches = false;
 		}
 	});

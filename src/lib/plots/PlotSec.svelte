@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { States } from '$lib/geometry';
+	import { States } from '$lib/state';
 	import Plot from 'svelte-plotly.js';
 	import { ribbon } from '$lib/plots/traces';
 	import { layout3d } from '$lib/plots/layouts';
@@ -46,7 +46,7 @@
 			const fst = st.data[i];
 			return colddraft
 				.scale(scale)
-				.to_mesh3d(fst.pos(), fst.att(), { opacity: 1.0, hoverinfo: 'skip', name: 'fl model' });
+				.to_mesh3d(fst.pos, fst.att, { opacity: 1.0, hoverinfo: 'skip', name: 'fl model' });
 		} else {
 			return { type: 'mesh3d', visible: false };
 		}

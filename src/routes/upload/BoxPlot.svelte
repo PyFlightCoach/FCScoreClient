@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Origin } from '$lib/api_objects/fcjson';
+	import type { Origin } from '$lib/fcjson';
 	import Plot from 'svelte-plotly.js';
 	import { GPS, Point, Quaternion } from '$lib/geometry';
   import {F3AGround, IACGround} from '$lib/box_geometry';

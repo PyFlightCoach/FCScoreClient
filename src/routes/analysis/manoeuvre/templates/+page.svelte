@@ -6,7 +6,7 @@
     import {layout3d} from '$lib/plots/layouts';    
     import {Checkbox, BottomNav, BottomNavItem} from 'flowbite-svelte';
     import { analyses, selManID, fcj} from '$lib/stores';
-    import type {States} from '$lib/geometry';
+    import type {States} from '$lib/state';
     import colddraft from '$lib/plots/colddraft.js';
     
     $: man = analyses[$selManID];

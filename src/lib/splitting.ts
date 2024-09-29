@@ -1,6 +1,5 @@
-import { FCJson, ScheduleInfo, type FCJMan } from '$lib/api_objects/fcjson';
-import { listManoeuvres } from '$lib/analysis';
-import { manoeuvres, loadManoeuvres } from '$lib/stores';
+import { FCJData, ScheduleInfo, type FCJMan } from '$lib/fcjson';
+
 
 export class ManDetails {
 	constructor(
@@ -33,19 +32,19 @@ export class ManSplit {
 	}
 }
 
-export async function parseFCJMans(fcjmans: FCJMan[], manDetails: ManDetails[], offset: number) {
+export async function parseFCJMans(fcjmans: FCJMan[], manDetails: ManDetails[], offset) {
 	return fcjmans.map((man: FCJMan, i: number) => {
 		switch (i) {
 			case 0:
-				return new ManSplit('Takeoff', undefined, i, man.stop + offset);
+				return new ManSplit('Takeoff', undefined, i, man.stop+offset);
 			case fcjmans.length - 1:
-				return new ManSplit('Landing', undefined, i, man.stop + offset);
+				return new ManSplit('Landing', undefined, i, man.stop+offset);
 			default:
 				return new ManSplit(
 					manDetails[i - 1].name,
 					manDetails[i - 1].sinfo,
 					i,
-					man.stop + offset
+					man.stop+offset
 				);
 		}
 

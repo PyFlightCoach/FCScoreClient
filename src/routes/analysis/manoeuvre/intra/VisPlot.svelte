@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Result } from '$lib/api_objects/scores';
+	import type { Result } from '$lib/scores';
 	import Plot from 'svelte-plotly.js';
 	import { linspace } from '$lib/arrays';
-	import type { DownGrade } from '$lib/api_objects/mandef';
+	import type { DownGrade } from '$lib/mandef';
 	
 	export let result: Result;
 	export let downgrade: DownGrade;

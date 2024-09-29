@@ -1,6 +1,6 @@
 <script lang="ts">
 	import PlotSec from '$lib/plots/PlotSec.svelte';
-	import type { States } from '$lib/geometry';
+	import type { States } from '$lib/state';
 	import {
 		Fileupload,
 		Dropdown,
@@ -11,8 +11,8 @@
 		Toggle
 	} from 'flowbite-svelte';
 
-	import { FCJson } from '$lib/api_objects/fcjson';
-	import { parseFCJMans, ManSplit  } from '$lib/splitting';
+	import { FCJson } from '$lib/fcjson';
+	import { ManSplit  } from '$lib/splitting';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
 	import {
 		categories,
@@ -31,7 +31,7 @@
 	export let fcj: FCJson = undefined;
 	export let modified: boolean = false;
 
-	let activeMan = 0;
+	export let activeMan = 0;
 	let range: number[] = [0, states.data.length];
 	let msddOpen = false;
 	let stddOpen = false;
@@ -42,23 +42,6 @@
 			fcj = undefined;
 		}
 	};
-
-	$: if (fcj) {
-		fcj.sinfo
-			.to_pfc()
-			.then((pfcSinfo) => {
-				loadSchedules(pfcSinfo.category);
-				return loadManoeuvres(pfcSinfo.category, pfcSinfo.name);
-			})
-			.then((manDetails) => {
-				return parseFCJMans(fcj.mans, manDetails, states.getFCJIndexOffset());
-			})
-			.then((fcjManSplits) => {
-				mans = fcjManSplits;
-				activeMan = 1;
-				console.log('Loaded mans from fcj');
-			});
-	}
 
 
 	const updateRange = (activeMan: number) => {
@@ -302,7 +285,7 @@
 				</div>
 				<div class="cell">
 					{#if man.name != 'Select'}
-						<button on:click={setRange}>{man.stop || 'Set Range'}</button><Tooltip
+						<button on:click={setRange}>{states[man.stop]?.time.tofixed(0) || `Update (${man.stop} -> ${range[1]})`}</button><Tooltip
 							>Set the end point of this manoeuvre to the end of the active range (or press 's')</Tooltip
 						>
 					{/if}

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { selManID, analyses } from '$lib/stores';
-	import type { States } from '$lib/geometry';
+	import type { States } from '$lib/state';
 	import Plot from 'svelte-plotly.js';
-	import { coloured_ribbons, points, boxtrace } from '$lib/plots/traces';
+	import { coloured_ribbons, points } from '$lib/plots/traces';
 	import { layout3d } from '$lib/plots/layouts';
 	import { iacBoxTrace, f3aBoxTrace } from '$lib/box_geometry';
 
@@ -12,14 +12,14 @@
 
 	const get_points = (states: Record<string, States>) => {
 		return $man!.mdef.info.centre_points.map((i) => {
-			return Object.values(states)[i - 1].data.at(-1).pos();
+			return Object.values(states)[i - 1].data.at(-1).pos;
 		});
 	};
 
 	const get_el_points = (states: Record<string, States>) => {
 		return $man!.mdef.info.centred_els.map((i) => {
 			let el = Object.values(states)[i[0]].data;
-			return el[Math.round(i[1] * el.length)].pos();
+			return el[Math.round(i[1] * el.length)].pos;
 		});
 	};
 

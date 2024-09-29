@@ -1,16 +1,17 @@
-import { States } from '$lib/geometry';
-import { FCJManResult, ScheduleInfo } from '$lib/api_objects/fcjson';
-import { Origin } from '$lib/api_objects/fcjson';
-import { State } from '$lib/geometry';
+import {States} from '$lib/state';
+import { FCJManResult, ScheduleInfo } from '$lib/fcjson';
+import { Origin } from '$lib/fcjson';
+
 
 export class MAExport {
 	constructor(
 		readonly name: string,
 		readonly id: number,
 		readonly sinfo: ScheduleInfo,
-		readonly start: number,
-		readonly stop: number,
+		readonly tStart: number,
+		readonly tStop: number,
     readonly k: number,
+    readonly flown: States,
 		readonly history: Record<string, FCJManResult> = {},
 	) {}
 
@@ -19,9 +20,10 @@ export class MAExport {
 			data.name,
 			data.id,
 			Object.setPrototypeOf(data.sinfo, ScheduleInfo.prototype),
-			data.start,
-			data.stop,
+			data.tStart,
+			data.tStop,
       data.k,
+      States.parse(data.states),
 			Object.fromEntries(Object.entries(data.history).map(([k, v]) => [k, FCJManResult.parse(v)]))
 		);
 	}
@@ -34,7 +36,6 @@ export class AnalysisExport {
 		readonly sourceBin: string,
 		readonly sourceFCJ: string,
 		readonly mans: MAExport[],
-		readonly states: States
 	) {}
 
 	static parse(data: any): AnalysisExport {
@@ -44,11 +45,10 @@ export class AnalysisExport {
 			data.sourceBin,
 			data.sourceFCJ,
 			data.mans.map(MAExport.parse),
-			States.parse(data.states)
 		);
 	}
 
   direction() {
-    return this.isComp ? this.states.data[this.mans[0].start].direction_str() : 'Infer';
+    return this.isComp ? this.mans[0].flown.data[0].direction_str() : 'Infer';
   }
 }

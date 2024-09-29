@@ -4,6 +4,7 @@
 	import BINWorker from '$lib/JsDataflashParser/parser.js?worker';
 	import pkg from 'file-saver';
 	import { createEventDispatcher } from 'svelte';
+  import {BinData, BinField} from '$lib/bindata';
 
 	const dispatch = createEventDispatcher();
 
@@ -11,15 +12,16 @@
 
 	const worker = new BINWorker();
 
-	export let data: Record<string, any>;
-	export let bin: File | undefined = undefined;
+	let data: BinData;
+	let file: File;
 
 	let percentage: number;
 	let startTime: Date = new Date();
 	let ready: boolean = false;
 	let availableMessages: Record<string, any>;
 	let loadedMessages: Record<string, boolean> = {};
-	
+	let selectFields: boolean = false;
+
 	worker.onmessage = (event) => {
 		if (event.data.hasOwnProperty('percentage')) {
 			percentage = event.data.percentage;
@@ -35,34 +37,27 @@
 			startTime = new Date(event.data.metadata.startTime);
 		} else if (event.data.hasOwnProperty('messageType')) {
 			const lname = event.data.messageType.split('[')[0];
-			data[event.data.messageType] = event.data.messageList;
+			data[event.data.messageType] = new BinField(event.data.messageList);
 			loadedMessages[lname] = true;
 		} else if (event.data.hasOwnProperty('messagesDoneLoading')) {
 			ready = true;
-			dispatch('newBin', { data });
+			dispatch('loaded', { data, file });
 		}
 	};
 
 	function parseMessages(msgs: string[]) {
+    data = new BinData({});
 		let reader = new FileReader();
 		reader.onload = (e) => {
-			let data = reader.result;
+			let dat = reader.result;
 			worker.postMessage({
 				action: 'parse',
-				file: data,
+				file: dat,
 				msgs: msgs
 			});
 		};
-		reader.readAsArrayBuffer(bin);
+		reader.readAsArrayBuffer(file);
 	}
-
-	//	function parseFCJ() {
-	//		const reader = new FileReader();
-	//		reader.onload = (e) => {
-	//			fcj = FCJson.parse(JSON.parse(reader.result as string));
-	//		};
-	//		reader.readAsText(json);
-	//	}
 
 	function loadOrDelMsg(load: boolean, name: string) {
 		if (load) {
@@ -89,8 +84,8 @@
 	function handleFileChange(e: Event) {
 		const input = e.target as HTMLInputElement;
 		if (input.files && input.files.length > 0) {
-			bin = input.files[0];
-			data = {};
+			file = input.files[0];
+			data = new BinData({});
 			ready = false;
 			loadedMessages = {};
 			parseMessages(['POS', 'ATT', 'XKF1', 'XKF2', 'IMU', 'GPS', 'ORGN']);
@@ -101,44 +96,46 @@
 	function saveData() {
 		saveAs(
 			new Blob([JSON.stringify(data)], { type: 'application/json' }),
-			`${bin!.name.split('.').slice(0, -1).join('.')}.json`
+			`${file!.name.split('.').slice(0, -1).join('.')}.json`
 		);
 	}
 	function clearData() {
-    dispatch('clear');
+		dispatch('clear');
 		data = undefined;
-		bin = undefined;
+		file = undefined;
 	}
 
 	let ddopen = false;
 </script>
 
-<Button>{bin ? bin.name : 'Bin'}<ChevronDownOutline /></Button>
+<Button>{file ? file.name : 'Bin'}<ChevronDownOutline /></Button>
 <Dropdown bind:open={ddopen}>
-	{#if !bin}
+	{#if !file}
 		<DropdownItem>
 			<Fileupload on:change={handleFileChange} accept=".bin, .BIN" name="BIN file" />
 		</DropdownItem>
 	{:else}
-		<DropdownItem>Select Fields</DropdownItem>
-		<MegaMenu>
-			<div class="selmsgs">
-				{#each Object.entries(loadedMessages) as [name, loaded]}
-					<div>
-						<Checkbox
-							bind:checked={loaded}
-							on:change={(e) => {
-								loadOrDelMsg(e.target.checked, name);
-							}}
-						>
-							{name}
-						</Checkbox>
-					</div>
-				{/each}
-			</div>
-		</MegaMenu>
+		{#if selectFields}
+			<DropdownItem>Select Fields</DropdownItem>
+			<MegaMenu>
+				<div class="selmsgs">
+					{#each Object.entries(loadedMessages) as [name, loaded]}
+						<div>
+							<Checkbox
+								bind:checked={loaded}
+								on:change={(e) => {
+									loadOrDelMsg(e.target.checked, name);
+								}}
+							>
+								{name}
+							</Checkbox>
+						</div>
+					{/each}
+				</div>
+			</MegaMenu>
+		{/if}
 		<DropdownItem>Show Field Columns</DropdownItem>
-		<MegaMenu>
+		<MegaMenu ulClass='w-full'>
 			<div class="minfo">
 				<h3>Field</h3>
 				<h3>Length</h3>
@@ -162,7 +159,8 @@
 	.minfo {
 		display: grid;
 		grid-column-gap: 10px;
-		grid-template-columns: max-content max-content 1fr;
+		grid-template-columns: max-content max-content 100%;
+		background-color: white;
 	}
 	.selmsgs {
 		display: grid;
