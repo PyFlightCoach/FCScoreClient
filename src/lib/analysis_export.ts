@@ -23,7 +23,7 @@ export class MAExport {
 			data.tStart,
 			data.tStop,
       data.k,
-      States.parse(data.states),
+      States.parse(data.flown),
 			Object.fromEntries(Object.entries(data.history).map(([k, v]) => [k, FCJManResult.parse(v)]))
 		);
 	}

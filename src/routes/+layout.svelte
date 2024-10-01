@@ -13,7 +13,8 @@
 		NavHamburger,
 		Checkbox,
 		Radio,
-		Input
+		Input,
+    Tooltip
 	} from 'flowbite-svelte';
 	import {
 		fcj,
@@ -36,6 +37,7 @@
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	
 
 	$: $difficulty = Math.round($difficulty);
 	let active_server =
@@ -130,21 +132,32 @@
 							<DropdownItem href={base + '/analysis'}>Analysis</DropdownItem>
 						{/if}
 						<DropdownItem on:click={() => analyseAll($optimise, true)}>Run All</DropdownItem>
-						<DropdownItem on:click={() => analyseAll($optimise, false)}>Run Remaining</DropdownItem>
+						<Tooltip placement='right'>Analyse all the manoeuvres and re-run existing results</Tooltip>
+            <DropdownItem on:click={() => analyseAll($optimise, false)}>Run Remaining</DropdownItem>
+            <Tooltip placement='right'>Analyse the manoeuvres that haven't been run yet</Tooltip>
             {#if $fcj}
-						<DropdownItem on:click={()=>exportFCJ($fcj)}>export FCJ</DropdownItem>
+						<DropdownItem on:click={()=>exportFCJ($fcj)}>Export FCJ</DropdownItem>
             {/if}
-						<DropdownItem on:click={exportAnalysis}>export Analysis</DropdownItem>
-
+						<DropdownItem on:click={exportAnalysis}>Export Basic</DropdownItem>
+            <Tooltip placement='right'>Download the flight data, scores and manoeuvre history, excluding the detailed downgrade information</Tooltip>
+            <DropdownItem on:click={exportAnalysis}>Export Full</DropdownItem>
+            <Tooltip placement='right'>Download the flight data, scores and manoeuvre history, including the detailed downgrade information if available</Tooltip>
 						<DropdownDivider />
 						<Helper>Available Analyses</Helper>
-						
             {#each $fa_versions as faV}
               <DropdownItem>
                 <Radio bind:group={$selectedResult} value={faV}>
                   {faV + ($fa_version == faV ? ' (Current)' : '')}
                 </Radio>
               </DropdownItem>
+              <Tooltip placement='right'>
+                Display scores from 
+                {#if $fa_version == faV}
+                  the latest analysis code version
+                {:else}
+                  version {faV}
+                {/if}
+              </Tooltip>
             {/each}
 					{:else if !$states}
             <DropdownItem href={base + '/upload'}>Load</DropdownItem>

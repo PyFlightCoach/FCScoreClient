@@ -6,22 +6,21 @@ import { FCJManResult, FCJScore, Origin, ScheduleInfo } from '$lib/fcjson';
 import { serverFunc } from '$lib/api_calls';
 import { selectedResult, fa_version, runInfo, binData, origin } from '$lib/stores';
 import { get } from 'svelte/store';
-import type { BinData } from './bindata';
 
 
 
-export class MA{
+export class MA {
 	constructor(
-    readonly name: string,
+		readonly name: string,
 		readonly id: number,
-    readonly tStart: number,
-    readonly tStop: number,
+		readonly tStart: number,
+		readonly tStop: number,
 		readonly schedule: ScheduleInfo,
 		readonly scheduleDirection: string,
 		readonly history: Record<string, FCJManResult> = {},
-    readonly k: number = undefined,
-    readonly flown: States = undefined,
-    readonly mdef: ManDef = undefined,
+		readonly k: number = undefined,
+		readonly flown: States = undefined,
+		readonly mdef: ManDef = undefined,
 		readonly manoeuvre: Manoeuvre = undefined,
 		readonly template: States = undefined,
 		readonly corrected: Manoeuvre = undefined,
@@ -29,26 +28,25 @@ export class MA{
 		readonly scores: ManoeuvreResult = undefined
 	) {}
 
-
-  summary() {
-    return {
-      name: this.name,
-      id: this.id,
-      schedule: this.schedule.to_string(),
-      scheduleDirection: this.scheduleDirection,
-      k: this.k,
-    }
-  }
+	summary() {
+		return {
+			name: this.name,
+			id: this.id,
+			schedule: this.schedule.to_string(),
+			scheduleDirection: this.scheduleDirection,
+			k: this.k
+		};
+	}
 
 	get_score(selectedResult: string, difficulty: number, truncate: boolean) {
 		if (!this.history[selectedResult]) {
 			return FCJScore.empty();
 		} else {
-			return this.history[selectedResult].get_score(difficulty, truncate)?.score || FCJScore.empty(); 
+			return (
+				this.history[selectedResult].get_score(difficulty, truncate)?.score || FCJScore.empty()
+			);
 		}
 	}
-
-
 
 	async run(optimise: boolean = false) {
 		try {
@@ -59,56 +57,77 @@ export class MA{
 					category: this.schedule.category,
 					schedule: this.schedule.name,
 					schedule_direction: this.scheduleDirection,
-					flown: this.flown?.data || {bin_data: get(binData).slice(this.tStart, this.tStop), origin: get(origin).noMove()},
+					flown: this.flown?.data || {
+						bin_data: get(binData).slice(this.tStart, this.tStop),
+						origin: get(origin).noMove()
+					},
 					optimise_alignment: optimise
 				},
 				'POST'
 			);
 			selectedResult.set(get(fa_version));
-      runInfo[this.id - 1].set(res.info);
+			runInfo[this.id - 1].set(res.info);
 			return new MA(
-        this.name,
-        this.id,
-        this.tStart,
-        this.tStop,
-        this.schedule,
-        this.scheduleDirection,
-        { ...this.history, [res.fa_version]: FCJManResult.parse(res) },
-        res.mdef.info.k,
-        States.parse(res.flown),
-        ManDef.parse(res.mdef),
-        Manoeuvre.parse(res.manoeuvre),
-        States.parse(res.template),
-        res.corrected ? Manoeuvre.parse(res.corrected) : undefined,
-        res.corrected_template ? States.parse(res.corrected_template) : undefined,
-        res.full_scores ? ManoeuvreResult.parse(res.full_scores) : undefined
-      );
+				this.name,
+				this.id,
+				this.tStart,
+				this.tStop,
+				this.schedule,
+				this.scheduleDirection,
+				{ ...this.history, [res.fa_version]: FCJManResult.parse(res) },
+				res.mdef.info.k,
+				States.parse(res.flown),
+				ManDef.parse(res.mdef),
+				Manoeuvre.parse(res.manoeuvre),
+				States.parse(res.template),
+				res.corrected ? Manoeuvre.parse(res.corrected) : undefined,
+				res.corrected_template ? States.parse(res.corrected_template) : undefined,
+				res.full_scores ? ManoeuvreResult.parse(res.full_scores) : undefined
+			);
 		} catch (err) {
 			runInfo[this.id - 1].set(`Analysis Failed: ${err.message}`);
-      console.trace();
+			console.trace();
 			return this;
 		}
 	}
 
-	static async parse(data: Record<string, any>) {
+  smallexport() {
+    return {
+      name: this.name,
+      id: this.id,
+      tStart: this.tStart,
+      tStop: this.tStop,
+      schedule: this.schedule,
+      scheduleDirection: this.scheduleDirection,
+      k: this.k,
+      flown: this.flown,
+      history: this.history
+    };
+  }
+
+
+	static parse(data: Record<string, any>) {
+    runInfo[data.id - 1].set(`Analysis Imported at ${new Date().toLocaleTimeString()}`);
 		return new MA(
 			data.mdef.info.short_name,
-			0,
-      data.start, data.stop,
-			new ScheduleInfo('f3a', 'p25'),
-			'RighttoLeft',
-      Object.setPrototypeOf(data.origin, Origin.prototype),
-			{},
-      data.mdef.info.k,
-      States.parse(data.flown),
-			ManDef.parse(data.mdef),
-			Manoeuvre.parse(data.manoeuvre),
-			States.parse(data.template),
-			Manoeuvre.parse(data.corrected),
-			States.parse(data.corrected_template),
-			ManoeuvreResult.parse(data.full_scores)
+			data.id,
+			data.start,
+			data.stop,
+			Object.setPrototypeOf(data.schedule, ScheduleInfo.prototype),
+			data.scheduleDirection,
+			Object.fromEntries(
+				Object.entries(data.history).map(([k, v]) => {
+					return [k, FCJManResult.parse(v)];
+				})
+			),
+			data.mdef.info.k,
+			data.flown ? States.parse(data.flown): undefined,
+			data.mdef ? ManDef.parse(data.mdef) : undefined,
+			data.manoeuvre ? Manoeuvre.parse(data.manoeuvre) : undefined,
+			data.template ? States.parse(data.template) : undefined,
+			data.corrected ? Manoeuvre.parse(data.corrected) : undefined,
+			data.corrected_template ? States.parse(data.corrected_template) : undefined,
+			data.scores ? ManoeuvreResult.parse(data.scores) : undefined,
 		);
 	}
 }
-
-

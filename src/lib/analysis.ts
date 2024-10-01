@@ -18,13 +18,12 @@ import {
 import { MA } from '$lib/ma';
 import { AnalysisExport, MAExport } from '$lib/analysis_export';
 import { serverFunc } from '$lib/api_calls';
-import {States} from '$lib/state';
+import { States } from '$lib/state';
 import { FCJson, type FCJMan, ScheduleInfo } from '$lib/fcjson';
 import { get } from 'svelte/store';
 import { base } from '$app/paths';
 import { fcj } from '$lib/stores';
 import { Manoeuvre } from '$lib/manoeuvre';
-import { dev } from '$app/environment';
 import pkg from 'file-saver';
 import { ManDef } from './mandef';
 import { ManoeuvreResult } from './scores';
@@ -76,81 +75,39 @@ export function clearAnalysis() {
 	runInfo.length = 0;
 }
 
-export async function loadExample() {
-	clearAnalysis();
-	const _fcj = FCJson.parse(await (await fetch(`${base}/example/example_fcjson.json`)).json());
-
-	createAnalyses(_fcj.unique_names.slice(1, _fcj.unique_names.length - 1));
-
-	get(manNames).forEach(async (name, i) => {
-		fetch(`${base}/example/${name}.json`).then(async (res) => {
-			res.json().then((data) => {
-				analyses[i].set(
-					new MA(
-						name,
-						i + 1,
-						_fcj.data[_fcj.mans[i + 1].start].time,
-						_fcj.data[_fcj.mans[i + 1].stop].time,
-						new ScheduleInfo('f3a', 'p25'),
-						'RighttoLeft',
-						_fcj.manhistory(i + 1),
-						data.mdef.info.k,
-            States.parse(data.flown),
-						ManDef.parse(data.mdef),
-						Manoeuvre.parse(data.manoeuvre),
-						States.parse(data.template),
-						Manoeuvre.parse(data.corrected),
-						States.parse(data.corrected_template),
-						ManoeuvreResult.parse(data.full_scores)
-					)
-				);
-			});
-		});
-	});
-}
-
-export async function createAnalysisExport() {
-	return new AnalysisExport(
-		get(origin),
-		get(isCompFlight),
-		get(bin)?.name || undefined,
-		get(fcj)?.name || undefined,
-		analyses.map((_ma, i) => {
-			const ma = get(_ma);
-			return new MAExport(ma.name, ma.id, ma.schedule, ma.tStart, ma.tStop, ma.k, ma.flown, ma.history);
-		})
-	);
+export async function createAnalysisExport(small: boolean = false) {
+	return {
+		origin: get(origin),
+		isComp: get(isCompFlight),
+		sourceBin: get(bin)?.name || undefined,
+		sourceFCJ: get(fcj)?.name || undefined,
+		mans: analyses.map((_ma) => (small ? get(_ma).smallexport() : get(_ma)))
+	};
 }
 
 export async function exportAnalysis() {
 	saveAs(
 		new Blob([JSON.stringify(await createAnalysisExport())], { type: 'application/json' }),
-		`${(get(bin)?.name.replace('.BIN', '') || get(fcj)?.name.replace('.json', '') || 'exported')}_analysis.json`
+		`${get(bin)?.name.replace('.BIN', '') || get(fcj)?.name.replace('.json', '') || 'exported'}_analysis.json`
 	);
 }
 
-export async function importAnalysis(aE: AnalysisExport) {
+export async function importAnalysis(data: Record<string, any>) {
 	clearAnalysis();
-	origin.set(aE.box);
-	isCompFlight.set(aE.isComp);
-	
-	createAnalyses(aE.mans.map((mae) => mae.name));
+	origin.set(data.origin);
+	isCompFlight.set(data.isComp);
 
-	aE.mans.forEach((mae, i) => {
-		analyses[i].set(
-			new MA(
-				mae.name,
-				mae.id,
-				mae.tStart,
-				mae.tStop,
-				mae.sinfo,
-				aE.direction(),
-				mae.history,
-				mae.k,
-        mae.flown,
-			)
-		);
+	createAnalyses(data.mans.map((ma) => ma.name));
+
+	data.mans.forEach((ma, i) => {
+		analyses[i].set(MA.parse(ma));
 	});
+}
+
+export async function loadExample() {
+	clearAnalysis();
+  importAnalysis(await (await fetch(`${base}/example/example_analysis.json`)).json());
+	
 }
 
 export async function analyseMans(ids: number[], optim: boolean, force: boolean) {
@@ -191,9 +148,9 @@ export async function checkFCJ(fcjson: FCJson) {
 export async function exportFCJ(oldfcj: FCJson) {
 	if (checkFCJ(oldfcj)) {
 		analyses.forEach(async (ma, i) => {
-      Object.entries(get(ma).history).forEach(([key, value]) => {
-        oldfcj.add_result_id(key, i+1, value);
-      });
+			Object.entries(get(ma).history).forEach(([key, value]) => {
+				oldfcj.add_result_id(key, i + 1, value);
+			});
 		});
 
 		saveAs(
