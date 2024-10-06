@@ -84,6 +84,21 @@ export class States {
 	get element() {
 		return this.data.map((state) => state.element);
 	}
+
+  move(start: Point) {
+    const offset = Point.distance(this.pos[0], start);
+    return new States(this.data.map((st, i) => {
+      return new State({
+        ...st,
+        x: st.x + offset.x,
+        y: st.y + offset.y,
+        z: st.z + offset.z
+      });
+    }));
+
+  }
+
+
 	body_to_world(p: Point) {
 		return this.data.map((st) => st.body_to_world(p));
 	}

@@ -13,7 +13,7 @@
  
   
     const make_trace = (tp: States, models: boolean, name: string, color: string) => {
-      const trs = [ribbon(tp, 3, {}, {name, color})]
+      const trs = [ribbon(tp, 10, {}, {name, color})]
   
       if (models) {
         trs.push(...modeltrace(tp.downsample(20), colddraft, {name, color}));

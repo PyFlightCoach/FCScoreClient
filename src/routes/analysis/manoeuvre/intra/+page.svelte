@@ -42,14 +42,15 @@
 		<div class="plot" class:fullwidth={!showintra} class:fullheight={!showintra}>
 			{#if activeED}
 				<PlotSec
-					flst={states[activeED.name]}
+					flst={states[activeED.name].move(templates[activeED.name].data[0].pos)}
 					tpst={templates[activeED.name]}
 					bind:i={activeIndex}
           controls={['play', 'scale', 'speed', 'projection', 'modelClick']}
           fixRange
+          scale={1}
 				/>
 			{:else}
-				<PlotDTW sts={states} bind:activeEl={activeDGName} />
+				<PlotDTW sts={states} bind:activeEl={activeDGName} sp={10}/>
 			{/if}
 		</div>
 

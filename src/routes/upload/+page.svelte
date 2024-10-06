@@ -38,11 +38,11 @@
 
 	$: if ($binData && !$fcj) {
 		if (
-			!$origin ||
-			GPS.sub(
-				new GPS($binData.orgn.Lat[0], $binData.orgn.Lng[0], $binData.orgn.Alt[0]),
-				new GPS($origin.lat, $origin.lng, $origin.alt)
-			).length() > 300
+			!$origin //||
+//			GPS.sub(
+//				new GPS($binData.orgn.Lat[0], $binData.orgn.Lng[0], $binData.orgn.Alt[0]),
+//				new GPS($origin.lat, $origin.lng, $origin.alt)
+//			).length() > 300
 		) {
 			$origin = new Origin($binData.orgn.Lat[0], $binData.orgn.Lng[0], $binData.orgn.Alt[0], 0);
 		}

@@ -69,7 +69,7 @@
 	<button
 		on:click={() => activate_man(id, '')}
 		data-sveltekit-preload-data="tap"
-		style:background-color={colscale((10 - score) * $ma.k, 20, colours)}>{score.toFixed(1)}</button
+		style:background-color={colscale(10 - score, 10, colours)}>{score.toFixed(1)}</button
 	>
 {:else}
 	<div>-</div>

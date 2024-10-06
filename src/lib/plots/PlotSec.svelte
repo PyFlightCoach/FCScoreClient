@@ -35,7 +35,7 @@
 			return { type: 'mesh3d', visible: false };
 		} else {
 			max = max == -1 ? st.data.length : max;
-			return ribbon(new States(st.data.slice(min, max)), 3);
+			return ribbon(new States(st.data.slice(min, max)), 3*scale);
 		}
 	};
 
