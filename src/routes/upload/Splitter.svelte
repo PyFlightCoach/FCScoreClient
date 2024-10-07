@@ -206,7 +206,7 @@
 
 <div class="parent">
 	<div class="plot">
-		<PlotSec flst={states} controls={['slider', 'rangeEndClick']} scale={5} bind:range />
+		<PlotSec flst={states} controls={['slider', 'rangeEndClick']} scale={3} bind:range />
 	</div>
 	<div class="options">
 		<ButtonGroup>

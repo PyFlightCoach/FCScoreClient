@@ -15,17 +15,13 @@
 	let data: BinData;
 	let file: File;
 
-	let percentage: number;
-	let startTime: Date = new Date();
 	let ready: boolean = false;
 	let availableMessages: Record<string, any>;
 	let loadedMessages: Record<string, boolean> = {};
-	let selectFields: boolean = false;
+	export let selectFields: boolean = false;
 
 	worker.onmessage = (event) => {
-		if (event.data.hasOwnProperty('percentage')) {
-			percentage = event.data.percentage;
-		} else if (event.data.hasOwnProperty('availableMessages')) {
+		if (event.data.hasOwnProperty('availableMessages')) {
 			availableMessages = event.data.availableMessages;
 			Object.entries(event.data.availableMessages).forEach(([name, message]) => {
 				const lname = name.split('[')[0];
@@ -33,8 +29,6 @@
 					loadedMessages[lname] = false;
 				}
 			});
-		} else if (event.data.hasOwnProperty('metadata')) {
-			startTime = new Date(event.data.metadata.startTime);
 		} else if (event.data.hasOwnProperty('messageType')) {
 			const lname = event.data.messageType.split('[')[0];
 			data[event.data.messageType] = new BinField(event.data.messageList);

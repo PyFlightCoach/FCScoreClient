@@ -50,7 +50,7 @@
           scale={1}
 				/>
 			{:else}
-				<PlotDTW sts={states} bind:activeEl={activeDGName} sp={10}/>
+				<PlotDTW sts={states} bind:activeEl={activeDGName} sp={4}/>
 			{/if}
 		</div>
 

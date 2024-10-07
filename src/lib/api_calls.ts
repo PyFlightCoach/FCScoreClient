@@ -30,14 +30,8 @@ export async function serverFunc(func_name: string, kwargs: Record<string, any>=
 
 
 
-export async function get_telemetry(): Promise<Blob> {
-  
-  let spath: string = '';
-  server.subscribe(v=>{spath=v});
-  return fetch(
-    `${spath}/telemetry` , 
-    { method: 'get', mode: 'cors' }
-  ).then(res => res.blob())
+export async function get_telemetry() {
+  return await serverFunc(`telemetry` , {}, 'GET')
   
 }
 

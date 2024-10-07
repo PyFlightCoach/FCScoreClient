@@ -57,10 +57,8 @@ export class MA {
 					category: this.schedule.category,
 					schedule: this.schedule.name,
 					schedule_direction: this.scheduleDirection,
-					flown: this.flown?.data || {
-						bin_data: get(binData).slice(this.tStart, this.tStop),
-						origin: get(origin).noMove()
-					},
+					flown: this.flown?.data || get(binData).slice(this.tStart, this.tStop),
+          origin: get(origin)?.noMove(),
 					optimise_alignment: optimise
 				},
 				'POST'
