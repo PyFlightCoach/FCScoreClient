@@ -85,19 +85,19 @@ export class States {
 		return this.data.map((state) => state.element);
 	}
 
-  move(start: Point) {
-    const offset = Point.distance(this.pos[0], start);
-    return new States(this.data.map((st, i) => {
-      return new State({
-        ...st,
-        x: st.x + offset.x,
-        y: st.y + offset.y,
-        z: st.z + offset.z
-      });
-    }));
-
-  }
-
+	move(start: Point) {
+		const offset = Point.distance(this.pos[0], start);
+		return new States(
+			this.data.map((st, i) => {
+				return new State({
+					...st,
+					x: st.x + offset.x,
+					y: st.y + offset.y,
+					z: st.z + offset.z
+				});
+			})
+		);
+	}
 
 	body_to_world(p: Point) {
 		return this.data.map((st) => st.body_to_world(p));
@@ -140,53 +140,53 @@ export class States {
 			new Point(Math.PI, 0, (fcj.origin.heading * Math.PI) / 180 + Math.PI / 2)
 		);
 
-    let lastT = fcj.data[0].time / 1e6 - 1/25;
+		let lastT = fcj.data[0].time / 1e6 - 1 / 25;
 
-		return new States(fcj.data.map((row) => {
-			const posbox = box_rot.transform_point(new Point(row.N, row.E, row.D));
-			const attbox = Quaternion.mul(
-				box_rot,
-				Quaternion.parse_euler(new Point(row.roll, row.pitch, row.yaw))
-			);
-			const velbody = attbox
-				.inverse()
-				.transform_point(box_rot.transform_point(new Point(row.VN, row.VE, row.VD)));
-			const st = new State({
-				t: row.time / 1e6,
-        dt: row.time / 1e6 - lastT,
-				x: posbox.x,
-				y: posbox.y,
-				z: posbox.z,
-				rw: attbox.w,
-				rx: attbox.x,
-				ry: attbox.y,
-				rz: attbox.z,
-				u: velbody.x,
-				v: velbody.y,
-				w: velbody.z
-			});
-      lastT = row.time / 1e6;
-      return st
-
-		}));
+		return new States(
+			fcj.data.map((row) => {
+				const posbox = box_rot.transform_point(new Point(row.N, row.E, row.D));
+				const attbox = Quaternion.mul(
+					box_rot,
+					Quaternion.parse_euler(new Point(row.roll, row.pitch, row.yaw))
+				);
+				const velbody = attbox
+					.inverse()
+					.transform_point(box_rot.transform_point(new Point(row.VN, row.VE, row.VD)));
+				const st = new State({
+					t: row.time / 1e6,
+					dt: row.time / 1e6 - lastT,
+					x: posbox.x,
+					y: posbox.y,
+					z: posbox.z,
+					rw: attbox.w,
+					rx: attbox.x,
+					ry: attbox.y,
+					rz: attbox.z,
+					u: velbody.x,
+					v: velbody.y,
+					w: velbody.z
+				});
+				lastT = row.time / 1e6;
+				return st;
+			})
+		);
 	}
 
+  slice(start: number, stop: number) {
+    return new States(this.data.slice(start, stop));
+  }
+
 	range(col: string) {
-		return [
-			Math.min.apply(
-				0,
-				this.data.map((st) => st[col])
-			),
+		return (
 			Math.max.apply(
 				0,
 				this.data.map((st) => st[col])
+			) -
+			Math.min.apply(
+				0,
+				this.data.map((st) => st[col])
 			)
-		];
-	}
-
-	centre(col: string) {
-		const srange = this.range(col);
-		return (srange[0] + srange[1]) / 2;
+		);
 	}
 
 	split() {

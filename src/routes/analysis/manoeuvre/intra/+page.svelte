@@ -47,7 +47,7 @@
 					bind:i={activeIndex}
           controls={['play', 'scale', 'speed', 'projection', 'modelClick']}
           fixRange
-          scale={1}
+          scale={3}
 				/>
 			{:else}
 				<PlotDTW sts={states} bind:activeEl={activeDGName} sp={4}/>

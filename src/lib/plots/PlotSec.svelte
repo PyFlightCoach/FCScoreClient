@@ -21,41 +21,49 @@
 		'rangeStartClick'
 	];
 
-	export let scale = 1;
+	export let scale: number = 1;
+  export let scaleType: string = 'range';
 	export let speed = 50;
 
 	export let range = [0, flst.data.length];
   export let fixRange: boolean = false;
 
+  let scale_multiplier = 1;
 
   $: if (flst && fixRange) { range=[0, flst.data.length]};
-
-	const createRibbonTrace = (st: States | undefined, min: number, max: number) => {
+  const getRange = (st: States) => {
+    const _st = st.slice(range[0], range[1]);
+    return Math.max(_st.range("x"), _st.range("y"), _st.range("z"));
+  }
+  $: rng = getRange(flst);
+  $: _scale = scaleType === 'range' ?  rng*0.01*scale : scale ;
+  
+	const createRibbonTrace = (st: States | undefined, sc: number, min: number, max: number) => {
 		if (!st) {
 			return { type: 'mesh3d', visible: false };
 		} else {
 			max = max == -1 ? st.data.length : max;
-			return ribbon(new States(st.data.slice(min, max)), 3*scale);
+			return ribbon(new States(st.data.slice(min, max)), sc);
 		}
 	};
 
 	let layout = structuredClone(layout3d);
 
-	const createModelTrace = (st: States | null, i: number | null) => {
+	const createModelTrace = (st: States | null, i: number | null, sc: number) => {
 		if (st != null && i < st.data.length) {
 			const fst = st.data[i];
 			return colddraft
-				.scale(scale)
+				.scale(sc*0.3)
 				.to_mesh3d(fst.pos, fst.att, { opacity: 1.0, hoverinfo: 'skip', name: 'fl model' });
 		} else {
 			return { type: 'mesh3d', visible: false };
 		}
 	};
 
-	$: fl_ribbon = createRibbonTrace(flst, ...range); //, tp_ribbon, fl_model, tp_model;
-	$: tp_ribbon = createRibbonTrace(tpst, ...range);
-	$: fl_model = createModelTrace(flst, i);
-	$: tp_model = createModelTrace(tpst, i);
+	$: fl_ribbon = createRibbonTrace(flst, _scale*scale_multiplier, ...range); //, tp_ribbon, fl_model, tp_model;
+	$: tp_ribbon = createRibbonTrace(tpst, _scale*scale_multiplier, ...range);
+	$: fl_model = createModelTrace(flst, i, _scale*scale_multiplier);
+	$: tp_model = createModelTrace(tpst, i, _scale*scale_multiplier);
 
 	$: traces = [fl_ribbon, tp_ribbon, fl_model, tp_model];
 
@@ -127,7 +135,7 @@
 			{#if controls.includes('scale')}
 				<Button
 					on:click={() => {
-						scale = Math.min(10, scale + 1);
+						scale_multiplier = scale_multiplier + 0.1;
 					}}>+</Button
 				>
 			{/if}
@@ -136,7 +144,7 @@
 			{#if controls.includes('scale')}
 				<Button
 					on:click={() => {
-						scale = Math.max(1, scale - 1);
+						scale_multiplier = Math.max(0.2, scale_multiplier - 0.2);
 					}}>-</Button
 				>
 			{/if}

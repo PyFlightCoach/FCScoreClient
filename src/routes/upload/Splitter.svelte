@@ -201,12 +201,11 @@
 
 	$: if (compFlight) {checkComp(true);}
 	
-
 </script>
 
 <div class="parent">
 	<div class="plot">
-		<PlotSec flst={states} controls={['slider', 'rangeEndClick']} scale={3} bind:range />
+		<PlotSec flst={states} controls={['slider', 'rangeEndClick']} bind:range />
 	</div>
 	<div class="options">
 		<ButtonGroup>
